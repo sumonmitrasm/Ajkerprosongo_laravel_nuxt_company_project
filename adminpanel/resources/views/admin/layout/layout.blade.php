@@ -55,7 +55,9 @@
 			<!-- main-sidebar -->
 
             <!-- app-content start-->
-            @yield('content')
+            <main id="ajax-page-content">
+                @yield('content')
+            </main>
             <!-- app-content end-->
 
         </div>
@@ -98,6 +100,160 @@
 
     <!--Moment js-->
     <script src="{{ url('admin/assets/plugins/moment/moment.js') }}"></script>
+
+    <!-- DataTables and AJAX page loading -->
+    <script src="{{ url('admin/assets/plugins/datatable/datatables.min.js') }}"></script>
+    <script>
+        function initialiseUsersTable() {
+            var $table = $('#users-table');
+
+            if ($table.length && $.fn.DataTable && !$.fn.dataTable.isDataTable($table)) {
+                $table.DataTable({
+                    language: {
+                        searchPlaceholder: 'Search...',
+                        sSearch: '',
+                        lengthMenu: '_MENU_'
+                    }
+                });
+            }
+        }
+
+        $(function () {
+            initialiseUsersTable();
+
+            window.loadAjaxPage = function (url, pushHistory) {
+                var $content = $('#ajax-page-content');
+                $content.css('opacity', '.5');
+
+                $.ajax({
+                    url: url
+                }).done(function (html) {
+                    var $response = $('<div>').append($.parseHTML(html));
+                    var $newContent = $response.find('#ajax-page-content').first();
+
+                    if (!$newContent.length) {
+                        window.location.href = url;
+                        return;
+                    }
+
+                    $content.html($newContent.html()).css('opacity', '1');
+                    $('.side-menu .slide-item').removeClass('active');
+                    $('.side-menu a[href="' + url + '"]').addClass('active');
+
+                    if (pushHistory) {
+                        window.history.pushState({}, '', url);
+                    }
+
+                    initialiseUsersTable();
+                }).fail(function () {
+                    window.location.href = url;
+                }).always(function () {
+                    $content.css('opacity', '1');
+                });
+            };
+
+            $(document).on('click', '.side-menu a[href]', function (event) {
+                var href = $(this).attr('href');
+
+                if (!href || href === '#' || href.indexOf('javascript:') === 0 || this.target ||
+                    event.ctrlKey || event.metaKey || event.shiftKey || event.which === 2) {
+                    return;
+                }
+
+                var url = new URL(this.href, window.location.href);
+
+                if (url.origin !== window.location.origin) {
+                    return;
+                }
+
+                event.preventDefault();
+                window.loadAjaxPage(url.href, true);
+            });
+
+            window.addEventListener('popstate', function () {
+                window.loadAjaxPage(window.location.href, false);
+            });
+
+            function showUserFormErrors(errors) {
+                var messages = $.map(errors, function (items) { return items.join('<br>'); });
+                $('#user-form-errors').html(messages.join('<br>')).removeClass('d-none');
+            }
+
+            function saveUserForm(url, method) {
+                var $form = $('#user-form');
+                var data = $form.serializeArray();
+                data.push({ name: '_method', value: method });
+
+                $('#user-form-submit').prop('disabled', true);
+                $.post(url, $.param(data)).done(function (response) {
+                    bootstrap.Modal.getInstance(document.getElementById('user-form-modal')).hide();
+                    window.loadAjaxPage(window.location.href, false);
+                    setTimeout(function () { alert(response.message); }, 250);
+                }).fail(function (xhr) {
+                    if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
+                        showUserFormErrors(xhr.responseJSON.errors);
+                    } else {
+                        alert(xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Request failed.');
+                    }
+                }).always(function () {
+                    $('#user-form-submit').prop('disabled', false);
+                });
+            }
+
+            $(document).on('click', '.js-user-create', function () {
+                var form = document.getElementById('user-form');
+                form.reset();
+                $(form).data({ url: '{{ route('admin-user.store') }}', method: 'POST' });
+                $('#user-form-title').text('Add User');
+                $('#password-help').text('(minimum 6 characters)');
+                $('#user-form-errors').addClass('d-none').empty();
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('user-form-modal')).show();
+            });
+
+            $(document).on('click', '.js-user-edit', function () {
+                var $button = $(this);
+                $.get($button.data('url')).done(function (response) {
+                    var user = response.user;
+                    var form = document.getElementById('user-form');
+                    form.reset();
+                    $(form).data({ url: $button.data('update-url'), method: 'PUT' });
+                    $.each(['ap_id', 'name', 'email', 'type', 'mobile'], function (_, field) {
+                        $(form).find('[name="' + field + '"]').val(user[field] || '');
+                    });
+                    $(form).find('[name="status"]').val(user.status ? '1' : '0');
+                    $('#user-form-title').text('Edit User');
+                    $('#password-help').text('(leave blank to keep the current password)');
+                    $('#user-form-errors').addClass('d-none').empty();
+                    bootstrap.Modal.getOrCreateInstance(document.getElementById('user-form-modal')).show();
+                }).fail(function () { alert('Could not load this user.'); });
+            });
+
+            $(document).on('submit', '#user-form', function (event) {
+                event.preventDefault();
+                saveUserForm($(this).data('url'), $(this).data('method'));
+            });
+
+            $(document).on('click', '.js-user-status', function () {
+                var url = $(this).data('url');
+                $.post(url, { _token: $('input[name="_token"]').first().val(), _method: 'PATCH' }).done(function (response) {
+                    window.loadAjaxPage(window.location.href, false);
+                    setTimeout(function () { alert(response.message); }, 250);
+                }).fail(function () { alert('Status update failed.'); });
+            });
+
+            $(document).on('click', '.js-user-delete', function () {
+                var url = $(this).data('url');
+                if (!window.confirm('Do you want to delete this user?')) return;
+
+                $.post(url, { _token: $('input[name="_token"]').first().val(), _method: 'DELETE' }).done(function (response) {
+                    window.loadAjaxPage(window.location.href, false);
+                    setTimeout(function () { alert(response.message); }, 250);
+                }).fail(function (xhr) {
+                    alert(xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Delete failed.');
+                });
+            });
+        });
+    </script>
 
     <!-- Daterangepicker js-->
     <script src="{{ url('admin/assets/plugins/bootstrap-daterangepicker/daterangepicker.js') }}"></script>

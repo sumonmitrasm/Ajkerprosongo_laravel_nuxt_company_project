@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use App\Models\Admin;
 
 class AdminController extends Controller
@@ -75,9 +76,61 @@ class AdminController extends Controller
         return redirect('admin/login');
     }
 
-    public function users(Request $request){
+    public function users(Request $request)
+    {
         $title = "Admin Users";
         $users = Admin::get();
-        return view('admin.accounts.admin-user')->with(compact('title','users'));
+        return view('admin.accounts.admin-user', compact('title', 'users'));
+    }
+    public function showUser(Admin $user)
+    {
+        return response()->json(['user' => $user]);
+    }
+
+    public function storeUser(Request $request)
+    {
+        Admin::create($this->validateUser($request));
+        return response()->json(['message' => 'User added successfully.'], 201);
+    }
+
+    public function updateUser(Request $request, Admin $user)
+    {
+        $user->update($this->validateUser($request, $user));
+        return response()->json(['message' => 'User updated successfully.']);
+    }
+
+    public function deleteUser(Admin $user)
+    {
+        if ($user->is(Auth::guard('admin')->user())) {
+            return response()->json(['message' => 'You cannot delete the logged-in user.'], 422);
+        }
+
+        $user->delete();
+        return response()->json(['message' => 'User deleted successfully.']);
+    }
+
+    public function updateUserStatus(Admin $user)
+    {
+        $user->update(['status' => ! $user->status]);
+        return response()->json(['message' => 'User status updated successfully.']);
+    }
+
+    private function validateUser(Request $request, ?Admin $user = null): array
+    {
+        $data = $request->validate([
+            'ap_id' => ['nullable', 'integer'],
+            'name' => ['required', 'string', 'max:100'],
+            'type' => ['nullable', 'string', 'max:100'],
+            'mobile' => ['nullable', 'string', 'max:30'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('admins', 'email')->ignore($user)],
+            'password' => $user ? ['nullable', 'string', 'min:6', 'max:255'] : ['required', 'string', 'min:6', 'max:255'],
+            'status' => ['required', 'boolean'],
+        ]);
+
+        if ($user && blank($data['password'] ?? null)) {
+            unset($data['password']);
+        }
+
+        return $data;
     }
 }

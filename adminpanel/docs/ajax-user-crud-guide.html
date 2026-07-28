@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="bn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Laravel AJAX User CRUD Guide</title>
+    <style>
+        :root { --ink:#1f2937; --muted:#64748b; --brand:#2563eb; --bg:#f8fafc; --card:#fff; --line:#e2e8f0; --code:#0f172a; }
+        * { box-sizing:border-box; }
+        body { margin:0; font-family:Arial, "Noto Sans Bengali", sans-serif; color:var(--ink); background:var(--bg); line-height:1.7; }
+        header { padding:56px 24px; color:#fff; background:linear-gradient(120deg,#1d4ed8,#0f766e); }
+        header div, main { max-width:1000px; margin:auto; }
+        h1 { margin:0 0 8px; font-size:clamp(28px,5vw,42px); } h2 { margin-top:0; color:#0f172a; } h3 { margin-top:28px; }
+        header p { margin:0; opacity:.92; font-size:18px; } main { padding:32px 20px 60px; }
+        section { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:26px; margin:20px 0; box-shadow:0 3px 12px #0f172a0a; }
+        .flow { display:flex; flex-wrap:wrap; gap:10px; align-items:center; font-weight:bold; } .flow span { padding:8px 12px; border-radius:8px; background:#dbeafe; color:#1e40af; } .flow b { color:var(--muted); }
+        code { color:#be123c; } pre { overflow:auto; padding:16px; border-radius:9px; background:var(--code); color:#e2e8f0; font:13px/1.55 Consolas, monospace; } pre code { color:inherit; }
+        table { border-collapse:collapse; width:100%; } th,td { padding:10px; border:1px solid var(--line); text-align:left; vertical-align:top; } th { background:#eff6ff; }
+        .note { padding:13px 16px; border-left:4px solid var(--brand); background:#eff6ff; } .ok { border-left-color:#059669; background:#ecfdf5; }
+        ul { padding-left:24px; } a { color:var(--brand); }
+    </style>
+</head>
+<body>
+<header><div><h1>Laravel AJAX User CRUD</h1><p>Page reload ছাড়া Add, Edit, Delete ও Status Update করার সহজ গাইড</p></div></header>
+<main>
+    <section>
+        <h2>কী তৈরি করা হয়েছে?</h2>
+        <p>Users page-এ একটি DataTable আছে। <strong>Add User</strong> চাপলে modal form আসে। Form submit, edit, delete এবং status change—সবগুলো AJAX request দিয়ে হয়। কাজ সফল হলে শুধু Users page-এর content আবার load হয়; browser-এর পুরো page reload হয় না।</p>
+        <div class="flow"><span>Button click</span><b>→</b><span>jQuery AJAX</span><b>→</b><span>Laravel Route</span><b>→</b><span>Controller</span><b>→</b><span>Database</span><b>→</b><span>DataTable refresh</span></div>
+    </section>
+
+    <section>
+        <h2>কোন ফাইল কী কাজ করে?</h2>
+        <table><thead><tr><th>ফাইল</th><th>কাজ</th></tr></thead><tbody>
+            <tr><td><code>routes/web.php</code></td><td>প্রতিটি AJAX URL বা endpoint নির্ধারণ করে।</td></tr>
+            <tr><td><code>app/Http/Controllers/AdminController.php</code></td><td>Validation করে এবং database create/update/delete/status পরিবর্তন করে।</td></tr>
+            <tr><td><code>app/Models/Admin.php</code></td><td>Database field, password hashing এবং status boolean conversion নির্ধারণ করে।</td></tr>
+            <tr><td><code>resources/views/admin/accounts/partials/admin-user-content.blade.php</code></td><td>Users table, action buttons এবং Add/Edit modal form রাখে।</td></tr>
+            <tr><td><code>resources/views/admin/layout/layout.blade.php</code></td><td>Global JavaScript: AJAX request, error message ও DataTable refresh রাখে।</td></tr>
+        </tbody></table>
+    </section>
+
+    <section>
+        <h2>১. Routes</h2>
+        <p>এই routes-গুলো <code>admin.auth</code> middleware-এর মধ্যে আছে, তাই login ছাড়া কেউ এগুলো ব্যবহার করতে পারবে না।</p>
+<pre><code>Route::get('users', [AdminController::class, 'users'])->name('admin-user');
+Route::post('users', [AdminController::class, 'storeUser'])->name('admin-user.store');
+Route::get('users/{user}', [AdminController::class, 'showUser'])->name('admin-user.show');
+Route::put('users/{user}', [AdminController::class, 'updateUser'])->name('admin-user.update');
+Route::patch('users/{user}/status', [AdminController::class, 'updateUserStatus'])->name('admin-user.status');
+Route::delete('users/{user}', [AdminController::class, 'deleteUser'])->name('admin-user.delete');</code></pre>
+        <p><strong>মনে রাখবেন:</strong> একই <code>users/{user}</code> URL হলেও HTTP method আলাদা হওয়ায় Laravel বুঝতে পারে কোন কাজ হবে। GET = data নেওয়া, PUT = update, DELETE = remove।</p>
+    </section>
+
+    <section>
+        <h2>২. Model: password কেন নিরাপদ?</h2>
+        <p><code>fillable</code> দিয়ে কোন field save করা যাবে তা বলা হয়েছে। <code>password =&gt; hashed</code> থাকার কারণে plain password database-এ যায় না; Laravel hash করে রাখে।</p>
+<pre><code>protected $fillable = ['ap_id', 'name', 'type', 'mobile', 'email', 'password', 'status'];
+protected $hidden = ['password'];
+
+protected function casts(): array
+{
+    return ['password' => 'hashed', 'status' => 'boolean'];
+}</code></pre>
+    </section>
+
+    <section>
+        <h2>৩. Controller: Add ও Update</h2>
+<pre><code>public function storeUser(Request $request)
+{
+    Admin::create($this->validateUser($request));
+    return response()->json(['message' => 'User added successfully.'], 201);
+}
+
+public function updateUser(Request $request, Admin $user)
+{
+    $user->update($this->validateUser($request, $user));
+    return response()->json(['message' => 'User updated successfully.']);
+}</code></pre>
+        <p><code>response()->json()</code> ব্যবহার করা হয়েছে কারণ AJAX JavaScript HTML redirect নয়, JSON response আশা করে।</p>
+        <h3>Validation</h3>
+<pre><code>private function validateUser(Request $request, ?Admin $user = null): array
+{
+    $data = $request->validate([
+        'name'     => ['required', 'string', 'max:100'],
+        'email'    => ['required', 'email', Rule::unique('admins', 'email')->ignore($user)],
+        'password' => $user ? ['nullable', 'string', 'min:6'] : ['required', 'string', 'min:6'],
+        'status'   => ['required', 'boolean'],
+    ]);
+
+    // Edit করার সময় password খালি থাকলে পুরোনো password অপরিবর্তিত থাকবে।
+    if ($user && blank($data['password'] ?? null)) unset($data['password']);
+    return $data;
+}</code></pre>
+    </section>
+
+    <section>
+        <h2>৪. Blade: Modal খুলতে button</h2>
+<pre><code>&lt;button type="button" class="btn btn-info js-user-create"&gt;Add User&lt;/button&gt;
+
+&lt;button class="js-user-edit"
+        data-url="/admin/users/5"
+        data-update-url="/admin/users/5"&gt;Edit&lt;/button&gt;
+
+&lt;button class="js-user-delete" data-url="/admin/users/5"&gt;Delete&lt;/button&gt;</code></pre>
+        <p><code>data-url</code>-এ route রাখা হয়। তাই JavaScript-এ URL লিখে hard-code করতে হয় না। বাস্তব view-তে <code>route('admin-user.show', $user)</code> ব্যবহার করা হয়েছে।</p>
+    </section>
+
+    <section>
+        <h2>৫. AJAX দিয়ে form save</h2>
+<pre><code>function saveUserForm(url, method) {
+    var data = $('#user-form').serializeArray();
+    data.push({ name: '_method', value: method });
+
+    $.post(url, $.param(data))
+        .done(function (response) {
+            // Modal বন্ধ করে শুধু বর্তমান content পুনরায় load করে।
+            bootstrap.Modal.getInstance(document.getElementById('user-form-modal')).hide();
+            window.loadAjaxPage(window.location.href, false);
+        })
+        .fail(function (xhr) {
+            // 422 হলে Laravel validation messages modal-এ দেখায়।
+            if (xhr.status === 422) showUserFormErrors(xhr.responseJSON.errors);
+        });
+}</code></pre>
+        <p><code>_method</code> হলো Laravel method spoofing। Browser form শুধু GET/POST পাঠাতে পারে, তাই POST-এর সঙ্গে <code>_method=PUT</code> পাঠিয়ে update route চালানো হয়েছে।</p>
+    </section>
+
+    <section>
+        <h2>৬. Delete ও Status update</h2>
+<pre><code>// Status toggle
+$.post(statusUrl, { _token: csrfToken, _method: 'PATCH' })
+ .done(function () { window.loadAjaxPage(window.location.href, false); });
+
+// Delete
+$.post(deleteUrl, { _token: csrfToken, _method: 'DELETE' })
+ .done(function () { window.loadAjaxPage(window.location.href, false); });</code></pre>
+        <p>প্রতিটি POST request-এ <code>_token</code> যায়। এটি Laravel CSRF protection-এর জন্য জরুরি। Delete-এর আগে browser confirmation দেখানো হয়। Controller logged-in user-কে নিজে delete করতেও বাধা দেয়।</p>
+    </section>
+
+    <section>
+        <h2>Category, Section, Post-এ একইভাবে ব্যবহার করবেন</h2>
+        <ol>
+            <li>আলাদা model ও migration তৈরি করুন, যেমন <code>Category</code>।</li>
+            <li>Users-এর মতো 6টি route রাখুন: list, store, show, update, status, delete।</li>
+            <li>Controller-এ validation ও JSON response ব্যবহার করুন।</li>
+            <li>একটি Blade partial-এ table + modal তৈরি করুন।</li>
+            <li>Button class আলাদা দিন, যেমন <code>js-category-create</code>।</li>
+            <li>Layout-এর JavaScript-এ Users-এর event code কপি করে শুধু selector ও route data পরিবর্তন করুন।</li>
+        </ol>
+        <div class="note ok"><strong>ভালো পদ্ধতি:</strong> প্রথমে Users module সম্পূর্ণ বুঝে চালান। তারপর একই pattern দিয়ে Category, Section, Post বানালে সব module-এর code একই রকম ও সহজে maintain করা যাবে।</div>
+    </section>
+
+    <section>
+        <h2>সমস্যা হলে কী দেখবেন?</h2>
+        <ul>
+            <li><strong>419 error:</strong> form-এ <code>@csrf</code> আছে কি না দেখুন।</li>
+            <li><strong>422 error:</strong> validation error; modal-এর error box দেখুন।</li>
+            <li><strong>Route not defined:</strong> <code>php artisan route:list --path=admin/users</code> চালান।</li>
+            <li><strong>পুরোনো Blade দেখালে:</strong> <code>php artisan view:clear</code> চালান।</li>
+            <li><strong>DataTable দুই বার initialize error:</strong> initialize করার আগে <code>$.fn.dataTable.isDataTable()</code> check রাখতে হবে।</li>
+        </ul>
+    </section>
+</main>
+</body>
+</html>

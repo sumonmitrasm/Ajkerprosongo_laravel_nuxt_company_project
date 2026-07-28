@@ -27,7 +27,12 @@ Route::namespace('App\Http\Controllers\Admin')->prefix('/admin')->group(function
     Route::middleware(['admin.auth'])->group(function () {
         Route::get('dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
         Route::get('logout', [AdminController::class, 'logout'])->name('logout-admin');
-        Route::get('users', [AdminController::class, 'logout'])->name('user');
+        Route::get('users', [AdminController::class, 'users'])->name('admin-user');
+        Route::post('users', [AdminController::class, 'storeUser'])->name('admin-user.store');
+        Route::get('users/{user}', [AdminController::class, 'showUser'])->name('admin-user.show');
+        Route::put('users/{user}', [AdminController::class, 'updateUser'])->name('admin-user.update');
+        Route::patch('users/{user}/status', [AdminController::class, 'updateUserStatus'])->name('admin-user.status');
+        Route::delete('users/{user}', [AdminController::class, 'deleteUser'])->name('admin-user.delete');
     });
 });
 require __DIR__.'/auth.php';
