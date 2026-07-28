@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\SectionController;
 
 
 Route::get('/clear-cache', function() {
@@ -36,8 +37,9 @@ Route::namespace('App\Http\Controllers\Admin')->prefix('/admin')->group(function
         Route::delete('users/{user}', [AdminController::class, 'deleteUser'])->name('admin-user.delete');
         //>>>>>>>>>>>>>>>>>>>>>>>>User activity<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         //>>>>>>>>>>>>>>>>>>>>>>>>Section activity<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        Route::get('users', [AdminController::class, 'users'])->name('admin-user');
+        Route::get('section', [SectionController::class, 'section'])->name('section');
         //>>>>>>>>>>>>>>>>>>>>>>>>Section activity<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
     });
 });
 require __DIR__.'/auth.php';

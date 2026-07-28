@@ -4,31 +4,39 @@ namespace App\Http\Controllers;
 
 use App\Models\Section;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class SectionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function section()
     {
-        //
+        $isCached = Cache::has('active_section');
+        $sections = Cache::remember('active_section', 86400, function () {
+            return Section::select('id', 'name', 'status')->get()->toArray();
+        });
+        return view('admin.sections.section', [
+            'status' => true,
+            'source' => $isCached ? 'Redis Cache' : 'Database',
+            'data'   => $sections
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'status' => 'required|boolean',
+        ]);
+        Section::create([
+            'name' => $request->name,
+            'status' => $request->status,
+        ]);
+        Cache::forget('active_section');
+        return view('admin.sections.section')->with('success', 'Section created successfully!');
     }
 
     /**

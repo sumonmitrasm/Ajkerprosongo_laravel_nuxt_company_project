@@ -64,72 +64,10 @@
                             <li class="slide">
                                 <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0)">
                                     <svg class="side-menu__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-                                    <span class="side-menu__label">Apps</span><i class="angle fe fe-chevron-right"></i></a>
+                                    <span class="side-menu__label">Pages</span><i class="angle fe fe-chevron-right"></i></a>
                                 <ul class="slide-menu">
-                                    <li class="side-menu-label1">
-                                        <a href="javascript:void(0)">Apps</a></li>
-                                    <li class="sub-slide">
-                                        <a class="sub-side-menu__item" data-bs-toggle="sub-slide" href="javascript:void(0)"><span class="sub-side-menu__label">Chat</span><i class="sub-angle fe fe-chevron-right"></i></a>
-                                        <ul class="sub-slide-menu">
-                                            <li><a class="sub-slide-item" href="chat.html">Chat</a></li>
-                                            <li><a class="sub-slide-item" href="chat2.html">Chat 02</a></li>
-                                            <li><a class="sub-slide-item" href="chat3.html">Chat 03</a></li>
-                                        </ul>
-                                    </li>
-                                    <li class="sub-slide">
-                                        <a class="sub-side-menu__item" data-bs-toggle="sub-slide" href="javascript:void(0)"><span class="sub-side-menu__label">Contact</span><i class="sub-angle fe fe-chevron-right"></i></a>
-                                        <ul class="sub-slide-menu">
-                                            <li><a class="sub-slide-item" href="contact-list.html">Contact list</a></li>
-                                            <li><a class="sub-slide-item" href="contact-list2.html">Contact list 02</a></li>
-                                        </ul>
-                                    </li>
-                                    <li class="sub-slide">
-                                        <a class="sub-side-menu__item" data-bs-toggle="sub-slide" href="javascript:void(0)"><span class="sub-side-menu__label">File Manager</span><i class="sub-angle fe fe-chevron-right"></i></a>
-                                        <ul class="sub-slide-menu">
-                                            <li><a class="sub-slide-item" href="file-manager.html">File Manager</a></li>
-                                            <li><a class="sub-slide-item" href="file-manager-list.html">File Manager 02</a></li>
-                                            <li><a class="sub-slide-item" href="file-details.html">File Details</a></li>
-                                            <li><a class="sub-slide-item" href="file-attachments.html">File Attachments</a></li>
-                                        </ul>
-                                    </li>
-                                    <li class="sub-slide">
-                                        <a class="sub-side-menu__item" data-bs-toggle="sub-slide" href="javascript:void(0)"><span class="sub-side-menu__label">Todo List</span><i class="sub-angle fe fe-chevron-right"></i></a>
-                                        <ul class="sub-slide-menu">
-                                            <li><a class="sub-slide-item" href="todo-list.html">Todo List</a></li>
-                                            <li><a class="sub-slide-item" href="todo-list2.html">Todo List 02</a></li>
-                                            <li><a class="sub-slide-item" href="todo-list3.html">Todo List 03</a></li>
-                                        </ul>
-                                    </li>
-                                    <li class="sub-slide">
-                                        <a class="sub-side-menu__item" data-bs-toggle="sub-slide" href="javascript:void(0)"><span class="sub-side-menu__label">User List</span><i class="sub-angle fe fe-chevron-right"></i></a>
-                                        <ul class="sub-slide-menu">
-                                            <li><a class="sub-slide-item" href="users-list-1.html">User List 01</a></li>
-                                            <li><a class="sub-slide-item" href="users-list-2.html">User List 02</a></li>
-                                            <li><a class="sub-slide-item" href="users-list-3.html">User List 03</a></li>
-                                            <li><a class="sub-slide-item" href="users-list-4.html">User List 04</a></li>
-                                        </ul>
-                                    </li>
-                                    <li class="sub-slide">
-                                        <a class="sub-side-menu__item" data-bs-toggle="sub-slide" href="javascript:void(0)"><span class="sub-side-menu__label">Maps</span><i class="sub-angle fe fe-chevron-right"></i></a>
-                                        <ul class="sub-slide-menu">
-                                            <li><a class="sub-slide-item" href="maps.html">Vector Maps</a></li>
-                                            <li><a class="sub-slide-item" href="maps2.html">Leaflet Maps</a></li>
-                                            <li><a class="sub-slide-item" href="maps3.html">Mapel Maps</a></li>
-                                        </ul>
-                                    </li>
-                                    <li><a href="calendar.html" class="slide-item"> Calendar</a></li>
+                                    <li><a href="{{ route('section') }}" class="slide-item">Sections</a></li>
                                     <li><a href="dragula.html" class="slide-item"> Dragula Card</a></li>
-                                    <li><a href="cookies.html" class="slide-item"> Cookies</a></li>
-                                    <li><a href="image-comparison.html" class="slide-item"> Image Comparison</a></li>
-                                    <li><a href="img-crop.html" class="slide-item"> Image Crop</a></li>
-                                    <li><a href="page-sessiontimeout.html" class="slide-item"> Page-sessiontimeout</a></li>
-                                    <li><a href="notify.html" class="slide-item"> Notifications</a></li>
-                                    <li><a href="sweetalert.html" class="slide-item"> Sweet alerts</a></li>
-                                    <li><a href="rangeslider.html" class="slide-item"> Range slider</a></li>
-                                    <li><a href="counters.html" class="slide-item"> Counters</a></li>
-                                    <li><a href="loaders.html" class="slide-item"> Loaders</a></li>
-                                    <li><a href="time-line.html" class="slide-item"> Time Line</a></li>
-                                    <li><a href="rating.html" class="slide-item"> Rating</a></li>
                                 </ul>
                             </li>
                             <li class="slide">
