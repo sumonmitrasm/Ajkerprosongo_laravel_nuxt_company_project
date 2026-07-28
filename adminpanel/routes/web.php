@@ -38,6 +38,11 @@ Route::namespace('App\Http\Controllers\Admin')->prefix('/admin')->group(function
         //>>>>>>>>>>>>>>>>>>>>>>>>User activity<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         //>>>>>>>>>>>>>>>>>>>>>>>>Section activity<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         Route::get('section', [SectionController::class, 'section'])->name('section');
+         Route::post('section', [AdminController::class, 'storeSection'])->name('admin-section.store');
+        Route::get('sections/{section}', [AdminController::class, 'showSection'])->name('admin-section.show');
+        Route::put('sections/{section}', [AdminController::class, 'updateSection'])->name('admin-section.update');
+        Route::patch('sections/{section}/status', [AdminController::class, 'updateSectionStatus'])->name('admin-section.status');
+        Route::delete('sections/{section}', [AdminController::class, 'deleteSection'])->name('admin-section.delete');
         //>>>>>>>>>>>>>>>>>>>>>>>>Section activity<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     });

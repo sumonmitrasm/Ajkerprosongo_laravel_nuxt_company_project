@@ -18,10 +18,12 @@ class SectionController extends Controller
         $sections = Cache::remember('active_section', 86400, function () {
             return Section::select('id', 'name', 'status')->get()->toArray();
         });
+        $title = "Section Page";
         return view('admin.sections.section', [
             'status' => true,
             'source' => $isCached ? 'Redis Cache' : 'Database',
-            'data'   => $sections
+            'data'   => $sections,
+            'title'  => $title
         ]);
     }
 
