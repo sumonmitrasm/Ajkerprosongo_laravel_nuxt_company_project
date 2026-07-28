@@ -29,12 +29,8 @@
                                     <li class="side-menu-label1"><a href="javascript:void(0)">Dashboard</a></li>
                                 </ul>
                             </li>
-                            <li class="slide {{ request()->routeIs('admin-user') ? 'is-expanded' : '' }}">
-                                <a class="side-menu__item"
-                                    data-bs-toggle="slide"
-                                    href="javascript:void(0)"
-                                    aria-expanded="{{ request()->routeIs('admin-user') ? 'true' : 'false' }}">
-
+                            <li class="slide">
+                                <a class="side-menu__item" href="{{ route('admin.login') }}">
                                     <svg class="side-menu__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                         stroke-linecap="round" stroke-linejoin="round">
@@ -44,22 +40,8 @@
                                         <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                                     </svg>
 
-                                    <span class="side-menu__label">Account</span>
-                                    <i class="angle fe fe-chevron-right"></i>
+                                    <span class="side-menu__label">Login</span>
                                 </a>
-
-                                <ul class="slide-menu">
-                                    <li class="side-menu-label1">
-                                        <a href="javascript:void(0)">Account</a>
-                                    </li>
-
-                                    <li>
-                                        <a class="slide-item {{ request()->routeIs('admin-user') ? 'active' : '' }}"
-                                            href="{{ route('admin-user') }}">
-                                            Users
-                                        </a>
-                                    </li>
-                                </ul>
                             </li>
                             <li class="slide">
                                 <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0)">

@@ -29,35 +29,20 @@
                                     <li class="side-menu-label1"><a href="javascript:void(0)">Dashboard</a></li>
                                 </ul>
                             </li>
-                            <li class="slide {{ request()->routeIs('admin-user') ? 'is-expanded' : '' }}">
-                                <a class="side-menu__item"
-                                    data-bs-toggle="slide"
-                                    href="javascript:void(0)"
-                                    aria-expanded="{{ request()->routeIs('admin-user') ? 'true' : 'false' }}">
-
-                                    <svg class="side-menu__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                        <circle cx="9" cy="7" r="4"></circle>
-                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                    </svg>
-
-                                    <span class="side-menu__label">Account</span>
-                                    <i class="angle fe fe-chevron-right"></i>
-                                </a>
-
+                             <li class="slide">
+                                <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0)">
+                                    <svg class="side-menu__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                    <span class="side-menu__label">Account</span><i class="angle fe fe-chevron-right"></i></a>
                                 <ul class="slide-menu">
                                     <li class="side-menu-label1">
-                                        <a href="javascript:void(0)">Account</a>
-                                    </li>
-
-                                    <li>
-                                        <a class="slide-item {{ request()->routeIs('admin-user') ? 'active' : '' }}"
-                                            href="{{ route('admin-user') }}">
-                                            Users
-                                        </a>
+                                        <a href="javascript:void(0)">Account</a></li>
+                                    <li class="sub-slide">
+                                        <a class="sub-side-menu__item" data-bs-toggle="sub-slide" href="javascript:void(0)"><span class="sub-side-menu__label">Login</span><i class="sub-angle fe fe-chevron-right"></i></a>
+                                        <ul class="sub-slide-menu">
+                                            <li><a class="sub-slide-item" href="login-1.html">Login 01</a></li>
+                                            <li><a class="sub-slide-item" href="login-2.html">Login 02</a></li>
+                                            <li><a class="sub-slide-item" href="login-3.html">Login 03</a></li>
+                                        </ul>
                                     </li>
                                 </ul>
                             </li>

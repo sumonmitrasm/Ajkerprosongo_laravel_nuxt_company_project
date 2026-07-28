@@ -29,11 +29,11 @@
                                     <li class="side-menu-label1"><a href="javascript:void(0)">Dashboard</a></li>
                                 </ul>
                             </li>
-                            <li class="slide {{ request()->routeIs('admin-user') ? 'is-expanded' : '' }}">
+                            <li class="slide {{ request()->routeIs('admin.admin-user') ? 'is-expanded' : '' }}">
                                 <a class="side-menu__item"
                                     data-bs-toggle="slide"
                                     href="javascript:void(0)"
-                                    aria-expanded="{{ request()->routeIs('admin-user') ? 'true' : 'false' }}">
+                                    aria-expanded="{{ request()->routeIs('admin.admin-user') ? 'true' : 'false' }}">
 
                                     <svg class="side-menu__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -54,8 +54,8 @@
                                     </li>
 
                                     <li>
-                                        <a class="slide-item {{ request()->routeIs('admin-user') ? 'active' : '' }}"
-                                            href="{{ route('admin-user') }}">
+                                        <a class="slide-item {{ request()->routeIs('admin.admin-user') ? 'active' : '' }}"
+                                            href="{{ route('admin.admin-user') }}">
                                             Users
                                         </a>
                                     </li>

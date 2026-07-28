@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
-use App\Models\Admin;
 
 class AdminController extends Controller
 {
@@ -76,8 +75,6 @@ class AdminController extends Controller
     }
 
     public function users(Request $request){
-        $title = "Admin Users";
-        $users = Admin::get();
-        return view('admin.accounts.admin-user')->with(compact('title','users'));
+        return view('admin.login');
     }
 }

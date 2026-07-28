@@ -27,38 +27,11 @@
                                     <span class="side-menu__label">Dashboard</span><i class="angle fe fe-chevron-right"></i></a>
                                 <ul class="slide-menu">
                                     <li class="side-menu-label1"><a href="javascript:void(0)">Dashboard</a></li>
-                                </ul>
-                            </li>
-                            <li class="slide {{ request()->routeIs('admin-user') ? 'is-expanded' : '' }}">
-                                <a class="side-menu__item"
-                                    data-bs-toggle="slide"
-                                    href="javascript:void(0)"
-                                    aria-expanded="{{ request()->routeIs('admin-user') ? 'true' : 'false' }}">
-
-                                    <svg class="side-menu__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                        <circle cx="9" cy="7" r="4"></circle>
-                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                    </svg>
-
-                                    <span class="side-menu__label">Account</span>
-                                    <i class="angle fe fe-chevron-right"></i>
-                                </a>
-
-                                <ul class="slide-menu">
-                                    <li class="side-menu-label1">
-                                        <a href="javascript:void(0)">Account</a>
-                                    </li>
-
-                                    <li>
-                                        <a class="slide-item {{ request()->routeIs('admin-user') ? 'active' : '' }}"
-                                            href="{{ route('admin-user') }}">
-                                            Users
-                                        </a>
-                                    </li>
+                                    <li><a class="slide-item" href="index.html"><span>Dashboard 01</span></a></li>
+                                    <li><a class="slide-item" href="index2.html"><span>Dashboard 02</span></a></li>
+                                    <li><a class="slide-item" href="index3.html"><span>Dashboard 03</span></a></li>
+                                    <li><a class="slide-item" href="index4.html"><span>Dashboard 04</span></a></li>
+                                    <li><a class="slide-item" href="index5.html"><span>Dashboard 05</span></a></li>
                                 </ul>
                             </li>
                             <li class="slide">
@@ -328,7 +301,57 @@
                                     </li>
                                 </ul>
                             </li>
-
+                            <li class="slide">
+                                <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0)">
+                                    <svg class="side-menu__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                    <span class="side-menu__label">Account</span><i class="angle fe fe-chevron-right"></i></a>
+                                <ul class="slide-menu">
+                                    <li class="side-menu-label1">
+                                        <a href="javascript:void(0)">Account</a></li>
+                                    <li class="sub-slide">
+                                        <a class="sub-side-menu__item" data-bs-toggle="sub-slide" href="javascript:void(0)"><span class="sub-side-menu__label">Login</span><i class="sub-angle fe fe-chevron-right"></i></a>
+                                        <ul class="sub-slide-menu">
+                                            <li><a class="sub-slide-item" href="login-1.html">Login 01</a></li>
+                                            <li><a class="sub-slide-item" href="login-2.html">Login 02</a></li>
+                                            <li><a class="sub-slide-item" href="login-3.html">Login 03</a></li>
+                                        </ul>
+                                    </li>
+                                    <li class="sub-slide">
+                                        <a class="sub-side-menu__item" data-bs-toggle="sub-slide" href="javascript:void(0)"><span class="sub-side-menu__label">Register</span><i class="sub-angle fe fe-chevron-right"></i></a>
+                                        <ul class="sub-slide-menu">
+                                            <li><a class="sub-slide-item" href="register-1.html">Register 01</a></li>
+                                            <li><a class="sub-slide-item" href="register-2.html">Register 02</a></li>
+                                            <li><a class="sub-slide-item" href="register-3.html">Register 03</a></li>
+                                        </ul>
+                                    </li>
+                                    <li class="sub-slide">
+                                        <a class="sub-side-menu__item" data-bs-toggle="sub-slide" href="javascript:void(0)"><span class="sub-side-menu__label">Forget Password</span><i class="sub-angle fe fe-chevron-right"></i></a>
+                                        <ul class="sub-slide-menu">
+                                            <li><a class="sub-slide-item" href="forgot-password-1.html">Forgot Password 01</a></li>
+                                            <li><a class="sub-slide-item" href="forgot-password-2.html">Forgot Password 02</a></li>
+                                            <li><a class="sub-slide-item" href="forgot-password-3.html">Forgot Password 03</a></li>
+                                        </ul>
+                                    </li>
+                                    <li class="sub-slide">
+                                        <a class="sub-side-menu__item" data-bs-toggle="sub-slide" href="javascript:void(0)"><span class="sub-side-menu__label">Reset Password</span><i class="sub-angle fe fe-chevron-right"></i></a>
+                                        <ul class="sub-slide-menu">
+                                            <li><a class="sub-slide-item" href="reset-password-1.html">Reset Password 01</a></li>
+                                            <li><a class="sub-slide-item" href="reset-password-2.html">Reset Password 02</a></li>
+                                            <li><a class="sub-slide-item" href="reset-password-3.html">Reset Password 03</a></li>
+                                        </ul>
+                                    </li>
+                                    <li class="sub-slide">
+                                        <a class="sub-side-menu__item" data-bs-toggle="sub-slide" href="javascript:void(0)"><span class="sub-side-menu__label">Lock Screen</span><i class="sub-angle fe fe-chevron-right"></i></a>
+                                        <ul class="sub-slide-menu">
+                                            <li><a class="sub-slide-item" href="lockscreen-1.html">Lock Screen 01</a></li>
+                                            <li><a class="sub-slide-item" href="lockscreen-2.html">Lock Screen 02</a></li>
+                                            <li><a class="sub-slide-item" href="lockscreen-3.html">Lock Screen 03</a></li>
+                                        </ul>
+                                    </li>
+                                    <li><a href="construction.html" class="slide-item"> Under Construction</a></li>
+                                    <li><a href="coming.html" class="slide-item"> Coming Soon</a></li>
+                                </ul>
+                            </li>
                             <li class="slide">
                                 <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0)">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="side-menu__icon"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>

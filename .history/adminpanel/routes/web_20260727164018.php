@@ -27,7 +27,6 @@ Route::namespace('App\Http\Controllers\Admin')->prefix('/admin')->group(function
     Route::middleware(['admin.auth'])->group(function () {
         Route::get('dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
         Route::get('logout', [AdminController::class, 'logout'])->name('logout-admin');
-        Route::get('users', [AdminController::class, 'users'])->name('admin-user');
     });
 });
 require __DIR__.'/auth.php';
