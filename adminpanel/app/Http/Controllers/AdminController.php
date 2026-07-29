@@ -111,7 +111,6 @@ class AdminController extends Controller
             'message' => 'User added successfully.'
         ], 201);
     }
-
    public function updateUser(Request $request, Admin $user)
     {
         $data = $this->validateUser($request, $user);
