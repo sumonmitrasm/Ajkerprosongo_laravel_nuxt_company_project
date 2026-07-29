@@ -10,13 +10,15 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header justify-content-between">
-                            <div class="card-title">{{ $title }}</div><button type="button"
-                                class="btn btn-info js-section-create">Add Section</button>
+                            <div class="card-title">{{ $title }}</div><button type="button" class="btn btn-info"
+                                data-crud-create data-crud-modal="#section-form-modal"
+                                data-store-url="{{ route('admin-section.store') }}" data-create-title="Add Section">Add
+                                Section</button>
                         </div>
                         <div class="card-body">
-                            <div id="section-action-message"></div>
                             <div class="table-responsive">
-                                <table id="sections-table" class="table table-bordered text-nowrap key-buttons">
+                                <table id="sections-table" data-crud-table
+                                    class="table table-bordered text-nowrap key-buttons">
                                     <thead>
                                         <tr>
                                             <th>ID</th>
@@ -26,18 +28,21 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($data as $section)
+                                        @foreach ($sections as $section)
                                             <tr>
                                                 <td>{{ $section->id }}</td>
                                                 <td>{{ $section->name }}</td>
                                                 <td><button type="button"
-                                                        class="btn btn-sm {{ $section->status ? 'btn-success' : 'btn-secondary' }} js-section-status"
+                                                        class="btn btn-sm {{ $section->status ? 'btn-success' : 'btn-secondary' }}"
+                                                        data-crud-status
                                                         data-url="{{ route('admin-section.status', $section) }}">{{ $section->status ? 'Active' : 'Inactive' }}</button>
                                                 </td>
-                                                <td><button type="button" class="btn btn-sm btn-primary js-section-edit"
+                                                <td><button type="button" class="btn btn-sm btn-primary" data-crud-edit
+                                                        data-crud-modal="#section-form-modal"
                                                         data-url="{{ route('admin-section.show', $section) }}"
                                                         data-update-url="{{ route('admin-section.update', $section) }}">Edit</button>
-                                                    <button type="button" class="btn btn-sm btn-danger js-section-delete"
+                                                    <button type="button" class="btn btn-sm btn-danger"
+                                                        data-crud-delete
                                                         data-url="{{ route('admin-section.delete', $section) }}">Delete</button>
                                                 </td>
                                             </tr>
@@ -49,6 +54,31 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="section-form-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form data-crud-form>
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" data-crud-title>Add Section</h5><button type="button" class="btn-close"
+                        data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger d-none js-crud-errors"></div>
+                    <div class="mb-3"><label class="form-label">Section Name</label><input type="text"
+                            name="name" class="form-control" required></div>
+                    <div><label class="form-label">Status</label><select name="status" class="form-select">
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary"
+                        data-crud-submit>Save Section</button></div>
+            </form>
         </div>
     </div>
 </div>

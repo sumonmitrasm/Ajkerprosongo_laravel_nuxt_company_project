@@ -5,40 +5,22 @@ namespace App\Http\Controllers;
 use App\Models\Section;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class SectionController extends Controller
 {
     public function section()
     {
-        $isCached = Cache::has('active_section');
-        $sections = Cache::remember('active_section', 86400, function () {
-            return Section::select('id', 'name', 'status')->get()->toArray();
-        });
+        $sections = Section::select('id', 'name', 'status')->latest('id')->get();
         $title = "Section Page";
-        return view('admin.sections.section', [
-            'status' => true,
-            'source' => $isCached ? 'Redis Cache' : 'Database',
-            'data'   => $sections,
-            'title'  => $title
-        ]);
+        return view('admin.sections.section', compact('sections', 'title'));
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'status' => 'required|boolean',
-        ]);
-        Section::create([
-            'name' => $request->name,
-            'status' => $request->status,
-        ]);
+        Section::create($this->validateSection($request));
         Cache::forget('active_section');
-        return view('admin.sections.section')->with('success', 'Section created successfully!');
+        return response()->json(['message' => 'Section saved successfully.'], 201);
     }
 
     /**
@@ -46,7 +28,7 @@ class SectionController extends Controller
      */
     public function show(Section $section)
     {
-        //
+        return response()->json(['record' => $section]);
     }
 
     /**
@@ -54,7 +36,7 @@ class SectionController extends Controller
      */
     public function edit(Section $section)
     {
-        //
+        return response()->json(['record' => $section]);
     }
 
     /**
@@ -62,7 +44,9 @@ class SectionController extends Controller
      */
     public function update(Request $request, Section $section)
     {
-        //
+        $section->update($this->validateSection($request, $section));
+        Cache::forget('active_section');
+        return response()->json(['message' => 'Section updated successfully.']);
     }
 
     /**
@@ -70,6 +54,25 @@ class SectionController extends Controller
      */
     public function destroy(Section $section)
     {
-        //
+        $section->delete();
+        Cache::forget('active_section');
+        return response()->json(['message' => 'Section deleted successfully.']);
+    }
+
+    public function updateStatus(Section $section)
+    {
+        $section->update(['status' => ! $section->status]);
+        Cache::forget('active_section');
+        return response()->json(['message' => 'Section status updated successfully.']);
+    }
+
+    private function validateSection(Request $request, ?Section $section = null): array
+    {
+        return $request->validate([
+            'name' => ['required', 'string', 'max:255', Rule::unique('sections', 'name')->ignore($section)],
+            'status' => ['required', 'boolean'],
+        ], [
+            'name.unique' => 'This section name already exists.',
+        ]);
     }
 }

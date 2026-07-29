@@ -104,10 +104,11 @@
     <!-- DataTables and AJAX page loading -->
     <script src="{{ url('admin/assets/plugins/datatable/datatables.min.js') }}"></script>
     <script>
-        function initialiseUsersTable() {
-            var $table = $('#users-table');
+        function initialiseCrudTables() {
+            $('[data-crud-table]').each(function () {
+                var $table = $(this);
+                if (!$table.length || !$.fn.DataTable || $.fn.dataTable.isDataTable($table)) return;
 
-            if ($table.length && $.fn.DataTable && !$.fn.dataTable.isDataTable($table)) {
                 $table.DataTable({
                     language: {
                         searchPlaceholder: 'Search...',
@@ -115,11 +116,11 @@
                         lengthMenu: '_MENU_'
                     }
                 });
-            }
+            });
         }
 
         $(function () {
-            initialiseUsersTable();
+            initialiseCrudTables();
 
             window.loadAjaxPage = function (url, pushHistory) {
                 var $content = $('#ajax-page-content');
@@ -144,7 +145,7 @@
                         window.history.pushState({}, '', url);
                     }
 
-                    initialiseUsersTable();
+                    initialiseCrudTables();
                 }).fail(function () {
                     window.location.href = url;
                 }).always(function () {
@@ -250,6 +251,136 @@
                     setTimeout(function () { alert(response.message); }, 250);
                 }).fail(function (xhr) {
                     alert(xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Delete failed.');
+                });
+            });
+
+            // Reusable CRUD: any module can use this by adding data-crud-* attributes to its form/buttons.
+            function crudToast(icon, title) {
+                if (window.Swal) {
+                    Swal.fire({ position: 'top-end', icon: icon, title: title, showConfirmButton: false, timer: 1500 });
+                } else {
+                    alert(title);
+                }
+            }
+
+            function crudErrors($form, errors) {
+                var messages = $.map(errors, function (items) { return items.join('<br>'); });
+                $form.find('.js-crud-errors').html(messages.join('<br>')).removeClass('d-none');
+            }
+
+            function crudModal($button) {
+                return $($button.data('crud-modal'));
+            }
+
+            function setImagePreview($form, source) {
+                var $preview = $form.find('[data-image-preview]');
+                if (!$preview.length) {
+                    var $input = $form.find('input[type="file"][data-image-input], input[type="file"][accept*="image"]').first();
+                    if (!$input.length) return;
+                    $preview = $('<img>', {
+                        'data-image-preview': '',
+                        alt: 'Selected image'
+                    }).addClass('d-none mt-2 rounded border').css({
+                        width: '100px',
+                        height: '100px',
+                        objectFit: 'cover'
+                    });
+                    $input.after($preview);
+                }
+
+                if (source) {
+                    $preview.attr('src', source).removeClass('d-none');
+                } else {
+                    $preview.attr('src', '').addClass('d-none');
+                }
+            }
+
+            function refreshCrudPage(message) {
+                window.loadAjaxPage(window.location.href, false);
+                setTimeout(function () { crudToast('success', message); }, 250);
+            }
+
+            $(document).on('click', '[data-crud-create]', function () {
+                var $button = $(this), $modal = crudModal($button), $form = $modal.find('[data-crud-form]');
+                $form[0].reset();
+                $form.data({ url: $button.data('store-url'), method: 'POST' });
+                $form.find('.js-crud-errors').empty().addClass('d-none');
+                setImagePreview($form, null);
+                $modal.find('[data-crud-title]').text($button.data('create-title') || 'Add Record');
+                $modal.find('[data-password-help]').text('(minimum 6 characters)');
+                bootstrap.Modal.getOrCreateInstance($modal[0]).show();
+            });
+
+            $(document).on('click', '[data-crud-edit]', function () {
+                var $button = $(this), $modal = crudModal($button), $form = $modal.find('[data-crud-form]');
+                $.get($button.data('url')).done(function (response) {
+                    var record = response.record || response.user || response;
+                    $form[0].reset();
+                    $form.data({ url: $button.data('update-url'), method: 'PUT' });
+                    $.each(record, function (field, value) {
+                        var $field = $form.find('[name="' + field + '"]');
+                        if (!$field.length || field === 'password' || $field.is('[type="file"]')) return;
+                        $field.val(field === 'status' ? (value ? '1' : '0') : (value || ''));
+                    });
+                    var imageUrl = response.image_url || record.image_url || '';
+                    if (!imageUrl && record.image && $form.data('image-base-url')) {
+                        imageUrl = $form.data('image-base-url').replace(/\/$/, '') + '/' + record.image;
+                    }
+                    setImagePreview($form, imageUrl);
+                    $form.find('.js-crud-errors').empty().addClass('d-none');
+                    $modal.find('[data-crud-title]').text('Edit Record');
+                    $modal.find('[data-password-help]').text('(leave blank to keep the current password)');
+                    bootstrap.Modal.getOrCreateInstance($modal[0]).show();
+                }).fail(function () { crudToast('error', 'Record load'); });
+            });
+
+            $(document).on('change', '[data-crud-form] input[type="file"][data-image-input], [data-crud-form] input[type="file"][accept*="image"]', function () {
+                var file = this.files && this.files[0];
+                var $form = $(this).closest('[data-crud-form]');
+                if (!file) return setImagePreview($form, null);
+                if (!file.type || file.type.indexOf('image/') !== 0) return setImagePreview($form, null);
+                setImagePreview($form, URL.createObjectURL(file));
+            });
+
+            $(document).on('submit', '[data-crud-form]', function (event) {
+                event.preventDefault();
+                var $form = $(this), data = new FormData(this);
+                data.set('_method', $form.data('method') || 'POST');
+                $form.find('[data-crud-submit]').prop('disabled', true);
+                $.ajax({
+                    url: $form.data('url'),
+                    method: 'POST',
+                    data: data,
+                    processData: false,
+                    contentType: false,
+                    headers: { Accept: 'application/json' }
+                }).done(function (response) {
+                    bootstrap.Modal.getInstance($form.closest('.modal')[0]).hide();
+                    refreshCrudPage(response.message || 'Your work has been saved');
+                }).fail(function (xhr) {
+                    if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) crudErrors($form, xhr.responseJSON.errors);
+                    else crudToast('error', (xhr.responseJSON && xhr.responseJSON.message) || 'Request failed.');
+                }).always(function () { $form.find('[data-crud-submit]').prop('disabled', false); });
+            });
+
+            $(document).on('click', '[data-crud-status]', function () {
+                var url = $(this).data('url'), token = $('[data-crud-form] input[name="_token"]').first().val();
+                $.post(url, { _token: token, _method: 'PATCH' }).done(function (response) {
+                    refreshCrudPage(response.message || 'Status updated successfully.');
+                }).fail(function () { crudToast('error', 'Status update failed.'); });
+            });
+
+            $(document).on('click', '[data-crud-delete]', function () {
+                var url = $(this).data('url'), token = $('[data-crud-form] input[name="_token"]').first().val();
+                if (!window.Swal) {
+                    if (!window.confirm('Do you want to delete this record?')) return;
+                    return $.post(url, { _token: token, _method: 'DELETE' }).done(function (response) { refreshCrudPage(response.message); });
+                }
+                Swal.fire({ title: 'Are you sure?', text: 'This data cannot be recovered.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Yes, delete it!', cancelButtonText: 'Cancel' }).then(function (result) {
+                    if (!result.isConfirmed) return;
+                    $.post(url, { _token: token, _method: 'DELETE' }).done(function (response) {
+                        refreshCrudPage(response.message || 'Deleted successfully.');
+                    }).fail(function (xhr) { crudToast('error', (xhr.responseJSON && xhr.responseJSON.message) || 'Delete failed.'); });
                 });
             });
         });

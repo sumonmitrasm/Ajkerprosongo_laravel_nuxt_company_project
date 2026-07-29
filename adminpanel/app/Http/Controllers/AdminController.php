@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use App\Models\Admin;
+use Intervention\Image\Drivers\Gd\Driver as GdDriver;
+use Intervention\Image\Format;
+use Intervention\Image\ImageManager;
 
 class AdminController extends Controller
 {
@@ -84,18 +87,39 @@ class AdminController extends Controller
     }
     public function showUser(Admin $user)
     {
-        return response()->json(['user' => $user]);
+        return response()->json([
+            'user' => $user,
+            'image_url' => $user->image ? asset('admin/adminimage/'.$user->image) : null,
+        ]);
     }
 
+    // public function storeUser(Request $request)
+    // {
+    //     Admin::create($this->validateUser($request));
+    //     return response()->json(['message' => 'User added successfully.'], 201);
+    // }
     public function storeUser(Request $request)
     {
-        Admin::create($this->validateUser($request));
-        return response()->json(['message' => 'User added successfully.'], 201);
+        $data = $this->validateUser($request);
+        if ($request->hasFile('image')) {
+            $data['image'] = $this->uploadImage($request->file('image'));
+        }
+        $admin = Admin::create($data);
+        $admin->ap_id = 1000 + $admin->id;
+        $admin->save();
+        return response()->json([
+            'message' => 'User added successfully.'
+        ], 201);
     }
 
-    public function updateUser(Request $request, Admin $user)
+   public function updateUser(Request $request, Admin $user)
     {
-        $user->update($this->validateUser($request, $user));
+        $data = $this->validateUser($request, $user);
+        if ($request->hasFile('image')) {
+            $this->deleteOldImage($user->image);
+            $data['image'] = $this->uploadImage($request->file('image'));
+        }
+        $user->update($data);
         return response()->json(['message' => 'User updated successfully.']);
     }
 
@@ -104,7 +128,7 @@ class AdminController extends Controller
         if ($user->is(Auth::guard('admin')->user())) {
             return response()->json(['message' => 'You cannot delete the logged-in user.'], 422);
         }
-
+        $this->deleteOldImage($user->image);
         $user->delete();
         return response()->json(['message' => 'User deleted successfully.']);
     }
@@ -125,6 +149,12 @@ class AdminController extends Controller
             'email' => ['required', 'email', 'max:255', Rule::unique('admins', 'email')->ignore($user)],
             'password' => $user ? ['nullable', 'string', 'min:6', 'max:255'] : ['required', 'string', 'min:6', 'max:255'],
             'status' => ['required', 'boolean'],
+            'image'    => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
+        ], [
+            'email.unique' => 'This email address is already in use.',
+            'image.image' => 'Please select a valid image file.',
+            'image.mimes' => 'The image must be a JPG, JPEG, PNG, GIF, or WEBP file.',
+            'image.max' => 'The image size must not exceed 2 MB.',
         ]);
 
         if ($user && blank($data['password'] ?? null)) {
@@ -132,5 +162,35 @@ class AdminController extends Controller
         }
 
         return $data;
+    }
+
+    private function uploadImage($file): string
+    {
+        $destinationPath = public_path('admin/adminimage');
+
+        if (!file_exists($destinationPath)) {
+            mkdir($destinationPath, 0777, true);
+        }
+
+        // Keep the longest side at 1200px and store a compressed WebP copy.
+        // This preserves a good visual quality while reducing server storage.
+        $imageName = time() . '_' . Str::random(10) . '.webp';
+        $manager = ImageManager::usingDriver(GdDriver::class);
+        $image = $manager->decodePath($file->getRealPath());
+        $image->scaleDown(width: 1200, height: 1200);
+        $image->encodeUsingFormat(Format::WEBP, quality: 75)
+            ->save($destinationPath . '/' . $imageName);
+
+        return $imageName;
+    }
+
+    private function deleteOldImage(?string $imageName): void
+    {
+        if ($imageName) {
+            $imagePath = public_path('admin/adminimage/' . $imageName);
+            if (file_exists($imagePath)) {
+                @unlink($imagePath);
+            }
+        }
     }
 }

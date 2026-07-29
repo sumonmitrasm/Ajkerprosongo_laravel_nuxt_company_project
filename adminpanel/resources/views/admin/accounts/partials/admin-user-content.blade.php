@@ -10,16 +10,19 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header justify-content-between">
-                            <div class="card-title">{{ $title }}</div><button type="button"
-                                class="btn btn-info js-user-create">Add User</button>
+                            <div class="card-title">{{ $title }}</div><button type="button" class="btn btn-info"
+                                data-crud-create data-crud-modal="#user-form-modal"
+                                data-store-url="{{ route('admin-user.store') }}" data-create-title="Add User">Add
+                                User</button>
                         </div>
                         <div class="card-body">
-                            <div id="user-action-message"></div>
                             <div class="table-responsive">
-                                <table id="users-table" class="table table-bordered text-nowrap key-buttons">
+                                <table id="users-table" data-crud-table
+                                    class="table table-bordered text-nowrap key-buttons">
                                     <thead>
                                         <tr>
                                             <th>ID</th>
+                                            <th>Image</th>
                                             <th>AP ID</th>
                                             <th>Name</th>
                                             <th>Email</th>
@@ -33,19 +36,29 @@
                                         @foreach ($users as $user)
                                             <tr>
                                                 <td>{{ $user->id }}</td>
+                                                <td>
+                                                    @if($user->image)
+                                                        <img src="{{ asset('admin/adminimage/' . $user->image) }}" alt="Avatar" class="rounded-circle" width="40" height="40">
+                                                    @else
+                                                        <img src="{{ asset('admin/site_settings/no-image.png') }}" alt="Avatar" class="rounded-circle" width="40" height="40">
+                                                    @endif
+                                                </td>
                                                 <td>{{ $user->ap_id }}</td>
                                                 <td>{{ $user->name }}</td>
                                                 <td>{{ $user->email }}</td>
                                                 <td>{{ $user->type }}</td>
                                                 <td>{{ $user->mobile }}</td>
                                                 <td><button type="button"
-                                                        class="btn btn-sm {{ $user->status ? 'btn-success' : 'btn-secondary' }} js-user-status"
+                                                        class="btn btn-sm {{ $user->status ? 'btn-success' : 'btn-secondary' }}"
+                                                        data-crud-status
                                                         data-url="{{ route('admin-user.status', $user) }}">{{ $user->status ? 'Active' : 'Inactive' }}</button>
                                                 </td>
-                                                <td><button type="button" class="btn btn-sm btn-primary js-user-edit"
+                                                <td><button type="button" class="btn btn-sm btn-primary" data-crud-edit
+                                                        data-crud-modal="#user-form-modal"
                                                         data-url="{{ route('admin-user.show', $user) }}"
                                                         data-update-url="{{ route('admin-user.update', $user) }}">Edit</button>
-                                                    <button type="button" class="btn btn-sm btn-danger js-user-delete"
+                                                    <button type="button" class="btn btn-sm btn-danger"
+                                                        data-crud-delete
                                                         data-url="{{ route('admin-user.delete', $user) }}">Delete</button>
                                                 </td>
                                             </tr>
@@ -60,29 +73,43 @@
         </div>
     </div>
 </div>
-
 <div class="modal fade" id="user-form-modal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="user-form">
+            <form data-crud-form data-image-base-url="{{ asset('admin/adminimage') }}" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title" id="user-form-title">Add User</h5><button type="button" class="btn-close"
+                    <h5 class="modal-title" data-crud-title>Add User</h5><button type="button" class="btn-close"
                         data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div id="user-form-errors" class="alert alert-danger d-none"></div>
-                    <div class="mb-3"><label class="form-label">AP ID</label><input type="number" name="ap_id"
-                            class="form-control"></div>
+                    <div class="alert alert-danger d-none js-crud-errors"></div>
+                    {{-- <div class="mb-3"><label class="form-label">AP ID</label><input type="number" name="ap_id"
+                            class="form-control"></div> --}}
                     <div class="mb-3"><label class="form-label">Name</label><input type="text" name="name"
                             class="form-control" required></div>
-                    <div class="mb-3"><label class="form-label">Email</label><input type="email" name="email"
+                    <div class="mb-3"><label class="form-label" id="user-email">Email</label><input type="email" name="email"
                             class="form-control" required></div>
-                    <div class="mb-3"><label class="form-label">Type</label><input type="text" name="type"
-                            class="form-control"></div>
+                    <div class="mb-3">
+                        <label class="form-label">Type</label>
+                        <select name="type" class="form-select" required>
+                            <option value="" disabled selected>Select Type</option>
+                            <option value="superadmin">Super Admin</option>
+                            <option value="admin">Admin</option>
+                            <option value="crospondent">Correspondent</option>
+                            <option value="manager">Manager</option>
+                            <option value="reporter">Reporter</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Profile Image</label>
+                        <input type="file" name="image" class="form-control" accept="image/*" data-image-input>
+                        <img data-image-preview class="d-none mt-2 rounded border" alt="Selected profile image"
+                            style="width: 100px; height: 100px; object-fit: cover;">
+                    </div>
                     <div class="mb-3"><label class="form-label">Mobile</label><input type="text" name="mobile"
                             class="form-control"></div>
-                    <div class="mb-3"><label class="form-label">Password <small id="password-help">(minimum 6
+                    <div class="mb-3"><label class="form-label">Password <small data-password-help>(minimum 6
                                 characters)</small></label><input type="password" name="password" class="form-control">
                     </div>
                     <div><label class="form-label">Status</label><select name="status" class="form-select">
@@ -92,7 +119,7 @@
                 </div>
                 <div class="modal-footer"><button type="button" class="btn btn-secondary"
                         data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary"
-                        id="user-form-submit">Save User</button></div>
+                        data-crud-submit>Save User</button></div>
             </form>
         </div>
     </div>
