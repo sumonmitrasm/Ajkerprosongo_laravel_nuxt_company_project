@@ -130,7 +130,14 @@
                                         <div class="dropdown profile-dropdown">
                                             <a href="javascript:void(0)" class="nav-link icon leading-none" data-bs-toggle="dropdown">
                                                 <span>
-                                                        <img src="{{ asset('admin/assets/images/users/16.jpg') }}" alt="img" class="avatar avatar-md brround">
+                                                        {{-- <img src="{{ asset('admin/assets/images/users/16.jpg') }}" alt="img" class="avatar avatar-md brround"> --}}
+                                                        @php
+                                                            $admin = Auth::guard('admin')->user();
+                                                        @endphp
+                                                        <img src="{{ $admin && $admin->image
+                                                            ? asset('admin/adminimage/' . $admin->image)
+                                                            : asset('admin/site_settings/no-image.png') }}"
+                                                            class="avatar avatar-md brround">
                                                     </span>
                                             </a>
                                             <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow animated">

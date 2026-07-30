@@ -30,18 +30,25 @@
                                         <div class="row">
                                             <div class="col-xl-7 col-md-12 col-lg-6">
                                                 <div class="d-block card-header border-0 text-center px-0">
-                                                    <h2 class="text-center mb-4">Congratulations <b>John!</b></h2>
-                                                    <small>You reached Page Views</small>
+                                                    <h2 class="text-center mb-4">Congratulations <b>{{ Auth::guard('admin')->user()?->name }}!</b></h2>
+                                                    <small>You position is {{ Auth::guard('admin')->user()?->type }}</small>
                                                 </div>
                                                 <div class="row text-center">
                                                     <div class="col-md-12">
-                                                        <h2 class="mb-0 fs-40 counter font-weight-bold">10M</h2>
+                                                        <h2 class="mb-0 fs-40 counter font-weight-bold">{{ Auth::guard('admin')->user()?->mobile }}</h2>
                                                         <h6 class="mt-4 text-white-50">You have done 100% reached target today.</h6>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="col-xl-5 col-md-12 col-lg-6">
-                                                <img class="mx-auto text-center w-90" alt="Award" src="{{ asset('admin/assets/images/photos/award.png') }}">
+                                                {{-- <img class="mx-auto text-center w-90" alt="Award" src="{{ asset('admin/assets/images/photos/award.png') }}"> --}}
+                                                @php
+                                                            $admin = Auth::guard('admin')->user();
+                                                        @endphp
+                                                        <img src="{{ $admin && $admin->image
+                                                            ? asset('admin/adminimage/' . $admin->image)
+                                                            : asset('admin/site_settings/no-image.png') }}"
+                                                            class="mx-auto text-center w-90" alt="Award">
                                             </div>
                                         </div>
                                     </div>

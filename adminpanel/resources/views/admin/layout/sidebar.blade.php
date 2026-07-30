@@ -11,11 +11,18 @@
                         <div class="app-sidebar__user">
                             <div class="dropdown user-pro-body text-center">
                                 <div class="user-pic">
-                                    <img alt="user-img" class="avatar avatar-xl brround mb-1" src="{{ asset('admin/assets/images/users/16.jpg') }}">
+                                    {{-- <img alt="user-img" class="avatar avatar-xl brround mb-1" src="{{ asset('admin/assets/images/users/16.jpg') }}"> --}}
+                                    @php
+                                        $admin = Auth::guard('admin')->user();
+                                    @endphp
+                                    <img src="{{ $admin && $admin->image
+                                        ? asset('admin/adminimage/' . $admin->image)
+                                        : asset('admin/site_settings/no-image.png') }}"
+                                        class="avatar avatar-xl brround mb-1">
                                 </div>
                                 <div class="user-info text-center">
-                                    <h5 class=" mb-1 font-weight-bold">John Thomson</h5>
-                                    <span class="text-muted app-sidebar__user-name text-sm">App Developer</span>
+                                    <h5 class=" mb-1 font-weight-bold">{{ Auth::guard('admin')->user()?->name }}</h5>
+                                    <span class="text-muted app-sidebar__user-name text-sm">{{ ucfirst(Auth::guard('admin')->user()?->type) }}</span>
                                 </div>
                             </div>
                         </div>

@@ -12,7 +12,7 @@
     />
 
     <!-- Title -->
-    <title>Dashtic - Bootstrap Webapp Responsive Dashboard Simple Admin Panel Premium HTML5 Template</title>
+    <title>{{ optional($generalSetting)->side_name ?? '' }}</title>
 
     <!--Favicon -->
     <link rel="icon" href="{{ url('admin/assets/images/brand/favicon.ico') }}" type="image/x-icon" />
