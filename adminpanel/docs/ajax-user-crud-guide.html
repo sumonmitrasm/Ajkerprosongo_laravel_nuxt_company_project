@@ -139,16 +139,29 @@ $.post(deleteUrl, { _token: csrfToken, _method: 'DELETE' })
     </section>
 
     <section>
-        <h2>Category, Section, Post-এ একইভাবে ব্যবহার করবেন</h2>
-        <ol>
-            <li>আলাদা model ও migration তৈরি করুন, যেমন <code>Category</code>।</li>
-            <li>Users-এর মতো 6টি route রাখুন: list, store, show, update, status, delete।</li>
-            <li>Controller-এ validation ও JSON response ব্যবহার করুন।</li>
-            <li>একটি Blade partial-এ table + modal তৈরি করুন।</li>
-            <li>Button class আলাদা দিন, যেমন <code>js-category-create</code>।</li>
-            <li>Layout-এর JavaScript-এ Users-এর event code কপি করে শুধু selector ও route data পরিবর্তন করুন।</li>
-        </ol>
-        <div class="note ok"><strong>ভালো পদ্ধতি:</strong> প্রথমে Users module সম্পূর্ণ বুঝে চালান। তারপর একই pattern দিয়ে Category, Section, Post বানালে সব module-এর code একই রকম ও সহজে maintain করা যাবে।</div>
+        <h2>Category, Section, Post-এ একই reusable CRUD ব্যবহার</h2>
+        <p><strong>নতুন নিয়ম:</strong> আর নতুন JavaScript event লিখতে হবে না। Shared CRUD engine <code>layout.blade.php</code>-এ একবার লেখা আছে। নতুন module-এর button/form-এ নিচের attributes দিলেই সেটি কাজ করবে।</p>
+<pre><code>&lt;button data-crud-create
+        data-crud-modal="#category-form-modal"
+        data-store-url="/admin/categories"
+        data-create-title="Add Category"&gt;Add Category&lt;/button&gt;
+
+&lt;button data-crud-edit data-crud-modal="#category-form-modal"
+        data-url="/admin/categories/5"
+        data-update-url="/admin/categories/5"&gt;Edit&lt;/button&gt;
+
+&lt;button data-crud-status data-url="/admin/categories/5/status"&gt;Active&lt;/button&gt;
+&lt;button data-crud-delete data-url="/admin/categories/5"&gt;Delete&lt;/button&gt;
+
+&lt;form data-crud-form&gt; ... @csrf ... &lt;/form&gt;
+&lt;table data-crud-table&gt;...&lt;/table&gt;</code></pre>
+        <p>Section module-এ এই reusable attributes দেওয়া হয়েছে। Save, Update, Status ও Delete সফল হলে একই SweetAlert toast দেখায়:</p>
+<pre><code>Swal.fire({
+  position: 'top-end', icon: 'success',
+  title: 'Your work has been saved',
+  showConfirmButton: false, timer: 1500
+});</code></pre>
+        <div class="note ok"><strong>নতুন Category/Post বানানোর কাজ:</strong> শুধু তাদের model, migration, 6টি route, validation controller এবং table/modal Blade তৈরি করবেন। Shared JavaScript আর কপি করতে হবে না।</div>
     </section>
 
     <section>

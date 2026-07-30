@@ -35,31 +35,31 @@
                                     <tbody>
                                         @foreach ($users as $user)
                                             <tr>
-                                                <td>{{ $user->id }}</td>
+                                                <td>{{ $user['id'] }}</td>
                                                 <td>
-                                                    @if($user->image)
-                                                        <img src="{{ asset('admin/adminimage/' . $user->image) }}" alt="Avatar" class="rounded-circle" width="40" height="40">
+                                                    @if($user['image'])
+                                                        <img src="{{ asset('admin/adminimage/' . $user['image']) }}" alt="Avatar" class="rounded-circle" width="40" height="40">
                                                     @else
                                                         <img src="{{ asset('admin/site_settings/no-image.png') }}" alt="Avatar" class="rounded-circle" width="40" height="40">
                                                     @endif
                                                 </td>
-                                                <td>{{ $user->ap_id }}</td>
-                                                <td>{{ $user->name }}</td>
-                                                <td>{{ $user->email }}</td>
-                                                <td>{{ $user->type }}</td>
-                                                <td>{{ $user->mobile }}</td>
+                                                <td>{{ $user['ap_id'] }}</td>
+                                                <td>{{ $user['name'] }}</td>
+                                                <td>{{ $user['email'] }}</td>
+                                                <td>{{ $user['type'] }}</td>
+                                                <td>{{ $user['mobile'] }}</td>
                                                 <td><button type="button"
-                                                        class="btn btn-sm {{ $user->status ? 'btn-success' : 'btn-secondary' }}"
+                                                        class="btn btn-sm {{ $user['status'] ? 'btn-success' : 'btn-secondary' }}"
                                                         data-crud-status
-                                                        data-url="{{ route('admin-user.status', $user) }}">{{ $user->status ? 'Active' : 'Inactive' }}</button>
+                                                        data-url="{{ route('admin-user.status', $user['id']) }}">{{ $user['status'] ? 'Active' : 'Inactive' }}</button>
                                                 </td>
                                                 <td><button type="button" class="btn btn-sm btn-primary" data-crud-edit
                                                         data-crud-modal="#user-form-modal"
-                                                        data-url="{{ route('admin-user.show', $user) }}"
-                                                        data-update-url="{{ route('admin-user.update', $user) }}">Edit</button>
+                                                        data-url="{{ route('admin-user.show', $user['id']) }}"
+                                                        data-update-url="{{ route('admin-user.update', $user['id']) }}">Edit</button>
                                                     <button type="button" class="btn btn-sm btn-danger"
                                                         data-crud-delete
-                                                        data-url="{{ route('admin-user.delete', $user) }}">Delete</button>
+                                                        data-url="{{ route('admin-user.delete', $user['id']) }}">Delete</button>
                                                 </td>
                                             </tr>
                                         @endforeach

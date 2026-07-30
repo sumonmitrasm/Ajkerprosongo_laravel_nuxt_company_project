@@ -33,22 +33,22 @@
                                     <tbody>
                                         @foreach ($categories as $category)
                                             <tr>
-                                                <td>{{ $category->id }}</td>
-                                                <td>{{ $category->parentcategory->category_name }}</td>
-                                                <td>{{ $category->section->name }}</td>
-                                                <td>{{ $category->category_name }}</td>
+                                                <td>{{ $category['id'] }}</td>
+                                                <td>{{ $category['parentcategory']['category_name'] ?? 'Root / Main Category' }}</td>
+                                                <td>{{ $category['section']['name'] ?? '' }}</td>
+                                                <td>{{ $category['category_name'] }}</td>
                                                 <td><button type="button"
-                                                        class="btn btn-sm {{ $category->status ? 'btn-success' : 'btn-secondary' }}"
+                                                        class="btn btn-sm {{ $category['status'] ? 'btn-success' : 'btn-secondary' }}"
                                                         data-crud-status
-                                                        data-url="{{ route('admin-category.status', $category) }}">{{ $category->status ? 'Active' : 'Inactive' }}</button>
+                                                        data-url="{{ route('admin-category.status', $category['id']) }}">{{ $category['status'] ? 'Active' : 'Inactive' }}</button>
                                                 </td>
                                                 <td><button type="button" class="btn btn-sm btn-primary" data-crud-edit
                                                         data-crud-modal="#category-form-modal"
-                                                        data-url="{{ route('admin-category.show', $category) }}"
-                                                        data-update-url="{{ route('admin-category.update', $category) }}">Edit</button>
+                                                        data-url="{{ route('admin-category.show', $category['id']) }}"
+                                                        data-update-url="{{ route('admin-category.update', $category['id']) }}">Edit</button>
                                                     <button type="button" class="btn btn-sm btn-danger"
                                                         data-crud-delete
-                                                        data-url="{{ route('admin-category.delete', $category) }}">Delete</button>
+                                                        data-url="{{ route('admin-category.delete', $category['id']) }}">Delete</button>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -88,7 +88,7 @@
                             <select id="section_id" name="section_id" class="form-control">
                                 <option value="">Select</option>
                                 @foreach ($getSection as $section)
-                                    <option value="{{ $section->id }}">{{ $section->name }}</option>
+                                    <option value="{{ $section['id'] }}">{{ $section['name'] }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -98,12 +98,12 @@
                                 <option value="0">Main Category</option>
                                 @if (!empty($getCategories))
                                     @foreach ($getCategories as $parentcategory)
-                                        <option value="{{ $parentcategory->id }}">{{ $parentcategory->category_name }}
+                                        <option value="{{ $parentcategory['id'] }}">{{ $parentcategory['category_name'] }}
                                         </option>
                                         @if (!empty($parentcategory['subcategories']))
                                             @foreach ($parentcategory['subcategories'] as $subcategory)
-                                                <option value="{{ $subcategory->id }}">
-                                                    &nbsp;&raquo;&nbsp;{{ $subcategory->category_name }}</option>
+                                                <option value="{{ $subcategory['id'] }}">
+                                                    &nbsp;&raquo;&nbsp;{{ $subcategory['category_name'] }}</option>
                                             @endforeach
                                         @endif
                                     @endforeach

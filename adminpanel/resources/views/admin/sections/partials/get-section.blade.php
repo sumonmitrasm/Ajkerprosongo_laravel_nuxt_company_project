@@ -30,20 +30,20 @@
                                     <tbody>
                                         @foreach ($sections as $section)
                                             <tr>
-                                                <td>{{ $section->id }}</td>
-                                                <td>{{ $section->name }}</td>
+                                                <td>{{ $section['id'] }}</td>
+                                                <td>{{ $section['name'] }}</td>
                                                 <td><button type="button"
-                                                        class="btn btn-sm {{ $section->status ? 'btn-success' : 'btn-secondary' }}"
+                                                        class="btn btn-sm {{ $section['status'] ? 'btn-success' : 'btn-secondary' }}"
                                                         data-crud-status
-                                                        data-url="{{ route('admin-section.status', $section) }}">{{ $section->status ? 'Active' : 'Inactive' }}</button>
+                                                        data-url="{{ route('admin-section.status', $section['id']) }}">{{ $section['status'] ? 'Active' : 'Inactive' }}</button>
                                                 </td>
                                                 <td><button type="button" class="btn btn-sm btn-primary" data-crud-edit
                                                         data-crud-modal="#section-form-modal"
-                                                        data-url="{{ route('admin-section.show', $section) }}"
-                                                        data-update-url="{{ route('admin-section.update', $section) }}">Edit</button>
+                                                        data-url="{{ route('admin-section.show', $section['id']) }}"
+                                                        data-update-url="{{ route('admin-section.update', $section['id']) }}">Edit</button>
                                                     <button type="button" class="btn btn-sm btn-danger"
                                                         data-crud-delete
-                                                        data-url="{{ route('admin-section.delete', $section) }}">Delete</button>
+                                                        data-url="{{ route('admin-section.delete', $section['id']) }}">Delete</button>
                                                 </td>
                                             </tr>
                                         @endforeach

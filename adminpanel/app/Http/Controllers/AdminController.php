@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -82,7 +83,7 @@ class AdminController extends Controller
     public function users(Request $request)
     {
         $title = "Admin Users";
-        $users = Admin::get();
+        $users = Cache::remember('admin.users.index', now()->addMinutes(87840), fn () => Admin::get()->toArray());
         return view('admin.accounts.admin-user', compact('title', 'users'));
     }
     public function showUser(Admin $user)
@@ -107,6 +108,7 @@ class AdminController extends Controller
         $admin = Admin::create($data);
         $admin->ap_id = 1000 + $admin->id;
         $admin->save();
+        $this->clearUserCache();
         return response()->json([
             'message' => 'User added successfully.'
         ], 201);
@@ -119,6 +121,7 @@ class AdminController extends Controller
             $data['image'] = $this->uploadImage($request->file('image'));
         }
         $user->update($data);
+        $this->clearUserCache();
         return response()->json(['message' => 'User updated successfully.']);
     }
 
@@ -129,12 +132,14 @@ class AdminController extends Controller
         }
         $this->deleteOldImage($user->image);
         $user->delete();
+        $this->clearUserCache();
         return response()->json(['message' => 'User deleted successfully.']);
     }
 
     public function updateUserStatus(Admin $user)
     {
         $user->update(['status' => ! $user->status]);
+        $this->clearUserCache();
         return response()->json(['message' => 'User status updated successfully.']);
     }
 
@@ -191,5 +196,10 @@ class AdminController extends Controller
                 @unlink($imagePath);
             }
         }
+    }
+
+    private function clearUserCache(): void
+    {
+        Cache::forget('admin.users.index');
     }
 }

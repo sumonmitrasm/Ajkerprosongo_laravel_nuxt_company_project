@@ -107,9 +107,16 @@
         function initialiseCrudTables() {
             $('[data-crud-table]').each(function () {
                 var $table = $(this);
-                if (!$table.length || !$.fn.DataTable || $.fn.dataTable.isDataTable($table)) return;
+                if (!$table.length || !$.fn.DataTable || $.fn.dataTable.isDataTable($table[0])) return;
 
                 $table.DataTable({
+                    paging: true,
+                    pageLength: 10,
+                    lengthMenu: [10, 25, 50, 100, 500],
+                    pagingType: 'simple_numbers',
+                    info: true,
+                    searching: true,
+                    stateSave: false,
                     language: {
                         searchPlaceholder: 'Search...',
                         sSearch: '',
@@ -122,7 +129,7 @@
         $(function () {
             initialiseCrudTables();
 
-            window.loadAjaxPage = function (url, pushHistory) {
+            window.loadAjaxPage = function (url, pushHistory, tablePages) {
                 var $content = $('#ajax-page-content');
                 $content.css('opacity', '.5');
 
@@ -146,6 +153,15 @@
                     }
 
                     initialiseCrudTables();
+
+                    $.each(tablePages || {}, function (tableId, page) {
+                        var $table = $('#' + tableId);
+                        if (!$table.length || !$.fn.dataTable.isDataTable($table[0])) return;
+
+                        var table = $table.DataTable();
+                        var lastPage = Math.max(0, table.page.info().pages - 1);
+                        table.page(Math.min(page, lastPage)).draw('page');
+                    });
                 }).fail(function () {
                     window.location.href = url;
                 }).always(function () {
@@ -296,7 +312,15 @@
             }
 
             function refreshCrudPage(message) {
-                window.loadAjaxPage(window.location.href, false);
+                var tablePages = {};
+
+                $('[data-crud-table]').each(function () {
+                    if ($.fn.dataTable.isDataTable(this)) {
+                        tablePages[this.id] = $(this).DataTable().page();
+                    }
+                });
+
+                window.loadAjaxPage(window.location.href, false, tablePages);
                 setTimeout(function () { crudToast('success', message); }, 250);
             }
 

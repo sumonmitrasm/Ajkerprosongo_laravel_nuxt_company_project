@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Laravel Reusable AJAX CRUD — A to Z</title>
+  <style>
+    :root{--nav:#0f172a;--brand:#2563eb;--bg:#f8fafc;--card:#fff;--line:#dbe3ee;--muted:#64748b;--code:#111827}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:#1e293b;font:16px/1.7 Arial,"Noto Sans Bengali",sans-serif}
+    header{background:linear-gradient(125deg,#0f172a,#1d4ed8);color:#fff;padding:54px 24px}header div,main{max-width:1100px;margin:auto}h1{font-size:clamp(28px,5vw,44px);margin:0 0 6px}header p{margin:0;opacity:.9;font-size:18px}
+    main{padding:28px 20px 64px}.box{background:var(--card);border:1px solid var(--line);border-radius:13px;margin:18px 0;padding:27px;box-shadow:0 2px 11px #0f172a0a}h2{margin:0 0 13px;color:#0f172a}h3{margin-top:26px;color:#172554}h4{margin-bottom:5px}p{margin:8px 0 14px}code{color:#be123c;background:#fff1f2;padding:1px 5px;border-radius:4px}pre{margin:12px 0;overflow:auto;background:var(--code);color:#e5e7eb;border-radius:9px;padding:17px;font:13px/1.55 Consolas,"Courier New",monospace}pre code{background:none;color:inherit;padding:0}.note{background:#eff6ff;border-left:4px solid var(--brand);padding:13px 16px;margin:15px 0}.warn{background:#fffbeb;border-color:#d97706}.ok{background:#ecfdf5;border-color:#059669}table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--line);padding:9px;text-align:left;vertical-align:top}th{background:#eff6ff}ol,ul{padding-left:25px}.flow{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.flow span{padding:7px 11px;border-radius:8px;background:#dbeafe;color:#1e3a8a;font-weight:bold}.flow b{color:#64748b}.toc a{display:inline-block;margin:4px 12px 4px 0;color:var(--brand);text-decoration:none}.small{font-size:14px;color:var(--muted)}
+  </style>
+</head>
+<body>
+<header><div><h1>Laravel Reusable AJAX CRUD — A to Z</h1><p>User, Section, Category, Post সহ যেকোনো module-এ একই CRUD code ব্যবহারের পূর্ণ গাইড</p></div></header>
+<main>
+  <section class="box toc"><h2>সূচিপত্র</h2><a href="#idea">মূল ধারণা</a><a href="#files">ফাইল তালিকা</a><a href="#links">Script links</a><a href="#layout">Layout JavaScript</a><a href="#routes">Routes</a><a href="#model">Model</a><a href="#controller">Controller</a><a href="#blade">Blade attributes</a><a href="#datatable">DataTable</a><a href="#new">নতুন module</a><a href="#errors">সমস্যা</a></section>
+
+  <section class="box" id="idea"><h2>১. মূল ধারণা</h2><p>প্রতিটি module-এর জন্য আলাদা JavaScript লেখা হবে না। <code>layout.blade.php</code>-এ একটি মাত্র <strong>shared CRUD engine</strong> থাকবে। User, Section, Category ও Post-এর table/form/button শুধু নির্দিষ্ট <code>data-crud-*</code> attribute ব্যবহার করবে।</p><div class="flow"><span>Add / Edit / Delete / Status button</span><b>→</b><span>Generic JS</span><b>→</b><span>Laravel route</span><b>→</b><span>Controller + validation</span><b>→</b><span>Database</span><b>→</b><span>DataTable refresh + Swal</span></div><div class="note ok">ফলাফল: JavaScript একবার লিখবেন। নতুন module-এ শুধু backend routes/controller এবং Blade table/modal বানাবেন।</div></section>
+
+  <section class="box" id="files"><h2>২. কোন ফাইলের কী দায়িত্ব?</h2><table><thead><tr><th>ফাইল</th><th>দায়িত্ব</th></tr></thead><tbody><tr><td><code>resources/views/admin/layout/layout.blade.php</code></td><td>jQuery, Bootstrap, DataTables, SweetAlert script এবং generic AJAX code।</td></tr><tr><td><code>routes/web.php</code></td><td>List, store, show, update, status ও delete routes।</td></tr><tr><td><code>app/Models/Section.php</code></td><td><code>fillable</code> ও <code>casts</code>।</td></tr><tr><td><code>app/Http/Controllers/SectionController.php</code></td><td>Validation, JSON response এবং database operation।</td></tr><tr><td><code>resources/views/admin/sections/partials/get-section.blade.php</code></td><td>Table, action button, modal এবং form fields।</td></tr></tbody></table></section>
+
+  <section class="box" id="links"><h2>৩. layout.blade.php-এ প্রয়োজনীয় CSS/Script link</h2><p>jQuery আগে, তারপর Bootstrap/DataTable এবং SweetAlert থাকতে হবে। SweetAlert user click করার আগেই load হয়ে যাবে।</p><pre><code>&lt;!-- head অংশে: আপনার Bootstrap এবং existing CSS --&gt;
+&lt;link href="{{ url('admin/assets/plugins/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet"&gt;
+
+&lt;!-- body শেষ হওয়ার আগে: এই order বজায় রাখুন --&gt;
+&lt;script src="{{ url('admin/assets/js/vendors/jquery.min.js') }}"&gt;&lt;/script&gt;
+&lt;script src="{{ url('admin/assets/plugins/bootstrap/js/bootstrap.min.js') }}"&gt;&lt;/script&gt;
+&lt;script src="{{ url('admin/assets/plugins/datatable/datatables.min.js') }}"&gt;&lt;/script&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"&gt;&lt;/script&gt;</code></pre><div class="note warn"><strong>গুরুত্বপূর্ণ:</strong> Internet ছাড়া SweetAlert কাজ করাতে চাইলে CDN file download করে <code>public/admin/assets/plugins/</code>-এ রেখে local path থেকে link দিন।</div></section>
+
+  <section class="box" id="layout"><h2>৪. layout.blade.php: shared JavaScript engine</h2><p>নিচের code <strong>একবারই</strong> <code>layout.blade.php</code>-এ লিখবেন। এটি DataTable, modal form, validation error, save, status, delete ও SweetAlert পরিচালনা করে।</p><pre><code>&lt;script&gt;
+function initialiseCrudTables() {
+  $('[data-crud-table]').each(function () {
+    var $table = $(this);
+    if (!$.fn.DataTable || $.fn.dataTable.isDataTable($table)) return;
+    $table.DataTable({ language: { searchPlaceholder: 'Search...', sSearch: '', lengthMenu: '_MENU_' } });
+  });
+}
+
+function crudToast(icon, title) {
+  Swal.fire({ position: 'top-end', icon: icon, title: title, showConfirmButton: false, timer: 1500 });
+}
+
+// বর্তমান page-এর content AJAX দিয়ে নতুন করে নেয়; browser reload হয় না।
+function refreshCrudPage(message) {
+  window.loadAjaxPage(window.location.href, false);
+  setTimeout(function () { crudToast('success', message); }, 250);
+}
+
+$(document).on('click', '[data-crud-create]', function () {
+  var $button = $(this), $modal = $($button.data('crud-modal'));
+  var $form = $modal.find('[data-crud-form]');
+  $form[0].reset();
+  $form.data({ url: $button.data('store-url'), method: 'POST' });
+  $form.find('.js-crud-errors').empty().addClass('d-none');
+  $modal.find('[data-crud-title]').text($button.data('create-title') || 'Add Record');
+  bootstrap.Modal.getOrCreateInstance($modal[0]).show();
+});
+
+$(document).on('click', '[data-crud-edit]', function () {
+  var $button = $(this), $modal = $($button.data('crud-modal'));
+  var $form = $modal.find('[data-crud-form]');
+  $.get($button.data('url')).done(function (response) {
+    var record = response.record || response.user || response;
+    $form[0].reset();
+    $form.data({ url: $button.data('update-url'), method: 'PUT' });
+    $.each(record, function (field, value) {
+      var $field = $form.find('[name="' + field + '"]');
+      if ($field.length &amp;&amp; field !== 'password') $field.val(field === 'status' ? (value ? '1' : '0') : (value || ''));
+    });
+    $form.find('.js-crud-errors').empty().addClass('d-none');
+    $modal.find('[data-crud-title]').text('Edit Record');
+    bootstrap.Modal.getOrCreateInstance($modal[0]).show();
+  });
+});
+
+$(document).on('submit', '[data-crud-form]', function (event) {
+  event.preventDefault();
+  var $form = $(this), data = $form.serializeArray();
+  data.push({ name: '_method', value: $form.data('method') });
+  $.post($form.data('url'), $.param(data)).done(function (response) {
+    bootstrap.Modal.getInstance($form.closest('.modal')[0]).hide();
+    refreshCrudPage(response.message || 'Your work has been saved');
+  }).fail(function (xhr) {
+    if (xhr.status === 422) {
+      var messages = $.map(xhr.responseJSON.errors, function (items) { return items.join('&lt;br&gt;'); });
+      $form.find('.js-crud-errors').html(messages.join('&lt;br&gt;')).removeClass('d-none');
+    }
+  });
+});
+
+$(document).on('click', '[data-crud-status]', function () {
+  $.post($(this).data('url'), { _token: $('[data-crud-form] [name=_token]').first().val(), _method: 'PATCH' })
+   .done(function (response) { refreshCrudPage(response.message); });
+});
+
+$(document).on('click', '[data-crud-delete]', function () {
+  var url = $(this).data('url'), token = $('[data-crud-form] [name=_token]').first().val();
+  Swal.fire({ title: 'Are you sure?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes, delete it!' })
+   .then(function (result) {
+     if (result.isConfirmed) $.post(url, { _token: token, _method: 'DELETE' })
+       .done(function (response) { refreshCrudPage(response.message); });
+   });
+});
+
+$(function () { initialiseCrudTables(); });
+&lt;/script&gt;</code></pre><p class="small">আপনার project-এ এই ধারণার সম্পূর্ণ version <code>layout.blade.php</code>-এ আছে; generic AJAX page loader <code>window.loadAjaxPage()</code> আলাদা করে সেখানে configured আছে।</p></section>
+
+  <section class="box" id="routes"><h2>৫. Routes: প্রতিটি module-এর ছয়টি route</h2><pre><code>use App\Http\Controllers\SectionController;
+
+Route::get('section', [SectionController::class, 'section'])->name('section');
+Route::post('section', [SectionController::class, 'store'])->name('admin-section.store');
+Route::get('sections/{section}', [SectionController::class, 'show'])->name('admin-section.show');
+Route::put('sections/{section}', [SectionController::class, 'update'])->name('admin-section.update');
+Route::patch('sections/{section}/status', [SectionController::class, 'updateStatus'])->name('admin-section.status');
+Route::delete('sections/{section}', [SectionController::class, 'destroy'])->name('admin-section.delete');</code></pre><table><thead><tr><th>Method</th><th>কাজ</th></tr></thead><tbody><tr><td>GET list</td><td>Table page দেখায়</td></tr><tr><td>POST</td><td>নতুন record save করে</td></tr><tr><td>GET {record}</td><td>Edit modal-এর জন্য JSON data দেয়</td></tr><tr><td>PUT</td><td>পুরোনো record update করে</td></tr><tr><td>PATCH status</td><td>Active/Inactive toggle করে</td></tr><tr><td>DELETE</td><td>Record remove করে</td></tr></tbody></table></section>
+
+  <section class="box" id="model"><h2>৬. Model</h2><pre><code>class Section extends Model
+{
+    protected $fillable = ['name', 'status'];
+
+    protected function casts(): array
+    {
+        return ['status' =&gt; 'boolean'];
+    }
+}</code></pre><p><code>fillable</code> ছাড়া <code>Section::create($data)</code> save হবে না। <code>status</code> boolean cast হওয়ার কারণে JavaScript-এ সহজে Active/Inactive handle করা যায়।</p></section>
+
+  <section class="box" id="controller"><h2>৭. Controller: Section সম্পূর্ণ উদাহরণ</h2><pre><code>public function section()
+{
+    $sections = Section::select('id', 'name', 'status')->latest('id')->get();
+    $title = 'Section Page';
+    return view('admin.sections.section', compact('sections', 'title'));
+}
+
+public function store(Request $request)
+{
+    Section::create($this->validateSection($request));
+    return response()->json(['message' =&gt; 'Section saved successfully.'], 201);
+}
+
+public function show(Section $section)
+{
+    return response()->json(['record' =&gt; $section]);
+}
+
+public function update(Request $request, Section $section)
+{
+    $section-&gt;update($this-&gt;validateSection($request));
+    return response()-&gt;json(['message' =&gt; 'Section updated successfully.']);
+}
+
+public function updateStatus(Section $section)
+{
+    $section-&gt;update(['status' =&gt; ! $section-&gt;status]);
+    return response()-&gt;json(['message' =&gt; 'Section status updated successfully.']);
+}
+
+public function destroy(Section $section)
+{
+    $section-&gt;delete();
+    return response()-&gt;json(['message' =&gt; 'Section deleted successfully.']);
+}
+
+private function validateSection(Request $request): array
+{
+    return $request-&gt;validate([
+        'name' =&gt; ['required', 'string', 'max:255'],
+        'status' =&gt; ['required', 'boolean'],
+    ]);
+}</code></pre><div class="note">AJAX response সবসময় <code>response()-&gt;json()</code> হতে হবে। Validation fail হলে Laravel automatic <strong>422 JSON error</strong> পাঠায়, যা generic form code দেখায়।</div></section>
+
+  <section class="box" id="blade"><h2>৮. Blade: দরকারি সব data attribute</h2><table><thead><tr><th>Attribute</th><th>কোথায়</th><th>কাজ</th></tr></thead><tbody><tr><td><code>data-crud-table</code></td><td><code>&lt;table&gt;</code></td><td>স্বয়ংক্রিয় DataTable initialize করে।</td></tr><tr><td><code>data-crud-create</code></td><td>Add button</td><td>খালি form সহ modal খুলে।</td></tr><tr><td><code>data-crud-modal</code></td><td>Add/Edit button</td><td>Modal selector, যেমন <code>#section-form-modal</code>।</td></tr><tr><td><code>data-store-url</code></td><td>Add button</td><td>POST URL।</td></tr><tr><td><code>data-crud-edit</code></td><td>Edit button</td><td>JSON data নিয়ে form fill করে।</td></tr><tr><td><code>data-url</code></td><td>Edit/Status/Delete</td><td>Show বা action endpoint URL।</td></tr><tr><td><code>data-update-url</code></td><td>Edit button</td><td>PUT URL।</td></tr><tr><td><code>data-crud-status</code></td><td>Status button</td><td>PATCH request পাঠায়।</td></tr><tr><td><code>data-crud-delete</code></td><td>Delete button</td><td>SweetAlert confirmation-এর পর DELETE request।</td></tr><tr><td><code>data-crud-form</code></td><td><code>&lt;form&gt;</code></td><td>Generic JS form submit ধরে।</td></tr><tr><td><code>data-crud-title</code></td><td>Modal title</td><td>Add/Edit অনুযায়ী title পরিবর্তন করে।</td></tr><tr><td><code>data-crud-submit</code></td><td>Submit button</td><td>Save সময় disable করে duplicate submit আটকায়।</td></tr><tr><td><code>js-crud-errors</code></td><td>Error div</td><td>422 validation message দেখায়।</td></tr></tbody></table>
+<h3>পূর্ণ Section Blade উদাহরণ</h3><pre><code>&lt;button class="btn btn-info" data-crud-create
+  data-crud-modal="#section-form-modal"
+  data-store-url="{{ route('admin-section.store') }}"
+  data-create-title="Add Section"&gt;Add Section&lt;/button&gt;
+
+&lt;table data-crud-table class="table"&gt;...&lt;/table&gt;
+
+&lt;button data-crud-edit data-crud-modal="#section-form-modal"
+  data-url="{{ route('admin-section.show', $section) }}"
+  data-update-url="{{ route('admin-section.update', $section) }}"&gt;Edit&lt;/button&gt;
+
+&lt;button data-crud-status data-url="{{ route('admin-section.status', $section) }}"&gt;Active&lt;/button&gt;
+&lt;button data-crud-delete data-url="{{ route('admin-section.delete', $section) }}"&gt;Delete&lt;/button&gt;
+
+&lt;div class="modal fade" id="section-form-modal"&gt;
+  &lt;form data-crud-form&gt;
+    @csrf
+    &lt;div class="alert alert-danger d-none js-crud-errors"&gt;&lt;/div&gt;
+    &lt;input name="name" required&gt;
+    &lt;select name="status"&gt;&lt;option value="1"&gt;Active&lt;/option&gt;&lt;option value="0"&gt;Inactive&lt;/option&gt;&lt;/select&gt;
+    &lt;button type="submit" data-crud-submit&gt;Save Section&lt;/button&gt;
+  &lt;/form&gt;
+&lt;/div&gt;</code></pre></section>
+
+  <section class="box" id="datatable"><h2>৯. DataTable A–Z</h2><p>Table-এ শুধু <code>data-crud-table</code> দিন। Shared code automatic search, pagination ও rows-per-page dropdown চালু করবে।</p><pre><code>&lt;table id="sections-table" data-crud-table class="table table-bordered text-nowrap"&gt;
+  &lt;thead&gt;...&lt;/thead&gt;
+  &lt;tbody&gt;...&lt;/tbody&gt;
+&lt;/table&gt;</code></pre><p><code>$.fn.dataTable.isDataTable($table)</code> check থাকার কারণে same table দ্বিতীয়বার initialize error হয় না। সফল CRUD-এর পর <code>refreshCrudPage()</code> table-এর নতুন HTML নিয়ে আসে এবং DataTable আবার initialize করে।</p></section>
+
+  <section class="box" id="new"><h2>১০. নতুন Category বা Post module বানানোর checklist</h2><ol><li>Migration: table ও প্রয়োজনীয় columns বানান।</li><li>Model: <code>$fillable</code> ও দরকার হলে <code>casts()</code> দিন।</li><li>Controller: list + store + show + update + updateStatus + destroy method লিখুন।</li><li>Routes: উপরের ছয়টি method দিন। সব route admin middleware-এর মধ্যে রাখুন।</li><li>Blade partial: table-এ <code>data-crud-table</code>, button/form-এ উপরের attributes দিন।</li><li>Sidebar-এ normal Laravel route link দিন; আপনার generic page loader তা reload ছাড়াই open করবে।</li></ol><div class="note ok"><strong>যা আর করবেন না:</strong> নতুন module-এর জন্য <code>js-category-create</code>, <code>js-post-delete</code> ইত্যাদির আলাদা layout JavaScript লিখবেন না। শুধুই <code>data-crud-*</code> ব্যবহার করুন।</div></section>
+
+  <section class="box" id="errors"><h2>১১. সমস্যা হলে</h2><table><thead><tr><th>সমস্যা</th><th>সমাধান</th></tr></thead><tbody><tr><td>419 Page Expired</td><td>প্রতিটি modal form-এ <code>@csrf</code> আছে কি না দেখুন।</td></tr><tr><td>422 Unprocessable Content</td><td>Validation ব্যর্থ। Modal-এর <code>.js-crud-errors</code> div দেখুন।</td></tr><tr><td>Route not defined</td><td><code>php artisan route:list</code> চালিয়ে route name check করুন।</td></tr><tr><td>Swal is not defined</td><td>SweetAlert script link যোগ করুন এবং jQuery/inline code-এর আগে বা user click-এর আগে load করুন।</td></tr><tr><td>DataTable reinitialise error</td><td>Table-এ শুধু <code>data-crud-table</code> রাখুন; একই table-এর জন্য পুরোনো <code>datatables.js</code> initialization চালাবেন না।</td></tr><tr><td>পুরোনো Blade দেখা যাচ্ছে</td><td><code>php artisan view:clear</code> চালান।</td></tr></tbody></table></section>
+</main>
+</body></html>

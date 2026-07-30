@@ -17,16 +17,22 @@ class CategoryController extends Controller
     public function category()
     {
         $title = 'Category Page';
-        $categories = Category::with('section', 'parentcategory')->latest('id')->get();
-        $getSection = Section::select('id', 'name')->orderBy('name')->get();
-        $getCategories = Category::with('subcategories')->where('parent_id', 0)->orderBy('category_name')->get();
+        $categories = Cache::remember('admin.categories.index', now()->addMinutes(87840), fn () =>
+            Category::with('section', 'parentcategory')->latest('id')->get()->toArray()
+        );
+        $getSection = Cache::remember('admin.category-form.sections', now()->addMinutes(87840), fn () =>
+            Section::select('id', 'name')->orderBy('name')->get()->toArray()
+        );
+        $getCategories = Cache::remember('admin.category-form.parents', now()->addMinutes(87840), fn () =>
+            Category::with('subcategories')->where('parent_id', 0)->orderBy('category_name')->get()->toArray()
+        );
         return view('admin.category.category', compact('categories', 'title', 'getSection', 'getCategories'));
     }
 
     public function store(Request $request)
     {
         Category::create($this->validatedData($request));
-        Cache::forget('active_categories');
+        $this->clearCategoryCache();
         return response()->json(['message' => 'Category saved successfully.'], 201);
     }
 
@@ -41,7 +47,7 @@ class CategoryController extends Controller
     public function update(Request $request, Category $category)
     {
         $category->update($this->validatedData($request, $category));
-        Cache::forget('active_categories');
+        $this->clearCategoryCache();
 
         return response()->json(['message' => 'Category updated successfully.']);
     }
@@ -53,14 +59,14 @@ class CategoryController extends Controller
         }
         $this->deleteOldImage($category->image);
         $category->delete();
-        Cache::forget('active_categories');
+        $this->clearCategoryCache();
         return response()->json(['message' => 'Category deleted successfully.']);
     }
 
     public function updateStatus(Category $category)
     {
         $category->update(['status' => ! $category->status]);
-        Cache::forget('active_categories');
+        $this->clearCategoryCache();
         return response()->json(['message' => 'Category status updated successfully.']);
     }
 
@@ -128,6 +134,12 @@ class CategoryController extends Controller
         if ($imageName && file_exists($path = public_path('admin/categoryimage/' . $imageName))) {
             @unlink($path);
         }
+    }
+
+    private function clearCategoryCache(): void
+    {
+        Cache::forget('admin.categories.index');
+        Cache::forget('admin.category-form.parents');
     }
 
     private function isDescendant(int $candidateParentId, int $categoryId): bool

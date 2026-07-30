@@ -11,7 +11,9 @@ class SectionController extends Controller
 {
     public function section()
     {
-        $sections = Section::select('id', 'name', 'status')->latest('id')->get();
+        $sections = Cache::remember('admin.sections.index', now()->addMinutes(87840), fn () =>
+            Section::select('id', 'name', 'status')->latest('id')->get()->toArray()
+        );
         $title = "Section Page";
         return view('admin.sections.section', compact('sections', 'title'));
     }
@@ -19,7 +21,7 @@ class SectionController extends Controller
     public function store(Request $request)
     {
         Section::create($this->validateSection($request));
-        Cache::forget('active_section');
+        $this->clearSectionCache();
         return response()->json(['message' => 'Section saved successfully.'], 201);
     }
 
@@ -45,7 +47,7 @@ class SectionController extends Controller
     public function update(Request $request, Section $section)
     {
         $section->update($this->validateSection($request, $section));
-        Cache::forget('active_section');
+        $this->clearSectionCache();
         return response()->json(['message' => 'Section updated successfully.']);
     }
 
@@ -55,14 +57,14 @@ class SectionController extends Controller
     public function destroy(Section $section)
     {
         $section->delete();
-        Cache::forget('active_section');
+        $this->clearSectionCache();
         return response()->json(['message' => 'Section deleted successfully.']);
     }
 
     public function updateStatus(Section $section)
     {
         $section->update(['status' => ! $section->status]);
-        Cache::forget('active_section');
+        $this->clearSectionCache();
         return response()->json(['message' => 'Section status updated successfully.']);
     }
 
@@ -74,5 +76,12 @@ class SectionController extends Controller
         ], [
             'name.unique' => 'This section name already exists.',
         ]);
+    }
+
+    private function clearSectionCache(): void
+    {
+        Cache::forget('admin.sections.index');
+        Cache::forget('admin.category-form.sections');
+        Cache::forget('admin.categories.index');
     }
 }
