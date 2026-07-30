@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\SectionController;
+use App\Http\Controllers\CategoryController;
 
 
 Route::get('/clear-cache', function() {
@@ -44,6 +45,14 @@ Route::namespace('App\Http\Controllers\Admin')->prefix('/admin')->group(function
         Route::patch('sections/{section}/status', [SectionController::class, 'updateStatus'])->name('admin-section.status');
         Route::delete('sections/{section}', [SectionController::class, 'destroy'])->name('admin-section.delete');
         //>>>>>>>>>>>>>>>>>>>>>>>>Section activity<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        //>>>>>>>>>>>>>>>>>>>>>>>>Category activity<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        Route::get('category', [CategoryController::class, 'category'])->name('category');
+        Route::post('category', [CategoryController::class, 'store'])->name('admin-category.store');
+        Route::get('categories/{category}', [CategoryController::class, 'show'])->name('admin-category.show');
+        Route::put('categories/{category}', [CategoryController::class, 'update'])->name('admin-category.update');
+        Route::patch('categories/{category}/status', [CategoryController::class, 'updateStatus'])->name('admin-category.status');
+        Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('admin-category.delete');
+        //>>>>>>>>>>>>>>>>>>>>>>>>Category activity<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     });
 });

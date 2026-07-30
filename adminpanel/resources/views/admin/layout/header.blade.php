@@ -135,8 +135,8 @@
                                             </a>
                                             <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow animated">
                                                 <div class="text-center">
-                                                    <a href="javascript:void(0)" class="dropdown-item text-center user pb-0 font-weight-bold">John Thomson</a>
-                                                    <span class="text-center user-semi-title">App Developer</span>
+                                                    <a href="javascript:void(0)" class="dropdown-item text-center user pb-0 font-weight-bold">{{ Auth::guard('admin')->user()?->name }}</a>
+                                                    <span class="text-center user-semi-title">{{ ucfirst(Auth::guard('admin')->user()?->type) }}</span>
                                                     <div class="dropdown-divider"></div>
                                                 </div>
                                                 <a class="dropdown-item d-flex" href="profile-1.html">

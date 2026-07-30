@@ -67,7 +67,7 @@
                                     <span class="side-menu__label">Pages</span><i class="angle fe fe-chevron-right"></i></a>
                                 <ul class="slide-menu">
                                     <li><a href="{{ route('section') }}" class="slide-item">Sections</a></li>
-                                    <li><a href="dragula.html" class="slide-item"> Dragula Card</a></li>
+                                    <li><a href="{{ route('category') }}" class="slide-item">Category</a></li>
                                 </ul>
                             </li>
                             <li class="slide">
