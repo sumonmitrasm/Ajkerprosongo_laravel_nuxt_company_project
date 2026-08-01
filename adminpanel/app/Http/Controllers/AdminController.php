@@ -216,10 +216,15 @@ class AdminController extends Controller
     }
     public function updatePermissionUser(Request $request, $id)
     {
-
         $user = Admin::findOrFail($id);
         $permissions = $request->input('permissions', []);
-        foreach ($permissions as $module => $access) {
+
+        // Always save every supported module. This also clears permissions when
+        // every checkbox for a module is unchecked (unchecked inputs are not sent).
+        $modules = ['admin', 'section', 'category'];
+
+        foreach ($modules as $module) {
+            $access = $permissions[$module] ?? [];
             AdminRole::updateOrCreate(
                 [
                     'admin_id' => $user->id,

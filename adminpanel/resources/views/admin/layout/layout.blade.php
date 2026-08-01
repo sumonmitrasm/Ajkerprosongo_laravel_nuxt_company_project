@@ -187,6 +187,17 @@
                 window.loadAjaxPage(url.href, true);
             });
 
+            $(document).on('click', '[data-ajax-page]', function (event) {
+                var url = new URL(this.href, window.location.href);
+
+                if (url.origin !== window.location.origin || this.target || event.ctrlKey || event.metaKey || event.shiftKey || event.which === 2) {
+                    return;
+                }
+
+                event.preventDefault();
+                window.loadAjaxPage(url.href, true);
+            });
+
             window.addEventListener('popstate', function () {
                 window.loadAjaxPage(window.location.href, false);
             });
@@ -385,6 +396,29 @@
                     if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) crudErrors($form, xhr.responseJSON.errors);
                     else crudToast('error', (xhr.responseJSON && xhr.responseJSON.message) || 'Request failed.');
                 }).always(function () { $form.find('[data-crud-submit]').prop('disabled', false); });
+            });
+
+            $(document).on('submit', '#permission-form', function (event) {
+                event.preventDefault();
+
+                var $form = $(this);
+                var $button = $form.find('#btn-save-permissions');
+
+                $button.prop('disabled', true);
+
+                $.ajax({
+                    url: $form.data('url'),
+                    method: 'POST',
+                    data: $form.serialize(),
+                    headers: { Accept: 'application/json' }
+                }).done(function (response) {
+                    crudToast('success', response.message || 'Permissions updated successfully.');
+                }).fail(function (xhr) {
+                    var message = (xhr.responseJSON && xhr.responseJSON.message) || 'Permissions could not be saved.';
+                    crudToast('error', message);
+                }).always(function () {
+                    $button.prop('disabled', false);
+                });
             });
 
             $(document).on('click', '[data-crud-status]', function () {

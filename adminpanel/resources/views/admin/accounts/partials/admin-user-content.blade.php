@@ -65,7 +65,7 @@
                                                         data-crud-delete
                                                         data-url="{{ route('admin-user.delete', $user['id']) }}">Delete</button>
 
-                                                    <a href="{{ route('admin-user.permission', $user['id']) }}" class="btn btn-sm btn-warning side-menu">
+                                                    <a href="{{ route('admin-user.permission', $user['id']) }}" class="btn btn-sm btn-warning" data-ajax-page>
                                                         Permission
                                                     </a>
                                                 </td>
