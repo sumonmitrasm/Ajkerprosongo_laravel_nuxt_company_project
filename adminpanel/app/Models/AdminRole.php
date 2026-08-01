@@ -6,5 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class AdminRole extends Model
 {
-    //
+    protected $table = 'admin_roles';
+
+    protected $fillable = [
+        'admin_id',
+        'module',
+        'view_access',
+        'edit_access',
+        'add_access',
+        'full_access',
+        'no_access',
+    ];
 }

@@ -408,6 +408,12 @@
                 });
             });
         });
+    $(document).on('click', '[data-crud-permission]', function () {
+        var url = $(this).data('url');
+        if (url) {
+            window.loadAjaxPage(url, true);
+        }
+    });
     </script>
 
     <!-- Daterangepicker js-->

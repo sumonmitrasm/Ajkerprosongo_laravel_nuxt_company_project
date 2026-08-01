@@ -37,10 +37,14 @@
                                             <tr>
                                                 <td>{{ $user['id'] }}</td>
                                                 <td>
-                                                    @if($user['image'])
-                                                        <img src="{{ asset('admin/adminimage/' . $user['image']) }}" alt="Avatar" class="rounded-circle" width="40" height="40">
+                                                    @if ($user['image'])
+                                                        <img src="{{ asset('admin/adminimage/' . $user['image']) }}"
+                                                            alt="Avatar" class="rounded-circle" width="40"
+                                                            height="40">
                                                     @else
-                                                        <img src="{{ asset('admin/site_settings/no-image.png') }}" alt="Avatar" class="rounded-circle" width="40" height="40">
+                                                        <img src="{{ asset('admin/site_settings/no-image.png') }}"
+                                                            alt="Avatar" class="rounded-circle" width="40"
+                                                            height="40">
                                                     @endif
                                                 </td>
                                                 <td>{{ $user['ap_id'] }}</td>
@@ -60,6 +64,10 @@
                                                     <button type="button" class="btn btn-sm btn-danger"
                                                         data-crud-delete
                                                         data-url="{{ route('admin-user.delete', $user['id']) }}">Delete</button>
+
+                                                    <a href="{{ route('admin-user.permission', $user['id']) }}" class="btn btn-sm btn-warning side-menu">
+                                                        Permission
+                                                    </a>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -88,8 +96,8 @@
                             class="form-control"></div> --}}
                     <div class="mb-3"><label class="form-label">Name</label><input type="text" name="name"
                             class="form-control" required></div>
-                    <div class="mb-3"><label class="form-label" id="user-email">Email</label><input type="email" name="email"
-                            class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label" id="user-email">Email</label><input type="email"
+                            name="email" class="form-control" required></div>
                     <div class="mb-3">
                         <label class="form-label">Type</label>
                         <select name="type" class="form-select" required>

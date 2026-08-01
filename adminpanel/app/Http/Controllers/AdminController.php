@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use App\Models\Admin;
+use App\Models\AdminRole;
 use Intervention\Image\Drivers\Gd\Driver as GdDriver;
 use Intervention\Image\Format;
 use Intervention\Image\ImageManager;
@@ -201,5 +202,41 @@ class AdminController extends Controller
     private function clearUserCache(): void
     {
         Cache::forget('admin.users.index');
+    }
+
+    public function permissionUser($id)
+    {
+        $user = Admin::findOrFail($id);
+        $title = "Set Permission for " . $user->name;
+        $userPermissions = AdminRole::where('admin_id', $user->id)
+            ->get()
+            ->keyBy('module')
+            ->toArray();
+        return view('admin.accounts.permission', compact('user', 'title', 'userPermissions'));
+    }
+    public function updatePermissionUser(Request $request, $id)
+    {
+
+        $user = Admin::findOrFail($id);
+        $permissions = $request->input('permissions', []);
+        foreach ($permissions as $module => $access) {
+            AdminRole::updateOrCreate(
+                [
+                    'admin_id' => $user->id,
+                    'module'   => $module
+                ],
+                [
+                    'view_access' => isset($access['view_access']) ? 1 : 0,
+                    'edit_access' => isset($access['edit_access']) ? 1 : 0,
+                    'add_access'  => isset($access['add_access']) ? 1 : 0,
+                    'full_access' => isset($access['full_access']) ? 1 : 0,
+                    'no_access'   => isset($access['no_access']) ? 1 : 0,
+                ]
+            );
+        }
+        return response()->json([
+            'status' => true,
+            'message' => 'Permissions updated successfully!'
+        ]);
     }
 }

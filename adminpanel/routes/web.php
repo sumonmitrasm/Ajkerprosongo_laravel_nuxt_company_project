@@ -36,6 +36,9 @@ Route::namespace('App\Http\Controllers\Admin')->prefix('/admin')->group(function
         Route::put('users/{user}', [AdminController::class, 'updateUser'])->name('admin-user.update');
         Route::patch('users/{user}/status', [AdminController::class, 'updateUserStatus'])->name('admin-user.status');
         Route::delete('users/{user}', [AdminController::class, 'deleteUser'])->name('admin-user.delete');
+        //++++++++++++++++++++++++++User Permission++++++++++++++++++++++++++++++++++++++++++++++++
+        Route::get('admin/users/{id}/permission', [AdminController::class, 'permissionUser'])->name('admin-user.permission');
+        Route::post('admin/users/{id}/permission', [AdminController::class, 'updatePermissionUser'])->name('admin-user.permission.update');
         //>>>>>>>>>>>>>>>>>>>>>>>>User activity<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         //>>>>>>>>>>>>>>>>>>>>>>>>Section activity<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         Route::get('section', [SectionController::class, 'section'])->name('section');

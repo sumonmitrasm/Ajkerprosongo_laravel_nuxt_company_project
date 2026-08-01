@@ -15,7 +15,6 @@
             <div class="app-sidebar__user">
                 <div class="dropdown user-pro-body text-center">
                     <div class="user-pic">
-
                         @php
                             $admin = Auth::guard('admin')->user();
                         @endphp
