@@ -1,3 +1,8 @@
+@php
+    $currentAdmin = Auth::guard('admin')->user();
+    $canAddSections = $currentAdmin?->hasModuleAccess('section', 'add');
+    $canEditSections = $currentAdmin?->hasModuleAccess('section', 'edit');
+@endphp
 <div class="app-content main-content">
     <div class="side-app">
         <div class="container-fluid main-container">
@@ -10,10 +15,10 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header justify-content-between">
-                            <div class="card-title">{{ $title }}</div><button type="button" class="btn btn-info"
+                            <div class="card-title">{{ $title }}</div>@if ($canAddSections)<button type="button" class="btn btn-info"
                                 data-crud-create data-crud-modal="#section-form-modal"
                                 data-store-url="{{ route('admin-section.store') }}" data-create-title="Add Section">Add
-                                Section</button>
+                                Section</button>@endif
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
@@ -32,18 +37,18 @@
                                             <tr>
                                                 <td>{{ $section['id'] }}</td>
                                                 <td>{{ $section['name'] }}</td>
-                                                <td><button type="button"
+                                                <td>@if ($canEditSections)<button type="button"
                                                         class="btn btn-sm {{ $section['status'] ? 'btn-success' : 'btn-secondary' }}"
                                                         data-crud-status
-                                                        data-url="{{ route('admin-section.status', $section['id']) }}">{{ $section['status'] ? 'Active' : 'Inactive' }}</button>
+                                                        data-url="{{ route('admin-section.status', $section['id']) }}">{{ $section['status'] ? 'Active' : 'Inactive' }}</button>@else {{ $section['status'] ? 'Active' : 'Inactive' }} @endif
                                                 </td>
-                                                <td><button type="button" class="btn btn-sm btn-primary" data-crud-edit
+                                                <td>@if ($canEditSections)<button type="button" class="btn btn-sm btn-primary" data-crud-edit
                                                         data-crud-modal="#section-form-modal"
                                                         data-url="{{ route('admin-section.show', $section['id']) }}"
                                                         data-update-url="{{ route('admin-section.update', $section['id']) }}">Edit</button>
                                                     <button type="button" class="btn btn-sm btn-danger"
                                                         data-crud-delete
-                                                        data-url="{{ route('admin-section.delete', $section['id']) }}">Delete</button>
+                                                        data-url="{{ route('admin-section.delete', $section['id']) }}">Delete</button>@endif
                                                 </td>
                                             </tr>
                                         @endforeach

@@ -26,7 +26,7 @@ Route::redirect('/', '/admin/login');
 
 Route::namespace('App\Http\Controllers\Admin')->prefix('/admin')->group(function() {
     Route::match(['get', 'post'], 'login', [AdminController::class, 'login'])->name('admin.login');
-    Route::middleware(['admin.auth'])->group(function () {
+    Route::middleware(['admin.auth', 'admin.permission'])->group(function () {
         Route::get('dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
         Route::get('logout', [AdminController::class, 'logout'])->name('logout-admin');
         //>>>>>>>>>>>>>>>>>>>>>>>>User activity<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<

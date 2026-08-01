@@ -225,17 +225,20 @@ class AdminController extends Controller
 
         foreach ($modules as $module) {
             $access = $permissions[$module] ?? [];
+            $noAccess = isset($access['no_access']);
+            $fullAccess = ! $noAccess && isset($access['full_access']);
+
             AdminRole::updateOrCreate(
                 [
                     'admin_id' => $user->id,
                     'module'   => $module
                 ],
                 [
-                    'view_access' => isset($access['view_access']) ? 1 : 0,
-                    'edit_access' => isset($access['edit_access']) ? 1 : 0,
-                    'add_access'  => isset($access['add_access']) ? 1 : 0,
-                    'full_access' => isset($access['full_access']) ? 1 : 0,
-                    'no_access'   => isset($access['no_access']) ? 1 : 0,
+                    'view_access' => $fullAccess || (! $noAccess && isset($access['view_access'])) ? 1 : 0,
+                    'edit_access' => $fullAccess || (! $noAccess && isset($access['edit_access'])) ? 1 : 0,
+                    'add_access'  => $fullAccess || (! $noAccess && isset($access['add_access'])) ? 1 : 0,
+                    'full_access' => $fullAccess ? 1 : 0,
+                    'no_access'   => $noAccess ? 1 : 0,
                 ]
             );
         }

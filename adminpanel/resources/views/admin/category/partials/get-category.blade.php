@@ -1,3 +1,8 @@
+@php
+    $currentAdmin = Auth::guard('admin')->user();
+    $canAddCategories = $currentAdmin?->hasModuleAccess('category', 'add');
+    $canEditCategories = $currentAdmin?->hasModuleAccess('category', 'edit');
+@endphp
 <div class="app-content main-content">
     <div class="side-app">
         <div class="container-fluid main-container">
@@ -10,11 +15,11 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header justify-content-between">
-                            <div class="card-title">{{ $title }}</div><button type="button" class="btn btn-info"
+                            <div class="card-title">{{ $title }}</div>@if ($canAddCategories)<button type="button" class="btn btn-info"
                                 data-crud-create data-crud-modal="#category-form-modal"
                                 data-store-url="{{ route('admin-category.store') }}"
                                 data-create-title="Add Category">Add
-                                Category</button>
+                                Category</button>@endif
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
@@ -37,18 +42,18 @@
                                                 <td>{{ $category['parentcategory']['category_name'] ?? 'Root / Main Category' }}</td>
                                                 <td>{{ $category['section']['name'] ?? '' }}</td>
                                                 <td>{{ $category['category_name'] }}</td>
-                                                <td><button type="button"
+                                                <td>@if ($canEditCategories)<button type="button"
                                                         class="btn btn-sm {{ $category['status'] ? 'btn-success' : 'btn-secondary' }}"
                                                         data-crud-status
-                                                        data-url="{{ route('admin-category.status', $category['id']) }}">{{ $category['status'] ? 'Active' : 'Inactive' }}</button>
+                                                        data-url="{{ route('admin-category.status', $category['id']) }}">{{ $category['status'] ? 'Active' : 'Inactive' }}</button>@else {{ $category['status'] ? 'Active' : 'Inactive' }} @endif
                                                 </td>
-                                                <td><button type="button" class="btn btn-sm btn-primary" data-crud-edit
+                                                <td>@if ($canEditCategories)<button type="button" class="btn btn-sm btn-primary" data-crud-edit
                                                         data-crud-modal="#category-form-modal"
                                                         data-url="{{ route('admin-category.show', $category['id']) }}"
                                                         data-update-url="{{ route('admin-category.update', $category['id']) }}">Edit</button>
                                                     <button type="button" class="btn btn-sm btn-danger"
                                                         data-crud-delete
-                                                        data-url="{{ route('admin-category.delete', $category['id']) }}">Delete</button>
+                                                        data-url="{{ route('admin-category.delete', $category['id']) }}">Delete</button>@endif
                                                 </td>
                                             </tr>
                                         @endforeach

@@ -17,6 +17,9 @@
                     <div class="user-pic">
                         @php
                             $admin = Auth::guard('admin')->user();
+                            $canManageAdmins = $admin?->hasModuleAccess('admin');
+                            $canManageSections = $admin?->hasModuleAccess('section');
+                            $canManageCategories = $admin?->hasModuleAccess('category');
                         @endphp
                         <img src="{{ $admin && $admin->image
                             ? asset('admin/adminimage/' . $admin->image)
@@ -48,7 +51,8 @@
                         <li class="side-menu-label1"><a href="javascript:void(0)">Dashboard</a></li>
                     </ul>
                 </li>
-                <li class="slide {{ request()->routeIs('admin-user') ? 'is-expanded' : '' }}">
+                @if ($canManageAdmins)
+                <li class="slide {{ request()->routeIs('admin-user*') ? 'is-expanded' : '' }}">
                     <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0)"
                         aria-expanded="{{ request()->routeIs('admin-user') ? 'true' : 'false' }}">
 
@@ -78,6 +82,8 @@
                         </li>
                     </ul>
                 </li>
+                @endif
+                @if ($canManageSections || $canManageCategories)
                 <li class="slide">
                     <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0)">
                         <svg class="side-menu__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -89,10 +95,15 @@
                         </svg>
                         <span class="side-menu__label">Pages</span><i class="angle fe fe-chevron-right"></i></a>
                     <ul class="slide-menu">
-                        <li><a href="{{ route('section') }}" class="slide-item">Sections</a></li>
-                        <li><a href="{{ route('category') }}" class="slide-item">Category</a></li>
+                        @if ($canManageSections)
+                            <li><a href="{{ route('section') }}" class="slide-item">Sections</a></li>
+                        @endif
+                        @if ($canManageCategories)
+                            <li><a href="{{ route('category') }}" class="slide-item">Category</a></li>
+                        @endif
                     </ul>
                 </li>
+                @endif
                 <li class="slide">
                     <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0)">
                         <svg class="side-menu__icon" xmlns="http://www.w3.org/2000/svg" width="24"

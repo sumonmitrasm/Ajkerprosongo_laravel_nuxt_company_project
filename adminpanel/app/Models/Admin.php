@@ -19,4 +19,39 @@ class Admin extends Authenticatable
     {
         return ['password' => 'hashed', 'status' => 'boolean'];
     }
+
+    public function roles()
+    {
+        return $this->hasMany(AdminRole::class, 'admin_id');
+    }
+
+    /**
+     * Check a module permission for the logged-in admin.
+     */
+    public function hasModuleAccess(string $module, string $access = 'view'): bool
+    {
+        // The super admin must always be able to manage permissions and recover access.
+        if ($this->type === 'superadmin') {
+            return true;
+        }
+
+        $role = $this->relationLoaded('roles')
+            ? $this->roles->firstWhere('module', $module)
+            : $this->roles()->where('module', $module)->first();
+
+        if (! $role || $role->no_access) {
+            return false;
+        }
+
+        if ($role->full_access) {
+            return true;
+        }
+
+        return match ($access) {
+            'add' => (bool) $role->add_access,
+            'edit' => (bool) $role->edit_access,
+            'full' => false,
+            default => (bool) $role->view_access,
+        };
+    }
 }

@@ -1,3 +1,9 @@
+@php
+    $currentAdmin = Auth::guard('admin')->user();
+    $canAddUsers = $currentAdmin?->hasModuleAccess('admin', 'add');
+    $canEditUsers = $currentAdmin?->hasModuleAccess('admin', 'edit');
+    $canSetPermissions = $currentAdmin?->hasModuleAccess('admin', 'full');
+@endphp
 <div class="app-content main-content">
     <div class="side-app">
         <div class="container-fluid main-container">
@@ -10,10 +16,10 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header justify-content-between">
-                            <div class="card-title">{{ $title }}</div><button type="button" class="btn btn-info"
+                            <div class="card-title">{{ $title }}</div>@if ($canAddUsers)<button type="button" class="btn btn-info"
                                 data-crud-create data-crud-modal="#user-form-modal"
                                 data-store-url="{{ route('admin-user.store') }}" data-create-title="Add User">Add
-                                User</button>
+                                User</button>@endif
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
@@ -52,22 +58,24 @@
                                                 <td>{{ $user['email'] }}</td>
                                                 <td>{{ $user['type'] }}</td>
                                                 <td>{{ $user['mobile'] }}</td>
-                                                <td><button type="button"
+                                                <td>@if ($canEditUsers)<button type="button"
                                                         class="btn btn-sm {{ $user['status'] ? 'btn-success' : 'btn-secondary' }}"
                                                         data-crud-status
-                                                        data-url="{{ route('admin-user.status', $user['id']) }}">{{ $user['status'] ? 'Active' : 'Inactive' }}</button>
+                                                        data-url="{{ route('admin-user.status', $user['id']) }}">{{ $user['status'] ? 'Active' : 'Inactive' }}</button>@else {{ $user['status'] ? 'Active' : 'Inactive' }} @endif
                                                 </td>
-                                                <td><button type="button" class="btn btn-sm btn-primary" data-crud-edit
+                                                <td>@if ($canEditUsers)<button type="button" class="btn btn-sm btn-primary" data-crud-edit
                                                         data-crud-modal="#user-form-modal"
                                                         data-url="{{ route('admin-user.show', $user['id']) }}"
                                                         data-update-url="{{ route('admin-user.update', $user['id']) }}">Edit</button>
                                                     <button type="button" class="btn btn-sm btn-danger"
                                                         data-crud-delete
-                                                        data-url="{{ route('admin-user.delete', $user['id']) }}">Delete</button>
+                                                        data-url="{{ route('admin-user.delete', $user['id']) }}">Delete</button>@endif
 
+                                                    @if ($canSetPermissions)
                                                     <a href="{{ route('admin-user.permission', $user['id']) }}" class="btn btn-sm btn-warning" data-ajax-page>
                                                         Permission
                                                     </a>
+                                                    @endif
                                                 </td>
                                             </tr>
                                         @endforeach
