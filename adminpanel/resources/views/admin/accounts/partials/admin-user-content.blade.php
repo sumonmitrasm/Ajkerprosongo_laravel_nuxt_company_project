@@ -2,6 +2,7 @@
     $currentAdmin = Auth::guard('admin')->user();
     $canAddUsers = $currentAdmin?->hasModuleAccess('admin', 'add');
     $canEditUsers = $currentAdmin?->hasModuleAccess('admin', 'edit');
+    $canDeleteUsers = $currentAdmin?->hasModuleAccess('admin', 'delete');
     $canSetPermissions = $currentAdmin?->hasModuleAccess('admin', 'full');
 @endphp
 <div class="app-content main-content">
@@ -66,7 +67,8 @@
                                                 <td>@if ($canEditUsers)<button type="button" class="btn btn-sm btn-primary" data-crud-edit
                                                         data-crud-modal="#user-form-modal"
                                                         data-url="{{ route('admin-user.show', $user['id']) }}"
-                                                        data-update-url="{{ route('admin-user.update', $user['id']) }}">Edit</button>
+                                                        data-update-url="{{ route('admin-user.update', $user['id']) }}">Edit</button>@endif
+                                                    @if ($canDeleteUsers)
                                                     <button type="button" class="btn btn-sm btn-danger"
                                                         data-crud-delete
                                                         data-url="{{ route('admin-user.delete', $user['id']) }}">Delete</button>@endif

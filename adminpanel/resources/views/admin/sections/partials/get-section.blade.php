@@ -2,6 +2,7 @@
     $currentAdmin = Auth::guard('admin')->user();
     $canAddSections = $currentAdmin?->hasModuleAccess('section', 'add');
     $canEditSections = $currentAdmin?->hasModuleAccess('section', 'edit');
+    $canDeleteSections = $currentAdmin?->hasModuleAccess('section', 'delete');
 @endphp
 <div class="app-content main-content">
     <div class="side-app">
@@ -45,7 +46,8 @@
                                                 <td>@if ($canEditSections)<button type="button" class="btn btn-sm btn-primary" data-crud-edit
                                                         data-crud-modal="#section-form-modal"
                                                         data-url="{{ route('admin-section.show', $section['id']) }}"
-                                                        data-update-url="{{ route('admin-section.update', $section['id']) }}">Edit</button>
+                                                        data-update-url="{{ route('admin-section.update', $section['id']) }}">Edit</button>@endif
+                                                    @if ($canDeleteSections)
                                                     <button type="button" class="btn btn-sm btn-danger"
                                                         data-crud-delete
                                                         data-url="{{ route('admin-section.delete', $section['id']) }}">Delete</button>@endif

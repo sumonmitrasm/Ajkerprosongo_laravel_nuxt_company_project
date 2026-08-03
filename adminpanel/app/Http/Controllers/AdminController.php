@@ -81,10 +81,26 @@ class AdminController extends Controller
         return redirect('admin/login');
     }
 
+    // public function users(Request $request)
+    // {
+    //     $title = "Admin Users";
+    //     $users = Cache::remember('admin.users.index', now()->addMinutes(87840), fn () => Admin::get()->toArray());
+    //     return view('admin.accounts.admin-user', compact('title', 'users'));
+    // }
     public function users(Request $request)
     {
-        $title = "Admin Users";
-        $users = Cache::remember('admin.users.index', now()->addMinutes(87840), fn () => Admin::get()->toArray());
+        $admin = Auth::guard('admin')->user();
+        $title = $admin->name;
+        if (in_array($admin->type, ['superadmin', 'admin'])) {
+
+            $users = Cache::remember('admin.users.index', now()->addDays(61), function () {
+                return Admin::latest()->get();
+            });
+
+        } else {
+
+            $users = collect([$admin]);
+        }
         return view('admin.accounts.admin-user', compact('title', 'users'));
     }
     public function showUser(Admin $user)
@@ -212,16 +228,17 @@ class AdminController extends Controller
             ->get()
             ->keyBy('module')
             ->toArray();
-        return view('admin.accounts.permission', compact('user', 'title', 'userPermissions'));
+        $modules = AdminRole::query()->select('module')->distinct()->orderBy('module')->pluck('module');
+        return view('admin.accounts.permission', compact('user', 'title', 'userPermissions', 'modules'));
     }
     public function updatePermissionUser(Request $request, $id)
     {
         $user = Admin::findOrFail($id);
         $permissions = $request->input('permissions', []);
 
-        // Always save every supported module. This also clears permissions when
-        // every checkbox for a module is unchecked (unchecked inputs are not sent).
-        $modules = ['admin', 'section', 'category'];
+        // Modules come directly from the existing admin_roles table.
+        // This also clears permissions when every checkbox is unchecked.
+        $modules = AdminRole::query()->select('module')->distinct()->orderBy('module')->pluck('module');
 
         foreach ($modules as $module) {
             $access = $permissions[$module] ?? [];
@@ -237,7 +254,7 @@ class AdminController extends Controller
                     'view_access' => $fullAccess || (! $noAccess && isset($access['view_access'])) ? 1 : 0,
                     'edit_access' => $fullAccess || (! $noAccess && isset($access['edit_access'])) ? 1 : 0,
                     'add_access'  => $fullAccess || (! $noAccess && isset($access['add_access'])) ? 1 : 0,
-                    'full_access' => $fullAccess ? 1 : 0,
+                    'delete_access' => $fullAccess || (! $noAccess && isset($access['delete_access'])) ? 1 : 0,
                     'no_access'   => $noAccess ? 1 : 0,
                 ]
             );

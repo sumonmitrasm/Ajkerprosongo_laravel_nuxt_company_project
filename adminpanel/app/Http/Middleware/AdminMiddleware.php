@@ -20,6 +20,8 @@ class AdminMiddleware
             return redirect()->route('admin.login');
         }
 
+        Auth::guard('admin')->user()->loadMissing('roles');
+
         return $next($request);
     }
 }

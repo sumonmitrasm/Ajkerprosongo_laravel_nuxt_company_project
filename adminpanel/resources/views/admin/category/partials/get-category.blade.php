@@ -2,6 +2,7 @@
     $currentAdmin = Auth::guard('admin')->user();
     $canAddCategories = $currentAdmin?->hasModuleAccess('category', 'add');
     $canEditCategories = $currentAdmin?->hasModuleAccess('category', 'edit');
+    $canDeleteCategories = $currentAdmin?->hasModuleAccess('category', 'delete');
 @endphp
 <div class="app-content main-content">
     <div class="side-app">
@@ -50,7 +51,8 @@
                                                 <td>@if ($canEditCategories)<button type="button" class="btn btn-sm btn-primary" data-crud-edit
                                                         data-crud-modal="#category-form-modal"
                                                         data-url="{{ route('admin-category.show', $category['id']) }}"
-                                                        data-update-url="{{ route('admin-category.update', $category['id']) }}">Edit</button>
+                                                        data-update-url="{{ route('admin-category.update', $category['id']) }}">Edit</button>@endif
+                                                    @if ($canDeleteCategories)
                                                     <button type="button" class="btn btn-sm btn-danger"
                                                         data-crud-delete
                                                         data-url="{{ route('admin-category.delete', $category['id']) }}">Delete</button>@endif

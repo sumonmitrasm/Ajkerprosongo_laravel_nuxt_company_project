@@ -36,16 +36,19 @@ class AdminPermissionMiddleware
         return match ($routeName) {
             'admin-user', 'admin-user.show' => ['admin', 'view'],
             'admin-user.store' => ['admin', 'add'],
-            'admin-user.update', 'admin-user.status', 'admin-user.delete' => ['admin', 'edit'],
+            'admin-user.update', 'admin-user.status' => ['admin', 'edit'],
+            'admin-user.delete' => ['admin', 'delete'],
             'admin-user.permission', 'admin-user.permission.update' => ['admin', 'full'],
 
             'section', 'admin-section.show' => ['section', 'view'],
             'admin-section.store' => ['section', 'add'],
-            'admin-section.update', 'admin-section.status', 'admin-section.delete' => ['section', 'edit'],
+            'admin-section.update', 'admin-section.status' => ['section', 'edit'],
+            'admin-section.delete' => ['section', 'delete'],
 
             'category', 'admin-category.show' => ['category', 'view'],
             'admin-category.store' => ['category', 'add'],
-            'admin-category.update', 'admin-category.status', 'admin-category.delete' => ['category', 'edit'],
+            'admin-category.update', 'admin-category.status' => ['category', 'edit'],
+            'admin-category.delete' => ['category', 'delete'],
             default => null,
         };
     }

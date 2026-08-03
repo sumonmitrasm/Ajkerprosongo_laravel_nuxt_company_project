@@ -14,7 +14,7 @@ class AdminRole extends Model
         'view_access',
         'edit_access',
         'add_access',
-        'full_access',
+        'delete_access',
         'no_access',
     ];
 }

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->tinyInteger('view_access');
             $table->tinyInteger('edit_access');
             $table->tinyInteger('add_access');
-            $table->tinyInteger('full_access');
+            $table->tinyInteger('delete_access');
             $table->tinyInteger('no_access');
             $table->timestamps();
         });

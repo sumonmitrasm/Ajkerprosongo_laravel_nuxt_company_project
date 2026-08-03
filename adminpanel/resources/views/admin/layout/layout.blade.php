@@ -340,6 +340,7 @@
                 $form[0].reset();
                 $form.data({ url: $button.data('store-url'), method: 'POST' });
                 $form.find('.js-crud-errors').empty().addClass('d-none');
+                $form.find('[name="email"]').prop('readonly', false);
                 setImagePreview($form, null);
                 $modal.find('[data-crud-title]').text($button.data('create-title') || 'Add Record');
                 $modal.find('[data-password-help]').text('(minimum 6 characters)');
@@ -357,6 +358,7 @@
                         if (!$field.length || field === 'password' || $field.is('[type="file"]')) return;
                         $field.val(field === 'status' ? (value ? '1' : '0') : (value || ''));
                     });
+                    $form.find('[name="email"]').prop('readonly', true);
                     var imageUrl = response.image_url || record.image_url || '';
                     if (!imageUrl && record.image && $form.data('image-base-url')) {
                         imageUrl = $form.data('image-base-url').replace(/\/$/, '') + '/' + record.image;
@@ -396,6 +398,25 @@
                     if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) crudErrors($form, xhr.responseJSON.errors);
                     else crudToast('error', (xhr.responseJSON && xhr.responseJSON.message) || 'Request failed.');
                 }).always(function () { $form.find('[data-crud-submit]').prop('disabled', false); });
+            });
+
+            $(document).on('change', '#permission-form [data-full-access]', function () {
+                var $module = $(this).closest('[data-permission-module]');
+                $module.find('[data-access-checkbox]').prop('checked', this.checked);
+                if (this.checked) $module.find('[data-no-access]').prop('checked', false);
+            });
+
+            $(document).on('change', '#permission-form [data-no-access]', function () {
+                if (!this.checked) return;
+                var $module = $(this).closest('[data-permission-module]');
+                $module.find('[data-access-checkbox], [data-full-access]').prop('checked', false);
+            });
+
+            $(document).on('change', '#permission-form [data-access-checkbox]', function () {
+                var $module = $(this).closest('[data-permission-module]');
+                var allSelected = $module.find('[data-access-checkbox]').length === $module.find('[data-access-checkbox]:checked').length;
+                $module.find('[data-full-access]').prop('checked', allSelected);
+                if (this.checked) $module.find('[data-no-access]').prop('checked', false);
             });
 
             $(document).on('submit', '#permission-form', function (event) {

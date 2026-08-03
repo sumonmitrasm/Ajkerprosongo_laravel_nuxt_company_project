@@ -19,61 +19,65 @@
                                 data-url="{{ route('admin-user.permission.update', $user->id) }}">
                                 @csrf
 
-                                @php
-
-                                    $modules = [
-                                        'admin' => 'Admin Management',
-                                        'section' => 'Section Management',
-                                        'category' => 'Category Management',
-                                    ];
-                                @endphp
-
-                                @foreach ($modules as $key => $label)
-                                    <div class="mb-4">
-                                        <h5 class="text-primary border-bottom pb-2">{{ $label }}</h5>
+                                @foreach ($modules as $module)
+                                    @php
+                                        $permission = $userPermissions[$module] ?? [];
+                                        $hasFullAccess = !empty($permission['view_access']) && !empty($permission['add_access']) && !empty($permission['edit_access']) && !empty($permission['delete_access']);
+                                    @endphp
+                                    <div class="mb-4" data-permission-module>
+                                        <h5 class="text-primary border-bottom pb-2">{{ ucfirst($module) }} Management</h5>
                                         <div class="row">
                                             <div class="col-md-2">
                                                 <label class="custom-control custom-checkbox">
                                                     <input type="checkbox" class="custom-control-input"
-                                                        name="permissions[{{ $key }}][view_access]"
+                                                        name="permissions[{{ $module }}][view_access]"
                                                         value="1"
-                                                        {{ !empty($userPermissions[$key]['view_access']) ? 'checked' : '' }}>
+                                                        data-access-checkbox {{ !empty($permission['view_access']) ? 'checked' : '' }}>
                                                     <span class="custom-control-label">View Access</span>
                                                 </label>
                                             </div>
                                             <div class="col-md-2">
                                                 <label class="custom-control custom-checkbox">
                                                     <input type="checkbox" class="custom-control-input"
-                                                        name="permissions[{{ $key }}][add_access]"
+                                                        name="permissions[{{ $module }}][add_access]"
                                                         value="1"
-                                                        {{ !empty($userPermissions[$key]['add_access']) ? 'checked' : '' }}>
+                                                        data-access-checkbox {{ !empty($permission['add_access']) ? 'checked' : '' }}>
                                                     <span class="custom-control-label">Add Access</span>
                                                 </label>
                                             </div>
                                             <div class="col-md-2">
                                                 <label class="custom-control custom-checkbox">
                                                     <input type="checkbox" class="custom-control-input"
-                                                        name="permissions[{{ $key }}][edit_access]"
+                                                        name="permissions[{{ $module }}][edit_access]"
                                                         value="1"
-                                                        {{ !empty($userPermissions[$key]['edit_access']) ? 'checked' : '' }}>
+                                                        data-access-checkbox {{ !empty($permission['edit_access']) ? 'checked' : '' }}>
                                                     <span class="custom-control-label">Edit Access</span>
                                                 </label>
                                             </div>
                                             <div class="col-md-2">
                                                 <label class="custom-control custom-checkbox">
                                                     <input type="checkbox" class="custom-control-input"
-                                                        name="permissions[{{ $key }}][no_access]"
+                                                        name="permissions[{{ $module }}][delete_access]"
                                                         value="1"
-                                                        {{ !empty($userPermissions[$key]['no_access']) ? 'checked' : '' }}>
+                                                        data-access-checkbox {{ !empty($permission['delete_access']) ? 'checked' : '' }}>
+                                                    <span class="custom-control-label">Delete Access</span>
+                                                </label>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label class="custom-control custom-checkbox">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        name="permissions[{{ $module }}][full_access]"
+                                                        value="1"
+                                                        data-full-access {{ $hasFullAccess ? 'checked' : '' }}>
                                                     <span class="custom-control-label">Full Access</span>
                                                 </label>
                                             </div>
                                             <div class="col-md-2">
                                                 <label class="custom-control custom-checkbox">
                                                     <input type="checkbox" class="custom-control-input"
-                                                        name="permissions[{{ $key }}][full_access]"
+                                                        name="permissions[{{ $module }}][no_access]"
                                                         value="1"
-                                                        {{ !empty($userPermissions[$key]['full_access']) ? 'checked' : '' }}>
+                                                        data-no-access {{ !empty($permission['no_access']) ? 'checked' : '' }}>
                                                     <span class="custom-control-label">Module No Access</span>
                                                 </label>
                                             </div>

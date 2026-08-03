@@ -17,9 +17,9 @@
                     <div class="user-pic">
                         @php
                             $admin = Auth::guard('admin')->user();
-                            $canManageAdmins = $admin?->hasModuleAccess('admin');
-                            $canManageSections = $admin?->hasModuleAccess('section');
-                            $canManageCategories = $admin?->hasModuleAccess('category');
+                            $canManageAdmins = $admin?->hasModuleAccess('admin', 'view');
+                            $canManageSections = $admin?->hasModuleAccess('section', 'view');
+                            $canManageCategories = $admin?->hasModuleAccess('category', 'view');
                         @endphp
                         <img src="{{ $admin && $admin->image
                             ? asset('admin/adminimage/' . $admin->image)
@@ -52,57 +52,27 @@
                     </ul>
                 </li>
                 @if ($canManageAdmins)
-                <li class="slide {{ request()->routeIs('admin-user*') ? 'is-expanded' : '' }}">
-                    <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0)"
-                        aria-expanded="{{ request()->routeIs('admin-user') ? 'true' : 'false' }}">
-
-                        <svg class="side-menu__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="9" cy="7" r="4"></circle>
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                        </svg>
-
-                        <span class="side-menu__label">Account</span>
-                        <i class="angle fe fe-chevron-right"></i>
-                    </a>
-
-                    <ul class="slide-menu">
-                        <li class="side-menu-label1">
-                            <a href="javascript:void(0)">Account</a>
-                        </li>
-
-                        <li>
-                            <a class="slide-item {{ request()->routeIs('admin-user') ? 'active' : '' }}"
-                                href="{{ route('admin-user') }}">
-                                Users
-                            </a>
-                        </li>
-                    </ul>
-                </li>
+                    <li class="slide {{ request()->routeIs('admin-user*') ? 'is-expanded' : '' }}">
+                        <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0)">
+                            <i class="side-menu__icon fe fe-users"></i>
+                            <span class="side-menu__label">Account</span><i class="angle fe fe-chevron-right"></i>
+                        </a>
+                        <ul class="slide-menu">
+                            <li><a class="slide-item {{ request()->routeIs('admin-user*') ? 'active' : '' }}" href="{{ route('admin-user') }}">Users</a></li>
+                        </ul>
+                    </li>
                 @endif
                 @if ($canManageSections || $canManageCategories)
-                <li class="slide">
-                    <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0)">
-                        <svg class="side-menu__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                            <polyline points="2 17 12 22 22 17"></polyline>
-                            <polyline points="2 12 12 17 22 12"></polyline>
-                        </svg>
-                        <span class="side-menu__label">Pages</span><i class="angle fe fe-chevron-right"></i></a>
-                    <ul class="slide-menu">
-                        @if ($canManageSections)
-                            <li><a href="{{ route('section') }}" class="slide-item">Sections</a></li>
-                        @endif
-                        @if ($canManageCategories)
-                            <li><a href="{{ route('category') }}" class="slide-item">Category</a></li>
-                        @endif
-                    </ul>
-                </li>
+                    <li class="slide {{ request()->routeIs('section') || request()->routeIs('category') ? 'is-expanded' : '' }}">
+                        <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0)">
+                            <i class="side-menu__icon fe fe-layers"></i>
+                            <span class="side-menu__label">Pages</span><i class="angle fe fe-chevron-right"></i>
+                        </a>
+                        <ul class="slide-menu">
+                            @if ($canManageSections)<li><a href="{{ route('section') }}" class="slide-item">Sections</a></li>@endif
+                            @if ($canManageCategories)<li><a href="{{ route('category') }}" class="slide-item">Category</a></li>@endif
+                        </ul>
+                    </li>
                 @endif
                 <li class="slide">
                     <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0)">

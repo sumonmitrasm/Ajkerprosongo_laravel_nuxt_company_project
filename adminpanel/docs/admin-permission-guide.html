@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="bn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Permission সহজ গাইড</title>
+    <style>
+        body{max-width:900px;margin:35px auto;padding:0 20px;font:16px/1.65 Arial,sans-serif;color:#202938;background:#f6f8fb}section{background:#fff;border:1px solid #dbe3ec;border-radius:10px;padding:22px;margin:18px 0}h1,h2{color:#135fc7}code{background:#f1f4f8;padding:2px 5px;border-radius:4px;color:#a61e4d}table{width:100%;border-collapse:collapse}th,td{padding:10px;border:1px solid #dbe3ec;text-align:left}th{background:#edf5ff}.flow{padding:14px;background:#edf5ff;border-left:4px solid #135fc7}.warn{padding:14px;background:#fff5d8;border-left:4px solid #d88a00}pre{background:#172033;color:#edf3ff;padding:15px;overflow:auto;border-radius:7px}
+    </style>
+</head>
+<body>
+    <h1>Admin Permission — সহজ A–Z গাইড</h1>
+
+    <section>
+        <h2>১. এক কথায় system কী করে?</h2>
+        <div class="flow">Admin user-এর জন্য checkbox select → Save → <code>admin_roles</code> table update → user page refresh করলে sidebar/button automatic hide বা show হবে।</div>
+        <p>এখানে আলাদা config file নেই। Permission page-এর module নাম সরাসরি database-এর <code>admin_roles.module</code> column থেকে আসে।</p>
+    </section>
+
+    <section>
+        <h2>২. Database-এ কী আছে?</h2>
+        <p>Table নাম: <code>admin_roles</code>। একটি row মানে একটি user-এর একটি module-এর permission।</p>
+        <table>
+            <tr><th>Column</th><th>কাজ</th></tr>
+            <tr><td>admin_id</td><td>কোন user-এর permission</td></tr>
+            <tr><td>module</td><td>Module নাম: <code>admin</code>, <code>section</code>, <code>category</code></td></tr>
+            <tr><td>view_access</td><td>Sidebar menu ও list/page দেখতে পারবে</td></tr>
+            <tr><td>add_access</td><td>Add/create করতে পারবে</td></tr>
+            <tr><td>edit_access</td><td>Edit, update এবং status change করতে পারবে</td></tr>
+            <tr><td>delete_access</td><td>Delete করতে পারবে</td></tr>
+            <tr><td>no_access</td><td>সব access বন্ধ করবে</td></tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>৩. Permission page-এ module নাম কোথা থেকে আসে?</h2>
+        <p>File: <code>app/Http/Controllers/AdminController.php</code></p>
+        <p><code>permissionUser()</code> method database থেকে unique module name নেয়:</p>
+        <pre><code>$modules = AdminRole::select('module')
+    -&gt;distinct()
+    -&gt;orderBy('module')
+    -&gt;pluck('module');</code></pre>
+        <p>তারপর <code>admin-permission.blade.php</code> ওই <code>$modules</code> loop করে checkbox দেখায়। তাই Blade file-এ <code>admin / section / category</code> manually লেখা নেই।</p>
+    </section>
+
+    <section>
+        <h2>৪. Save চাপলে কী হয়?</h2>
+        <ol>
+            <li><code>resources/views/admin/accounts/partials/admin-permission.blade.php</code> checkbox form পাঠায়।</li>
+            <li><code>resources/views/admin/layout/layout.blade.php</code> AJAX দিয়ে submit করে এবং SweetAlert message দেখায়।</li>
+            <li><code>AdminController::updatePermissionUser()</code> request নেয়।</li>
+            <li><code>AdminRole::updateOrCreate()</code> দিয়ে ওই user + module-এর row create/update করে।</li>
+        </ol>
+        <p><strong>Full Access</strong> checkbox database-এ আলাদা column নয়। এটি shortcut: click করলে View, Add, Edit, Delete চারটিই <code>1</code> save হয়।</p>
+        <p><strong>Module No Access</strong> দিলে অন্য চারটি <code>0</code> এবং <code>no_access = 1</code> save হয়।</p>
+    </section>
+
+    <section>
+        <h2>৫. Sidebar কীভাবে কাজ করে?</h2>
+        <p>File: <code>resources/views/admin/layout/sidebar.blade.php</code></p>
+        <p>এখানে তিনটি সহজ check আছে:</p>
+        <pre><code>$canManageAdmins = $admin?-&gt;hasModuleAccess('admin', 'view');
+$canManageSections = $admin?-&gt;hasModuleAccess('section', 'view');
+$canManageCategories = $admin?-&gt;hasModuleAccess('category', 'view');</code></pre>
+        <p>যার View Access নেই, তার menu show হবে না।</p>
+    </section>
+
+    <section>
+        <h2>৬. User manually URL দিলে?</h2>
+        <p>File: <code>app/Http/Middleware/AdminPermissionMiddleware.php</code></p>
+        <p>এই middleware প্রতিটি route-এর আগে database permission check করে। তাই button/menu hide করাই একমাত্র security নয়। Permission না থাকলে server HTTP 403 দেয়।</p>
+    </section>
+
+    <section>
+        <h2>৭. নতুন module যোগ করার সহজ নিয়ম</h2>
+        <ol>
+            <li>প্রথমে <code>admin_roles</code> table-এ কোনো existing admin-এর জন্য নতুন module name-এর একটি row দিন। উদাহরণ: <code>module = news</code>।</li>
+            <li>তারপর Permission page open করলে <strong>News Management</strong> automatic দেখা যাবে।</li>
+            <li>নতুন News page-এর route-এ permission check এবং sidebar link যোগ করতে হবে। কারণ system জানবে না <code>news</code> কোন Laravel route/page-এর সঙ্গে যুক্ত।</li>
+        </ol>
+        <div class="warn">বর্তমান project-এ sidebar-এ শুধু Users, Sections, Category page আছে। নতুন module-এর actual controller, route ও sidebar link তৈরি না করলে শুধু database row দিলেই কোনো নতুন page তৈরি হবে না।</div>
+    </section>
+
+    <section>
+        <h2>৮. Important file list</h2>
+        <table>
+            <tr><th>File</th><th>কাজ</th></tr>
+            <tr><td>AdminController.php</td><td>Module database থেকে নেয় এবং permission save করে</td></tr>
+            <tr><td>AdminRole.php</td><td><code>admin_roles</code> model</td></tr>
+            <tr><td>Admin.php</td><td><code>hasModuleAccess()</code> দিয়ে permission check</td></tr>
+            <tr><td>AdminPermissionMiddleware.php</td><td>URL/API request security check</td></tr>
+            <tr><td>admin-permission.blade.php</td><td>Permission checkbox form</td></tr>
+            <tr><td>sidebar.blade.php</td><td>Sidebar menu show/hide</td></tr>
+            <tr><td>layout.blade.php</td><td>AJAX save + SweetAlert</td></tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>৯. ব্যবহার করার নিয়ম</h2>
+        <ol>
+            <li>Superadmin দিয়ে login করুন।</li>
+            <li>Users → Permission চাপুন।</li>
+            <li>প্রয়োজন অনুযায়ী View/Add/Edit/Delete select করুন, অথবা Full Access চাপুন।</li>
+            <li>Save Permissions চাপুন।</li>
+            <li>ওই user দিয়ে login/refresh করে ফল দেখুন।</li>
+        </ol>
+        <div class="warn">কমপক্ষে একটি user-এর <code>type = superadmin</code> রাখবেন। Superadmin সবসময় access পাবে; তাই নিজের সব permission বন্ধ হয়ে যাওয়ার ভয় থাকবে না।</div>
+    </section>
+</body>
+</html>

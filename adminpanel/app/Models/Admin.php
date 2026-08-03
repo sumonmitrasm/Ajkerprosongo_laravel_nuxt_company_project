@@ -28,30 +28,55 @@ class Admin extends Authenticatable
     /**
      * Check a module permission for the logged-in admin.
      */
+    // public function hasModuleAccess(string $module, string $access = 'view'): bool
+    // {
+    //     // The super admin must always be able to manage permissions and recover access.
+    //     if ($this->type === 'superadmin') {
+    //         return true;
+    //     }
+
+    //     $role = $this->relationLoaded('roles')
+    //         ? $this->roles->firstWhere('module', $module)
+    //         : $this->roles()->where('module', $module)->first();
+
+    //     if (! $role || $role->no_access) {
+    //         return false;
+    //     }
+
+    //     return match ($access) {
+    //         'add' => (bool) $role->add_access,
+    //         'edit' => (bool) $role->edit_access,
+    //         'delete' => (bool) $role->delete_access,
+    //         'full' => (bool) ($role->view_access && $role->add_access && $role->edit_access && $role->delete_access),
+    //         'view' => (bool) $role->view_access,
+    //         default => false,
+    //     };
+    // }
+
     public function hasModuleAccess(string $module, string $access = 'view'): bool
     {
-        // The super admin must always be able to manage permissions and recover access.
         if ($this->type === 'superadmin') {
             return true;
         }
-
-        $role = $this->relationLoaded('roles')
-            ? $this->roles->firstWhere('module', $module)
-            : $this->roles()->where('module', $module)->first();
-
-        if (! $role || $role->no_access) {
+        $role = $this->roles()->where('module', $module)->first();
+        if (!$role || $role->no_access == 1) {
             return false;
         }
-
-        if ($role->full_access) {
-            return true;
+        if ($access === 'add') {
+            return (bool) $role->add_access;
         }
 
-        return match ($access) {
-            'add' => (bool) $role->add_access,
-            'edit' => (bool) $role->edit_access,
-            'full' => false,
-            default => (bool) $role->view_access,
-        };
+        if ($access === 'edit') {
+            return (bool) $role->edit_access;
+        }
+
+        if ($access === 'delete') {
+            return (bool) $role->delete_access;
+        }
+
+        if ($access === 'full') {
+            return $role->view_access && $role->add_access && $role->edit_access && $role->delete_access;
+        }
+        return (bool) $role->view_access;
     }
 }

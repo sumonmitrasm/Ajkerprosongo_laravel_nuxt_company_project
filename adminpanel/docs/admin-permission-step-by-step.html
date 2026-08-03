@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="bn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Permission: Step-by-Step কাজের Manual</title>
+    <style>
+        :root{--blue:#1769d2;--dark:#182235;--soft:#eef5ff;--line:#dbe3ed;--green:#087f5b;--orange:#a15c00}
+        *{box-sizing:border-box} body{margin:0;background:#f5f7fb;color:#243044;font:16px/1.7 Arial,"Noto Sans Bengali",sans-serif}
+        header{padding:45px max(20px,calc((100% - 1050px)/2));background:linear-gradient(135deg,#103a76,#1b75dd);color:#fff} h1{margin:0 0 8px;font-size:31px} header p{margin:0;opacity:.92}
+        main{max-width:1050px;margin:28px auto 70px;padding:0 20px} section{background:#fff;border:1px solid var(--line);border-radius:12px;padding:25px;margin:18px 0} h2{margin:0 0 12px;color:var(--blue);font-size:23px} h3{margin:25px 0 8px;font-size:18px} h4{margin:18px 0 5px;font-size:16px}
+        p,li{color:#4c5b70} table{width:100%;border-collapse:collapse;margin:12px 0} th,td{padding:10px;border:1px solid var(--line);text-align:left;vertical-align:top} th{background:#edf5ff;color:#193b70} code{background:#f1f3f7;color:#a51d4e;padding:2px 5px;border-radius:4px;font-family:Consolas,monospace;font-size:.92em} pre{background:var(--dark);color:#e9f1ff;padding:17px;border-radius:8px;overflow:auto;line-height:1.55} pre code{padding:0;background:transparent;color:inherit}.step{border-left:5px solid var(--blue);padding:12px 16px;background:var(--soft);margin:14px 0}.ok{border-left-color:var(--green);background:#eafbf4}.warn{border-left-color:#d38a00;background:#fff6dc}.path{color:#a51d4e;font-family:Consolas,monospace;word-break:break-all}.toc a{color:var(--blue);text-decoration:none}.tag{display:inline-block;background:#e4efff;color:#1856a3;padding:3px 8px;border-radius:20px;font-size:13px;font-weight:bold;margin:2px}.flow{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.flow div{flex:1 1 160px;background:#edf5ff;border:1px solid #cfe1fb;padding:12px;border-radius:7px;font-weight:bold;color:#1d4d8d}@media(max-width:600px){h1{font-size:25px}section{padding:18px}}
+    </style>
+</head>
+<body>
+<header>
+    <h1>Admin Permission System — Step-by-Step কাজের Manual</h1>
+    <p>এই file দেখে আপনি নিজে permission module বুঝতে, edit করতে এবং নতুন module add করতে পারবেন।</p>
+</header>
+
+<main>
+    <section class="toc">
+        <h2>আগে এই ৪টি কথা বুঝুন</h2>
+        <div class="flow"><div>1. Module নাম database থেকে আসে</div><div>2. Checkbox database-এ 0/1 save হয়</div><div>3. Sidebar permission দেখে menu দেখায়</div><div>4. Middleware URL access নিরাপদ রাখে</div></div>
+        <p>বর্তমান module: <span class="tag">admin</span><span class="tag">section</span><span class="tag">category</span></p>
+        <ol>
+            <li><a href="#map">কোন file কী কাজ করে</a></li>
+            <li><a href="#module-show">Permission page-এ module কীভাবে আসে</a></li>
+            <li><a href="#save">Save করলে database-এ কী হয়</a></li>
+            <li><a href="#layout">Layout-এ AJAX ও SweetAlert code</a></li>
+            <li><a href="#sidebar">Sidebar menu show/hide</a></li>
+            <li><a href="#security">URL security / middleware</a></li>
+            <li><a href="#new-module">নতুন module add: পুরো step</a></li>
+            <li><a href="#test">Test করার নিয়ম</a></li>
+        </ol>
+    </section>
+
+    <section id="map">
+        <h2>1. কোন file কী কাজ করে?</h2>
+        <table>
+            <tr><th>কাজ</th><th>File</th><th>মনে রাখবেন</th></tr>
+            <tr><td>Permission page দেখানো ও database save</td><td class="path">app/Http/Controllers/AdminController.php</td><td>মূল backend file</td></tr>
+            <tr><td>Checkbox-এর HTML</td><td class="path">resources/views/admin/accounts/partials/admin-permission.blade.php</td><td>এখানে module name manually লেখা নেই</td></tr>
+            <tr><td>AJAX save ও SweetAlert</td><td class="path">resources/views/admin/layout/layout.blade.php</td><td>Page reload ছাড়া save হয়</td></tr>
+            <tr><td>Sidebar Users/Sections/Category</td><td class="path">resources/views/admin/layout/sidebar.blade.php</td><td>View permission না থাকলে menu hide</td></tr>
+            <tr><td>Permission check helper</td><td class="path">app/Models/Admin.php</td><td><code>hasModuleAccess()</code> এখানে আছে</td></tr>
+            <tr><td>Database model</td><td class="path">app/Models/AdminRole.php</td><td><code>admin_roles</code> table ব্যবহার করে</td></tr>
+            <tr><td>Direct URL security</td><td class="path">app/Http/Middleware/AdminPermissionMiddleware.php</td><td>Permission ছাড়া URL block করে</td></tr>
+            <tr><td>Routes</td><td class="path">routes/web.php</td><td>সব protected route group এখানে</td></tr>
+        </table>
+    </section>
+
+    <section id="module-show">
+        <h2>2. প্রথম কাজ: Permission page-এ module কীভাবে show হয়?</h2>
+        <div class="step"><strong>আপনি যদি শুধু module name দেখাতে চান:</strong> প্রথমে database-এর <code>admin_roles</code> table-এ ওই module name থাকতে হবে। এরপর permission page automatic সেটি দেখাবে।</div>
+        <h3>Step 2.1 — Database check করুন</h3>
+        <p>phpMyAdmin → <code>admin_roles</code> → দেখুন <code>module</code> column-এ এই values আছে:</p>
+        <pre><code>admin
+section
+category</code></pre>
+        <p>এই তিনটি value থাকলে Permission page-এ দেখাবে:</p>
+        <pre><code>Admin Management
+Section Management
+Category Management</code></pre>
+
+        <h3>Step 2.2 — কোন code database থেকে module নেয়?</h3>
+        <p>File খুলুন:</p>
+        <p class="path">app/Http/Controllers/AdminController.php</p>
+        <p><code>permissionUser()</code> method-এ এই code আছে:</p>
+        <pre><code>$modules = AdminRole::query()
+    -&gt;select('module')
+    -&gt;distinct()
+    -&gt;orderBy('module')
+    -&gt;pluck('module');</code></pre>
+        <p>এর অর্থ: <strong>সব row থেকে duplicate বাদ দিয়ে শুধু module নামগুলো নেয়</strong>। যেমন table-এ 20টি <code>section</code> row থাকলেও page-এ Section একবারই দেখাবে।</p>
+
+        <h3>Step 2.3 — Blade file কী করে?</h3>
+        <p>File খুলুন:</p>
+        <p class="path">resources/views/admin/accounts/partials/admin-permission.blade.php</p>
+        <p>এখানে এই loop আছে:</p>
+        <pre><code>@foreach ($modules as $module)
+    &lt;h5&gt;{{ ucfirst($module) }} Management&lt;/h5&gt;
+    {{-- View, Add, Edit, Delete, Full, No Access checkboxes --}}
+@endforeach</code></pre>
+        <p>তাই এখানে <code>admin</code>, <code>section</code>, <code>category</code> manually add করার দরকার নেই।</p>
+    </section>
+
+    <section id="save">
+        <h2>3. দ্বিতীয় কাজ: Save চাপলে database-এ কীভাবে যায়?</h2>
+        <div class="flow"><div>Checkbox select</div><div>Permission form</div><div>AJAX POST</div><div>AdminController</div><div>admin_roles update</div></div>
+        <h3>Step 3.1 — Checkbox field name</h3>
+        <p><code>admin-permission.blade.php</code>-এ input name এমন হয়:</p>
+        <pre><code>permissions[section][view_access]
+permissions[section][add_access]
+permissions[section][edit_access]
+permissions[section][delete_access]
+permissions[section][no_access]</code></pre>
+        <p>অর্থাৎ Section-এর View checkbox select হলে request-এ <code>permissions[section][view_access] = 1</code> যায়।</p>
+
+        <h3>Step 3.2 — Controller database save করে</h3>
+        <p>File:</p><p class="path">app/Http/Controllers/AdminController.php</p>
+        <p>Method: <code>updatePermissionUser()</code></p>
+        <pre><code>AdminRole::updateOrCreate(
+    ['admin_id' =&gt; $user-&gt;id, 'module' =&gt; $module],
+    [
+        'view_access' =&gt; 1 or 0,
+        'add_access' =&gt; 1 or 0,
+        'edit_access' =&gt; 1 or 0,
+        'delete_access' =&gt; 1 or 0,
+        'no_access' =&gt; 1 or 0,
+    ]
+);</code></pre>
+        <p><strong>updateOrCreate</strong> মানে: ওই user + ওই module-এর row থাকলে update, না থাকলে create।</p>
+
+        <h3>Step 3.3 — Full Access / No Access</h3>
+        <table>
+            <tr><th>আপনি যা select করবেন</th><th>Database-এ কী save হবে</th></tr>
+            <tr><td>Full Access</td><td><code>view_access=1, add_access=1, edit_access=1, delete_access=1, no_access=0</code></td></tr>
+            <tr><td>Module No Access</td><td><code>view_access=0, add_access=0, edit_access=0, delete_access=0, no_access=1</code></td></tr>
+            <tr><td>শুধু View Access</td><td><code>view_access=1</code>; বাকি সব <code>0</code></td></tr>
+        </table>
+        <div class="step warn"><strong>খুব গুরুত্বপূর্ণ:</strong> আপনার আসল table-এ <code>full_access</code> column নেই, আছে <code>delete_access</code>। Full Access checkbox শুধু shortcut; এটি চারটি access একসাথে 1 করে।</div>
+    </section>
+
+    <section id="layout">
+        <h2>4. তৃতীয় কাজ: Layout-এ permission save-এর code কোথায়?</h2>
+        <p>File খুলুন:</p>
+        <p class="path">resources/views/admin/layout/layout.blade.php</p>
+        <h3>Step 4.1 — AJAX form submit</h3>
+        <p>এই selector permission form ধরছে:</p>
+        <pre><code>$(document).on('submit', '#permission-form', function (event) {
+    event.preventDefault();
+    // AJAX দিয়ে save request পাঠায়
+});</code></pre>
+        <p>এখানেই <code>event.preventDefault()</code> থাকার কারণে Save করলে browser reload হয় না।</p>
+        <h3>Step 4.2 — SweetAlert message</h3>
+        <pre><code>crudToast('success', response.message || 'Permissions updated successfully.');</code></pre>
+        <p>এটি save successful হলে SweetAlert toast দেখায় এবং নিজে থেকেই disappear হয়।</p>
+        <h3>Step 4.3 — Full Access checkbox shortcut</h3>
+        <p>একই file-এ <code>data-full-access</code> JavaScript আছে। আপনি Full Access tick করলে View/Add/Edit/Delete automatic tick হবে। No Access tick করলে অন্য সব untick হবে।</p>
+    </section>
+
+    <section id="sidebar">
+        <h2>5. চতুর্থ কাজ: Sidebar menu কীভাবে hide/show হয়?</h2>
+        <p>File খুলুন:</p>
+        <p class="path">resources/views/admin/layout/sidebar.blade.php</p>
+        <p>Top-এর দিকে এই 3টি variable আছে:</p>
+        <pre><code>$canManageAdmins = $admin?-&gt;hasModuleAccess('admin', 'view');
+$canManageSections = $admin?-&gt;hasModuleAccess('section', 'view');
+$canManageCategories = $admin?-&gt;hasModuleAccess('category', 'view');</code></pre>
+        <table>
+            <tr><th>Database module</th><th>Sidebar menu</th><th>কোন variable</th></tr>
+            <tr><td><code>admin</code></td><td>Account → Users</td><td><code>$canManageAdmins</code></td></tr>
+            <tr><td><code>section</code></td><td>Pages → Sections</td><td><code>$canManageSections</code></td></tr>
+            <tr><td><code>category</code></td><td>Pages → Category</td><td><code>$canManageCategories</code></td></tr>
+        </table>
+        <p>যদি <code>view_access=0</code> অথবা <code>no_access=1</code> হয়, <code>hasModuleAccess(..., 'view')</code> false দেয়। তখন ওই menu show হবে না।</p>
+    </section>
+
+    <section id="security">
+        <h2>6. পঞ্চম কাজ: শুধু menu hide নয়, URL-ও কীভাবে বন্ধ হয়?</h2>
+        <p>File খুলুন:</p>
+        <p class="path">app/Http/Middleware/AdminPermissionMiddleware.php</p>
+        <p>এই file-এ route name-এর সঙ্গে module/action match করা আছে:</p>
+        <pre><code>'section' =&gt; ['section', 'view'],
+'admin-section.store' =&gt; ['section', 'add'],
+'admin-section.update' =&gt; ['section', 'edit'],
+'admin-section.delete' =&gt; ['section', 'delete'],</code></pre>
+        <p>তারপর middleware <code>hasModuleAccess($module, $access)</code> চালায়। Permission না থাকলে HTTP 403 দেয়।</p>
+        <h3>এই middleware route-এ কীভাবে চালু আছে?</h3>
+        <p>File:</p><p class="path">routes/web.php</p>
+        <pre><code>Route::middleware(['admin.auth', 'admin.permission'])-&gt;group(function () {
+    // Users, Sections, Category routes এখানে আছে
+});</code></pre>
+        <p>নতুন protected route-ও এই group-এর মধ্যে রাখবেন।</p>
+    </section>
+
+    <section id="new-module">
+        <h2>7. নতুন module add করার পুরো step</h2>
+        <div class="step">উদাহরণ: আপনি <strong>News</strong> নামে নতুন module বানাবেন। Module key হবে <code>news</code>।</div>
+
+        <h3>Step 7.1 — আগে News-এর page/route/controller তৈরি করুন</h3>
+        <p>Laravel route অবশ্যই named route হতে হবে। উদাহরণ:</p>
+        <pre><code>Route::get('news', [NewsController::class, 'index'])-&gt;name('news');
+Route::post('news', [NewsController::class, 'store'])-&gt;name('admin-news.store');
+Route::put('news/{news}', [NewsController::class, 'update'])-&gt;name('admin-news.update');
+Route::delete('news/{news}', [NewsController::class, 'destroy'])-&gt;name('admin-news.delete');</code></pre>
+
+        <h3>Step 7.2 — Database-এ একবার module name ঢোকান</h3>
+        <p>phpMyAdmin → <code>admin_roles</code> → Insert। একটি existing superadmin-এর জন্য row দিন:</p>
+        <pre><code>admin_id: 1                 // আপনার superadmin ID
+module: news
+view_access: 1
+add_access: 1
+edit_access: 1
+delete_access: 1
+no_access: 0</code></pre>
+        <p>এখন Permission page refresh করলে <strong>News Management</strong> automatic দেখাবে। কারণ controller database থেকে distinct module name নেয়।</p>
+
+        <h3>Step 7.3 — Middleware-এ News route add করুন</h3>
+        <p>File:</p><p class="path">app/Http/Middleware/AdminPermissionMiddleware.php</p>
+        <p><code>permissionForRoute()</code> method-এ যোগ করুন:</p>
+        <pre><code>'news' =&gt; ['news', 'view'],
+'admin-news.store' =&gt; ['news', 'add'],
+'admin-news.update' =&gt; ['news', 'edit'],
+'admin-news.delete' =&gt; ['news', 'delete'],</code></pre>
+
+        <h3>Step 7.4 — Sidebar-এ News menu add করুন</h3>
+        <p>File:</p><p class="path">resources/views/admin/layout/sidebar.blade.php</p>
+        <p>Variable add করুন:</p>
+        <pre><code>$canManageNews = $admin?-&gt;hasModuleAccess('news', 'view');</code></pre>
+        <p>তারপর Pages menu-র ভিতরে add করুন:</p>
+        <pre><code>@if ($canManageNews)
+    &lt;li&gt;&lt;a href="{{ route('news') }}" class="slide-item"&gt;News&lt;/a&gt;&lt;/li&gt;
+@endif</code></pre>
+
+        <h3>Step 7.5 — News page-এর Add/Edit/Delete button control করুন</h3>
+        <p>News Blade file-এর শুরুতে:</p>
+        <pre><code>@php
+    $currentAdmin = Auth::guard('admin')-&gt;user();
+    $canAddNews = $currentAdmin?-&gt;hasModuleAccess('news', 'add');
+    $canEditNews = $currentAdmin?-&gt;hasModuleAccess('news', 'edit');
+    $canDeleteNews = $currentAdmin?-&gt;hasModuleAccess('news', 'delete');
+@endphp</code></pre>
+        <p>Button-এর চারপাশে ব্যবহার করুন:</p>
+        <pre><code>@if ($canAddNews)
+    &lt;button&gt;Add News&lt;/button&gt;
+@endif
+
+@if ($canEditNews)
+    &lt;button&gt;Edit&lt;/button&gt;
+@endif
+
+@if ($canDeleteNews)
+    &lt;button&gt;Delete&lt;/button&gt;
+@endif</code></pre>
+        <div class="step ok"><strong>এই 5টি step শেষ হলে News module পুরো permission system-এ কাজ করবে।</strong></div>
+    </section>
+
+    <section id="test">
+        <h2>8. কাজ শেষে test করার নিয়ম</h2>
+        <ol>
+            <li>একটি non-superadmin user নিন।</li>
+            <li>Section → শুধু View Access দিন → Save করুন।</li>
+            <li>ওই user দিয়ে login করুন। Sidebar-এ Sections দেখাবে, কিন্তু Add/Edit/Delete button দেখাবে না।</li>
+            <li>তারপর Full Access দিন → চারটি action button কাজ করবে।</li>
+            <li>তারপর Module No Access দিন → Sections sidebar থেকে চলে যাবে। Direct URL দিলে 403 হবে।</li>
+        </ol>
+        <h3>Code change করার পরে command</h3>
+        <pre><code>php artisan optimize:clear
+php artisan view:cache</code></pre>
+        <div class="step warn"><strong>Safety:</strong> অন্তত একটি account-এর <code>type</code> অবশ্যই <code>superadmin</code> রাখবেন। Superadmin সবসময় permission access পাবে, তাই নিজের সব access বন্ধ হয়ে যাবে না।</div>
+    </section>
+</main>
+</body>
+</html>
