@@ -24,7 +24,7 @@
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table id="users-table" data-crud-table
+                                <table id="users-table" data-server-pagination
                                     class="table table-bordered text-nowrap key-buttons">
                                     <thead>
                                         <tr>
@@ -42,9 +42,9 @@
                                     <tbody>
                                         @foreach ($users as $user)
                                             <tr>
-                                                <td>{{ $user['id'] }}</td>
+                                                <td>{{ $user['id'] ?? '-' }}</td>
                                                 <td>
-                                                    @if ($user['image'])
+                                                    @if ($user['image'] ?? false)
                                                         <img src="{{ asset('admin/adminimage/' . $user['image']) }}"
                                                             alt="Avatar" class="rounded-circle" width="40"
                                                             height="40">
@@ -54,15 +54,15 @@
                                                             height="40">
                                                     @endif
                                                 </td>
-                                                <td>{{ $user['ap_id'] }}</td>
-                                                <td>{{ $user['name'] }}</td>
-                                                <td>{{ $user['email'] }}</td>
-                                                <td>{{ $user['type'] }}</td>
-                                                <td>{{ $user['mobile'] }}</td>
+                                                <td>{{ $user['ap_id'] ?? '-' }}</td>
+                                                <td>{{ $user['name'] ?? '-' }}</td>
+                                                <td>{{ $user['email'] ?? '-' }}</td>
+                                                <td>{{ $user['type'] ?? '-' }}</td>
+                                                <td>{{ $user['mobile'] ?? '-' }}</td>
                                                 <td>@if ($canEditUsers)<button type="button"
-                                                        class="btn btn-sm {{ $user['status'] ? 'btn-success' : 'btn-secondary' }}"
+                                                        class="btn btn-sm {{ ($user['status'] ?? false) ? 'btn-success' : 'btn-secondary' }}"
                                                         data-crud-status
-                                                        data-url="{{ route('admin-user.status', $user['id']) }}">{{ $user['status'] ? 'Active' : 'Inactive' }}</button>@else {{ $user['status'] ? 'Active' : 'Inactive' }} @endif
+                                                        data-url="{{ route('admin-user.status', $user['id']) }}">{{ ($user['status'] ?? false) ? 'Active' : 'Inactive' }}</button>@else {{ ($user['status'] ?? false) ? 'Active' : 'Inactive' }} @endif
                                                 </td>
                                                 <td>@if ($canEditUsers)<button type="button" class="btn btn-sm btn-primary" data-crud-edit
                                                         data-crud-modal="#user-form-modal"
@@ -84,6 +84,9 @@
                                     </tbody>
                                 </table>
                             </div>
+                            @if ($users instanceof \Illuminate\Contracts\Pagination\Paginator)
+                                <div class="mt-3">{{ $users->links() }}</div>
+                            @endif
                         </div>
                     </div>
                 </div>

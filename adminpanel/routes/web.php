@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\SettingController;
 
 
 Route::get('/clear-cache', function() {
@@ -56,6 +57,9 @@ Route::namespace('App\Http\Controllers\Admin')->prefix('/admin')->group(function
         Route::patch('categories/{category}/status', [CategoryController::class, 'updateStatus'])->name('admin-category.status');
         Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('admin-category.delete');
         //>>>>>>>>>>>>>>>>>>>>>>>>Category activity<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        //>>>>>>>>>>>>>>>>>>>>>>>>General Settings<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        Route::get('settings', [SettingController::class, 'settings'])->name('settings');
+        //>>>>>>>>>>>>>>>>>>>>>>>>General Settings<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     });
 });

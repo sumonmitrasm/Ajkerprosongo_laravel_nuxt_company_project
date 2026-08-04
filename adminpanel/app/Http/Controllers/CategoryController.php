@@ -13,19 +13,45 @@ use Intervention\Image\ImageManager;
 
 class CategoryController extends Controller
 {
-
-    public function category()
+    public function category(Request $request)
     {
         $title = 'Category Page';
-        $categories = Cache::remember('admin.categories.index', now()->addMinutes(87840), fn () =>
-            Category::with('section', 'parentcategory')->latest('id')->get()->toArray()
+        $categories = $this->cachedPage($request, 'admin.categories.index', fn () =>
+            Category::with('section', 'parentcategory')->latest('id'),
+            fn (Category $category) => [
+                'id' => $category->id,
+                'parent_category_name' => $category->parentcategory?->category_name,
+                'section_name' => $category->section?->name,
+                'category_name' => $category->category_name,
+                'status' => $category->status,
+            ]
         );
-        $getSection = Cache::remember('admin.category-form.sections', now()->addMinutes(87840), fn () =>
-            Section::select('id', 'name')->orderBy('name')->get()->toArray()
-        );
-        $getCategories = Cache::remember('admin.category-form.parents', now()->addMinutes(87840), fn () =>
-            Category::with('subcategories')->where('parent_id', 0)->orderBy('category_name')->get()->toArray()
-        );
+
+        $getSection = Cache::get('admin.category-form.sections.v3');
+        if (! $this->isArrayList($getSection)) {
+            Cache::forget('admin.category-form.sections.v3');
+            $getSection = Cache::remember('admin.category-form.sections.v3', now()->addHours(6), fn () =>
+                Section::select('id', 'name')->orderBy('name')->get()
+                    ->map(fn (Section $section) => $section->only(['id', 'name']))->all()
+            );
+        }
+
+        $getCategories = Cache::get('admin.category-form.parents.v3');
+        if (! $this->isArrayList($getCategories) || collect($getCategories)->contains(fn (array $category) => isset($category['subcategories']) && ! is_array($category['subcategories']))) {
+            Cache::forget('admin.category-form.parents.v3');
+            $getCategories = Cache::remember('admin.category-form.parents.v3', now()->addHours(6), fn () =>
+                Category::with('subcategories')->where('parent_id', 0)->orderBy('category_name')->get()
+                    ->map(fn (Category $category) => [
+                        'id' => $category->id,
+                        'category_name' => $category->category_name,
+                        'subcategories' => $category->subcategories->map(fn (Category $subcategory) => [
+                            'id' => $subcategory->id,
+                            'category_name' => $subcategory->category_name,
+                        ])->all(),
+                    ])->all()
+            );
+        }
+
         return view('admin.category.category', compact('categories', 'title', 'getSection', 'getCategories'));
     }
 
@@ -33,6 +59,7 @@ class CategoryController extends Controller
     {
         Category::create($this->validatedData($request));
         $this->clearCategoryCache();
+
         return response()->json(['message' => 'Category saved successfully.'], 201);
     }
 
@@ -57,9 +84,11 @@ class CategoryController extends Controller
         if (Category::where('parent_id', $category->id)->exists()) {
             return response()->json(['message' => 'This category has subcategories. Delete or move them first.'], 422);
         }
+
         $this->deleteOldImage($category->image);
         $category->delete();
         $this->clearCategoryCache();
+
         return response()->json(['message' => 'Category deleted successfully.']);
     }
 
@@ -67,6 +96,7 @@ class CategoryController extends Controller
     {
         $category->update(['status' => ! $category->status]);
         $this->clearCategoryCache();
+
         return response()->json(['message' => 'Category status updated successfully.']);
     }
 
@@ -126,6 +156,7 @@ class CategoryController extends Controller
         $image = $manager->decodePath($file->getRealPath());
         $image->scaleDown(width: 1200, height: 1200);
         $image->encodeUsingFormat(Format::WEBP, quality: 75)->save($destinationPath . '/' . $imageName);
+
         return $imageName;
     }
 
@@ -136,11 +167,16 @@ class CategoryController extends Controller
         }
     }
 
+    /**
+     * Clear all cached category data (Permanent fix)
+     */
     private function clearCategoryCache(): void
     {
-        Cache::forget('admin.categories.index');
-        Cache::forget('admin.category-form.parents');
+        $this->invalidateCachedPages('admin.categories.index');
+        Cache::forget('admin.category-form.sections.v3');
+        Cache::forget('admin.category-form.parents.v3');
     }
+
 
     private function isDescendant(int $candidateParentId, int $categoryId): bool
     {

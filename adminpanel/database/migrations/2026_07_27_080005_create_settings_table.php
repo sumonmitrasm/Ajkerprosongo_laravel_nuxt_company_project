@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('twitter_url')->nullable();
             $table->string('linkedin_url')->nullable();
             $table->string('instagram_url')->nullable();
+            $table->string('youtube_url')->nullable();
             $table->string('meta_title')->nullable();
             $table->text('meta_description')->nullable();
             $table->string('meta_image')->nullable();

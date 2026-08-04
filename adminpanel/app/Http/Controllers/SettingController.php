@@ -4,15 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Setting;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Cache;
 class SettingController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function settings(Request $request)
     {
-        //
+        $title = 'Setting Page';
+        $getSettings = $this->cachedPage($request, 'admin.settings.index', fn () => Setting::latest(), fn (Setting $setting) =>
+            $setting->only([
+                    'id', 'side_name', 'email', 'phone', 'perronal_phone', 'status',
+            ])
+        );
+        return view('admin.setting.setting', compact('getSettings', 'title'));
     }
 
     /**
@@ -62,4 +65,5 @@ class SettingController extends Controller
     {
         //
     }
+
 }

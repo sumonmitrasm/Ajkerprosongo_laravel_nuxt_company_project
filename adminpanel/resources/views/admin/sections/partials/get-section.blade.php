@@ -23,7 +23,7 @@
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table id="sections-table" data-crud-table
+                                <table id="sections-table" data-server-pagination
                                     class="table table-bordered text-nowrap key-buttons">
                                     <thead>
                                         <tr>
@@ -36,12 +36,12 @@
                                     <tbody>
                                         @foreach ($sections as $section)
                                             <tr>
-                                                <td>{{ $section['id'] }}</td>
-                                                <td>{{ $section['name'] }}</td>
+                                                <td>{{ $section['id'] ?? '-' }}</td>
+                                                <td>{{ $section['name'] ?? '-' }}</td>
                                                 <td>@if ($canEditSections)<button type="button"
-                                                        class="btn btn-sm {{ $section['status'] ? 'btn-success' : 'btn-secondary' }}"
+                                                        class="btn btn-sm {{ ($section['status'] ?? false) ? 'btn-success' : 'btn-secondary' }}"
                                                         data-crud-status
-                                                        data-url="{{ route('admin-section.status', $section['id']) }}">{{ $section['status'] ? 'Active' : 'Inactive' }}</button>@else {{ $section['status'] ? 'Active' : 'Inactive' }} @endif
+                                                        data-url="{{ route('admin-section.status', $section['id']) }}">{{ ($section['status'] ?? false) ? 'Active' : 'Inactive' }}</button>@else {{ ($section['status'] ?? false) ? 'Active' : 'Inactive' }} @endif
                                                 </td>
                                                 <td>@if ($canEditSections)<button type="button" class="btn btn-sm btn-primary" data-crud-edit
                                                         data-crud-modal="#section-form-modal"
@@ -57,6 +57,7 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <div class="mt-3">{{ $sections->links() }}</div>
                         </div>
                     </div>
                 </div>

@@ -107,6 +107,7 @@
         function initialiseCrudTables() {
             $('[data-crud-table]').each(function () {
                 var $table = $(this);
+                if ($table.is('[data-server-pagination]')) return;
                 if (!$table.length || !$.fn.DataTable || $.fn.dataTable.isDataTable($table[0])) return;
 
                 $table.DataTable({
@@ -196,6 +197,11 @@
 
                 event.preventDefault();
                 window.loadAjaxPage(url.href, true);
+            });
+
+            $(document).on('click', '#ajax-page-content .pagination a', function (event) {
+                event.preventDefault();
+                window.loadAjaxPage(this.href, true);
             });
 
             window.addEventListener('popstate', function () {

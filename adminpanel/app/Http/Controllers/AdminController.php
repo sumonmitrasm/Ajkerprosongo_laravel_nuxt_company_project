@@ -81,25 +81,18 @@ class AdminController extends Controller
         return redirect('admin/login');
     }
 
-    // public function users(Request $request)
-    // {
-    //     $title = "Admin Users";
-    //     $users = Cache::remember('admin.users.index', now()->addMinutes(87840), fn () => Admin::get()->toArray());
-    //     return view('admin.accounts.admin-user', compact('title', 'users'));
-    // }
     public function users(Request $request)
     {
         $admin = Auth::guard('admin')->user();
         $title = $admin->name;
         if (in_array($admin->type, ['superadmin', 'admin'])) {
-
-            $users = Cache::remember('admin.users.index', now()->addDays(61), function () {
-                return Admin::latest()->get();
-            });
-
+            $users = $this->cachedPage($request, 'admin.users.index', fn () => Admin::latest(), fn (Admin $user) =>
+                $user->only([
+                        'id', 'image', 'ap_id', 'name', 'email', 'type', 'mobile', 'status',
+                ])
+            );
         } else {
-
-            $users = collect([$admin]);
+            $users = collect([$admin->only(['id', 'image', 'ap_id', 'name', 'email', 'type', 'mobile', 'status'])]);
         }
         return view('admin.accounts.admin-user', compact('title', 'users'));
     }
@@ -217,8 +210,9 @@ class AdminController extends Controller
 
     private function clearUserCache(): void
     {
-        Cache::forget('admin.users.index');
+        $this->invalidateCachedPages('admin.users.index');
     }
+
 
     public function permissionUser($id)
     {
@@ -227,7 +221,10 @@ class AdminController extends Controller
         $userPermissions = AdminRole::where('admin_id', $user->id)
             ->get()
             ->keyBy('module')
-            ->toArray();
+            ->map(fn (AdminRole $role) => $role->only([
+                'view_access', 'add_access', 'edit_access', 'delete_access', 'no_access',
+            ]))
+            ->all();
         $modules = AdminRole::query()->select('module')->distinct()->orderBy('module')->pluck('module');
         return view('admin.accounts.permission', compact('user', 'title', 'userPermissions', 'modules'));
     }

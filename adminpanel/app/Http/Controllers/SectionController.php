@@ -9,10 +9,11 @@ use Illuminate\Validation\Rule;
 
 class SectionController extends Controller
 {
-    public function section()
+    public function section(Request $request)
     {
-        $sections = Cache::remember('admin.sections.index', now()->addMinutes(87840), fn () =>
-            Section::select('id', 'name', 'status')->latest('id')->get()->toArray()
+        $sections = $this->cachedPage($request, 'admin.sections.index', fn () =>
+            Section::select('id', 'name', 'status')->latest('id'),
+            fn (Section $section) => $section->only(['id', 'name', 'status'])
         );
         $title = "Section Page";
         return view('admin.sections.section', compact('sections', 'title'));
@@ -80,8 +81,9 @@ class SectionController extends Controller
 
     private function clearSectionCache(): void
     {
-        Cache::forget('admin.sections.index');
-        Cache::forget('admin.category-form.sections');
-        Cache::forget('admin.categories.index');
+        $this->invalidateCachedPages('admin.sections.index');
+        Cache::forget('admin.category-form.sections.v3');
+        Cache::forget('admin.categories.index.v3');
     }
+
 }

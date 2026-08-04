@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>News Post Module A to Z</title><style>body{margin:0;background:#f6f8fc;color:#172033;font:16px/1.7 Arial,"Noto Sans Bengali",sans-serif}header{padding:52px 24px;color:#fff;background:linear-gradient(125deg,#6a1b9a,#0b6974)}header div,main{max-width:1060px;margin:auto}h1{margin:0 0 7px;font-size:clamp(28px,5vw,42px)}h2{margin:0 0 12px}h3{margin:23px 0 8px}main{padding:28px 20px 60px}section{margin:18px 0;padding:26px;background:#fff;border:1px solid #dce4f1;border-radius:14px}.flow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.flow span{padding:8px 11px;border-radius:7px;background:#eee8ff;color:#51319b;font-weight:bold}.flow b{color:#64748b}.ok,.note{padding:14px 16px;border-radius:7px}.ok{background:#ecfdf3;border-left:4px solid #067647}.note{background:#fff8e6;border-left:4px solid #a16207}code{padding:2px 5px;border-radius:4px;background:#fff1f5;color:#9b174c;font-family:Consolas,monospace}pre{overflow:auto;padding:15px;border-radius:8px;background:#0f172a;color:#e6edf8}pre code{padding:0;background:none;color:inherit}table{width:100%;border-collapse:collapse}th,td{padding:10px;border:1px solid #dce4f1;text-align:left;vertical-align:top}th{background:#edf3ff}ul,ol{padding-left:24px}</style></head><body>
+<header><div><h1>News Post Module: A to Z</h1><p>Laravel admin news-post CRUD, database, image, SEO, route, cache এবং frontend delivery blueprint</p></div></header><main>
+<section><h2>১. Module-এর লক্ষ্য</h2><p>Admin user একটি post create, draft, publish, edit, status change ও delete করতে পারবেন। Public visitor category page, homepage ও single-news page-এ দ্রুত post দেখতে পাবেন। Admin list server-side pagination ব্যবহার করবে এবং public data cache হবে।</p><div class="flow"><span>Admin form</span><b>→</b><span>Validation</span><b>→</b><span>Database</span><b>→</b><span>Cache invalidate</span><b>→</b><span>Public/API response</span></div></section>
+<section><h2>২. আগে কী create করবেন?</h2><ol><li><code>posts</code> migration</li><li><code>Post</code> model এবং relationships</li><li><code>PostController</code></li><li>Admin CRUD routes ও public routes</li><li>Admin list Blade, create/edit modal বা separate form</li><li>Image upload directory/disk</li><li>Permission module: <code>post</code></li></ol></section>
+<section><h2>৩. Database migration: posts table</h2><p>File: <code>database/migrations/YYYY_MM_DD_create_posts_table.php</code></p><pre><code>Schema::create('posts', function (Blueprint $table) {
+    $table-&gt;id();
+    $table-&gt;foreignId('category_id')-&gt;constrained()-&gt;restrictOnDelete();
+    $table-&gt;foreignId('admin_id')-&gt;nullable()-&gt;constrained('admins')-&gt;nullOnDelete();
+    $table-&gt;string('title');
+    $table-&gt;string('slug')-&gt;unique();
+    $table-&gt;string('short_title')-&gt;nullable();
+    $table-&gt;text('excerpt')-&gt;nullable();
+    $table-&gt;longText('content');
+    $table-&gt;string('image')-&gt;nullable();
+    $table-&gt;string('image_alt')-&gt;nullable();
+    $table-&gt;enum('status', ['draft', 'published', 'archived'])-&gt;default('draft');
+    $table-&gt;timestamp('published_at')-&gt;nullable();
+    $table-&gt;string('meta_title')-&gt;nullable();
+    $table-&gt;text('meta_description')-&gt;nullable();
+    $table-&gt;string('meta_keywords')-&gt;nullable();
+    $table-&gt;string('canonical_url')-&gt;nullable();
+    $table-&gt;timestamps();
+    $table-&gt;index(['status', 'published_at']);
+    $table-&gt;index(['category_id', 'status', 'published_at']);
+});</code></pre><div class="note"><strong>Index খুব গুরুত্বপূর্ণ:</strong> homepage এবং category page সাধারণত <code>published</code> status ও <code>published_at</code> দিয়ে filter করে। এই composite indexes না থাকলে post বড় হলে query slow হবে।</div></section>
+<section><h2>৪. Model: Post.php</h2><p>File: <code>app/Models/Post.php</code></p><pre><code>class Post extends Model
+{
+    protected $fillable = ['category_id','admin_id','title','slug','short_title','excerpt','content','image','image_alt','status','published_at','meta_title','meta_description','meta_keywords','canonical_url'];
+    protected $casts = ['published_at' =&gt; 'datetime'];
+    public function category(): BelongsTo { return $this-&gt;belongsTo(Category::class); }
+    public function author(): BelongsTo { return $this-&gt;belongsTo(Admin::class, 'admin_id'); }
+    public function scopePublished($query) { return $query-&gt;where('status', 'published')-&gt;whereNotNull('published_at')-&gt;where('published_at', '&lt;=', now()); }
+}</code></pre><p><code>scopePublished()</code> ব্যবহার করলে একই publish rule homepage, category page ও single page-এ copy করতে হয় না।</p></section>
+<section><h2>৫. Routes</h2><p>File: <code>routes/web.php</code>; admin.auth ও admin.permission middleware-এর ভিতরে রাখবেন।</p><pre><code>Route::get('posts', [PostController::class, 'index'])-&gt;name('admin-post');
+Route::post('posts', [PostController::class, 'store'])-&gt;name('admin-post.store');
+Route::get('posts/{post}', [PostController::class, 'show'])-&gt;name('admin-post.show');
+Route::put('posts/{post}', [PostController::class, 'update'])-&gt;name('admin-post.update');
+Route::patch('posts/{post}/status', [PostController::class, 'updateStatus'])-&gt;name('admin-post.status');
+Route::delete('posts/{post}', [PostController::class, 'destroy'])-&gt;name('admin-post.delete');
+Route::get('news/{post:slug}', [NewsController::class, 'show'])-&gt;name('news.show');</code></pre><p>Middleware map-এ <code>admin-post</code> = view, store = add, update/status = edit, delete = delete permission যোগ করবেন।</p></section>
+<section><h2>৬. Admin list: huge data-এর correct pattern</h2><p><code>PostController::index(Request $request)</code>-এ বর্তমান project-এর reusable <code>cachedPage()</code> ব্যবহার করবেন:</p><pre><code>$posts = $this-&gt;cachedPage($request, 'admin.posts.index', fn () =&gt;
+    Post::with(['category:id,category_name','author:id,name'])-&gt;latest('id'),
+    fn (Post $post) =&gt; [
+        'id' =&gt; $post-&gt;id,
+        'title' =&gt; $post-&gt;title,
+        'slug' =&gt; $post-&gt;slug,
+        'category_name' =&gt; $post-&gt;category?-&gt;category_name,
+        'author_name' =&gt; $post-&gt;author?-&gt;name,
+        'status' =&gt; $post-&gt;status,
+        'published_at' =&gt; optional($post-&gt;published_at)-&gt;format('Y-m-d H:i'),
+    ]
+);</code></pre><p>এটি প্রতি page-এ 25 row query/cache করে। <strong><code>Post::get()</code> দিয়ে সব post load করবেন না।</strong></p></section>
+<section><h2>৭. Cache key ও invalidation</h2><p>Base Controller page keys বানাবে: <code>admin.posts.index.{version}.page.{number}</code>। Post create/update/delete/status হওয়ার পর:</p><pre><code>$this-&gt;invalidateCachedPages('admin.posts.index');
+Cache::forget('public.homepage.v1');
+Cache::forget('public.category.' . $post-&gt;category_id . '.v1');
+Cache::forget('public.post.' . $post-&gt;slug . '.v1');</code></pre><p>Admin list এবং public cache আলাদা রাখবেন। Public cache key-তে language, page, category বা slug থাকলে সেই অংশ key-তে রাখবেন।</p></section>
+<section><h2>৮. Store/update validation</h2><pre><code>$data = $request-&gt;validate([
+    'category_id' =&gt; ['required', 'exists:categories,id'],
+    'title' =&gt; ['required', 'string', 'max:255'],
+    'excerpt' =&gt; ['nullable', 'string', 'max:1000'],
+    'content' =&gt; ['required', 'string'],
+    'image' =&gt; ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:4096'],
+    'status' =&gt; ['required', Rule::in(['draft','published','archived'])],
+    'published_at' =&gt; ['nullable', 'date'],
+    'meta_title' =&gt; ['nullable', 'string', 'max:255'],
+    'meta_description' =&gt; ['nullable', 'string'],
+]);</code></pre><p>Server-side validation বাধ্যতামূলক। Browser validation কখনো security নয়। Slug server-এ <code>Str::slug($data['title'])</code> দিয়ে তৈরি করে unique check করবেন।</p></section>
+<section><h2>৯. Image upload</h2><p><code>public_path()</code>-এ random file রাখার বদলে Laravel disk ব্যবহার ভালো:</p><pre><code>$path = $request-&gt;file('image')-&gt;store('posts', 'public');
+$data['image'] = $path;</code></pre><p>Server-এ একবার <code>php artisan storage:link</code> চালাতে হবে। Image change/delete হলে পুরোনো file <code>Storage::disk('public')-&gt;delete($post-&gt;image)</code> করবেন। বড় site-এ পরে S3/Cloudflare R2 disk ব্যবহার করা যায়; controller code একই থাকবে।</p></section>
+<section><h2>১০. Admin Blade form</h2><p>Category select, title, excerpt, content editor, image, status, publish datetime এবং SEO fields দিন। Form-এ অবশ্যই:</p><pre><code>&lt;form data-crud-form enctype="multipart/form-data"&gt;
+    @csrf
+    &lt;input name="title" required&gt;
+    &lt;textarea name="content" required&gt;&lt;/textarea&gt;
+    &lt;input type="file" name="image" accept="image/*"&gt;
+&lt;/form&gt;</code></pre><p>বর্তমান <code>layout.blade.php</code>-এর generic <code>data-crud-form</code> JavaScript FormData দিয়ে image-সহ AJAX submit করতে পারে। Table-এ <code>data-server-pagination</code> এবং নিচে <code>{{ $posts-&gt;links() }}</code> দিন।</p></section>
+<section><h2>১১. Public homepage/category/single cache</h2><table><thead><tr><th>Page</th><th>Query</th><th>Suggested cache</th></tr></thead><tbody><tr><td>Homepage</td><td>সর্বশেষ published post</td><td>1–5 মিনিট; publish/update-এ forget</td></tr><tr><td>Category page</td><td>এক category-এর published post + pagination</td><td>1–10 মিনিট; category/page key</td></tr><tr><td>Single post</td><td>slug দিয়ে published post</td><td>10–60 মিনিট; post slug key</td></tr><tr><td>Admin list</td><td>সব status, management data</td><td>বর্তমান <code>cachedPage()</code>, 6 ঘণ্টা + invalidation</td></tr></tbody></table></section>
+<section><h2>১২. Post publish workflow</h2><div class="flow"><span>Draft save</span><b>→</b><span>Admin edit</span><b>→</b><span>Status = published</span><b>→</b><span>published_at = now</span><b>→</b><span>DB save</span><b>→</b><span>Admin/public cache invalidate</span><b>→</b><span>Homepage/category/news page fresh</span></div><p>Future publish schedule হলে cron/scheduler প্রতি minute-এ scheduled post publish করবে এবং একই cache invalidation চালাবে।</p></section>
+<section><h2>১৩. Security ও quality checklist</h2><ul><li>HTML editor থাকলে XSS sanitation policy ঠিক করুন; raw user HTML সরাসরি render করবেন না।</li><li>Slug route-এ unpublished post public user-কে দেখাবেন না।</li><li>Image MIME, size এবং dimensions validate করুন।</li><li>Authorization: editor শুধু নিজের post edit করবে কি না business rule ঠিক করুন।</li><li>Database transaction ব্যবহার করুন যেখানে post save ও related records একসঙ্গে save হয়।</li><li>Soft delete লাগলে migration/model-এ <code>softDeletes()</code> দিন।</li><li>Public page N+1 query এড়াতে <code>with('category')</code> ব্যবহার করুন।</li></ul></section>
+<section><h2>১৪. Implementation order</h2><ol><li>Migration চালান: <code>php artisan make:migration create_posts_table</code>, তারপর <code>php artisan migrate</code>।</li><li>Post model ও relationships লিখুন।</li><li>Routes ও permission map যোগ করুন।</li><li>PostController index + <code>cachedPage()</code> দিয়ে list বানান।</li><li>Admin list Blade ও pagination বানান।</li><li>Store/update/delete/status implement করুন এবং cache invalidate করুন।</li><li>Image storage ও SEO fields যোগ করুন।</li><li>Public NewsController এবং public cache যোগ করুন।</li><li>Create/edit/delete/pagination/publish flow test করুন।</li></ol><div class="ok"><strong>মূল নিয়ম:</strong> Admin-এর জন্য সব post কখনো একবারে load নয়; public cache ও admin cache কখনো এক key নয়; post change হলে সংশ্লিষ্ট cache invalidate করতে হবে।</div></section>
+</main></body></html>
