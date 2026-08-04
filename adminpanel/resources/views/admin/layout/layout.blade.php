@@ -204,6 +204,30 @@
                 window.loadAjaxPage(this.href, true);
             });
 
+            $(document).on('change', '[data-server-per-page]', function () {
+                var url = new URL(window.location.href);
+                url.searchParams.set('per_page', this.value);
+                url.searchParams.delete('page');
+                window.loadAjaxPage(url.href, true);
+            });
+
+            $(document).on('click', '[data-table-export]', function () {
+                var $table = $($(this).data('table-export'));
+                if (!$table.length) return;
+                var type = $(this).data('table-export-type');
+                var rows = [];
+                $table.find('tr').each(function () { rows.push($(this).find('th,td').map(function () { return $(this).text().trim(); }).get()); });
+                var blob, name = $table.attr('id') || 'export';
+                if (type === 'word') {
+                    blob = new Blob(['<html><head><meta charset="utf-8"></head><body>' + $table.prop('outerHTML') + '</body></html>'], { type: 'application/msword' });
+                    name += '.doc';
+                } else {
+                    blob = new Blob(['\ufeff' + rows.map(function (row) { return row.map(function (cell) { return '"' + cell.replace(/"/g, '""') + '"'; }).join(','); }).join('\n')], { type: 'text/csv;charset=utf-8' });
+                    name += '.csv';
+                }
+                var link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = name; link.click(); URL.revokeObjectURL(link.href);
+            });
+
             window.addEventListener('popstate', function () {
                 window.loadAjaxPage(window.location.href, false);
             });
