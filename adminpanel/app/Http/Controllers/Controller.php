@@ -13,10 +13,11 @@ abstract class Controller
     /** Cache one small page of primitive records, never Eloquent objects. */
     protected function cachedPage(Request $request, string $prefix, Closure $query, Closure $map): LengthAwarePaginator
     {
-        $perPage = 25;
+        $perPage = (int) $request->query('per_page', 10);
+        $perPage = in_array($perPage, [10, 20, 50, 100], true) ? $perPage : 10;
         $page = max(1, (int) $request->query('page', 1));
         $version = Cache::get($prefix . '.version', '1');
-        $key = $prefix . '.' . $version . '.page.' . $page;
+        $key = $prefix . '.' . $version . '.per-page.' . $perPage . '.page.' . $page;
         $payload = Cache::get($key);
 
         if (! is_array($payload) || ! isset($payload['items'], $payload['total']) || ! is_array($payload['items'])) {

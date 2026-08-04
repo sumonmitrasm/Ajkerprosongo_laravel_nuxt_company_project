@@ -57,6 +57,7 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <div class="mt-3 d-flex align-items-center gap-2"><label class="mb-0">Show</label><select class="form-select form-select-sm w-auto" data-server-per-page>@foreach ([10, 20, 50, 100] as $size)<option value="{{ $size }}" {{ (int) request('per_page', 10) === $size ? 'selected' : '' }}>{{ $size }}</option>@endforeach</select><span>entries</span></div>
                             <div class="mt-3">{{ $sections->links() }}</div>
                         </div>
                     </div>
