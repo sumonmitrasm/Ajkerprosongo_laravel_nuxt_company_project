@@ -24,7 +24,7 @@
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table id="category-table" data-crud-table
+                                <table id="category-table" data-server-pagination
                                     class="table table-bordered text-nowrap key-buttons">
                                     <thead>
                                         <tr>
@@ -39,14 +39,14 @@
                                     <tbody>
                                         @foreach ($categories as $category)
                                             <tr>
-                                                <td>{{ $category['id'] }}</td>
-                                                <td>{{ $category['parentcategory']['category_name'] ?? 'Root / Main Category' }}</td>
-                                                <td>{{ $category['section']['name'] ?? '' }}</td>
-                                                <td>{{ $category['category_name'] }}</td>
+                                                <td>{{ $category['id'] ?? '-' }}</td>
+                                                <td>{{ $category['parent_category_name'] ?? 'Root / Main Category' }}</td>
+                                                <td>{{ $category['section_name'] ?? '' }}</td>
+                                                <td>{{ $category['category_name'] ?? '-' }}</td>
                                                 <td>@if ($canEditCategories)<button type="button"
-                                                        class="btn btn-sm {{ $category['status'] ? 'btn-success' : 'btn-secondary' }}"
+                                                        class="btn btn-sm {{ ($category['status'] ?? false) ? 'btn-success' : 'btn-secondary' }}"
                                                         data-crud-status
-                                                        data-url="{{ route('admin-category.status', $category['id']) }}">{{ $category['status'] ? 'Active' : 'Inactive' }}</button>@else {{ $category['status'] ? 'Active' : 'Inactive' }} @endif
+                                                        data-url="{{ route('admin-category.status', $category['id']) }}">{{ ($category['status'] ?? false) ? 'Active' : 'Inactive' }}</button>@else {{ ($category['status'] ?? false) ? 'Active' : 'Inactive' }} @endif
                                                 </td>
                                                 <td>@if ($canEditCategories)<button type="button" class="btn btn-sm btn-primary" data-crud-edit
                                                         data-crud-modal="#category-form-modal"
@@ -62,6 +62,7 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <div class="mt-3">{{ $categories->links() }}</div>
                         </div>
                     </div>
                 </div>
