@@ -16,41 +16,21 @@ class CategoryController extends Controller
     public function category(Request $request)
     {
         $title = 'Category Page';
-        $categories = $this->cachedPage($request, 'admin.categories.index', fn () =>
-            Category::with('section', 'parentcategory')->latest('id'),
-            fn (Category $category) => [
+        $categories = Category::select('id', 'parent_id', 'section_id', 'category_name', 'status')
+            ->with('section:id,name', 'parentcategory:id,category_name')
+            ->latest('id')
+            ->cursorPaginate($this->perPage($request))
+            ->withQueryString()
+            ->through(fn (Category $category) => [
                 'id' => $category->id,
                 'parent_category_name' => $category->parentcategory?->category_name,
                 'section_name' => $category->section?->name,
                 'category_name' => $category->category_name,
                 'status' => $category->status,
-            ]
-        );
+            ]);
 
-        $getSection = Cache::get('admin.category-form.sections.v3');
-        if (! $this->isArrayList($getSection)) {
-            Cache::forget('admin.category-form.sections.v3');
-            $getSection = Cache::remember('admin.category-form.sections.v3', now()->addHours(6), fn () =>
-                Section::select('id', 'name')->orderBy('name')->get()
-                    ->map(fn (Section $section) => $section->only(['id', 'name']))->all()
-            );
-        }
-
-        $getCategories = Cache::get('admin.category-form.parents.v3');
-        if (! $this->isArrayList($getCategories) || collect($getCategories)->contains(fn (array $category) => isset($category['subcategories']) && ! is_array($category['subcategories']))) {
-            Cache::forget('admin.category-form.parents.v3');
-            $getCategories = Cache::remember('admin.category-form.parents.v3', now()->addHours(6), fn () =>
-                Category::with('subcategories')->where('parent_id', 0)->orderBy('category_name')->get()
-                    ->map(fn (Category $category) => [
-                        'id' => $category->id,
-                        'category_name' => $category->category_name,
-                        'subcategories' => $category->subcategories->map(fn (Category $subcategory) => [
-                            'id' => $subcategory->id,
-                            'category_name' => $subcategory->category_name,
-                        ])->all(),
-                    ])->all()
-            );
-        }
+        $getSection = Section::select('id', 'name')->orderBy('name')->get();
+        $getCategories = Category::with('subcategories')->where('parent_id', 0)->orderBy('category_name')->get();
 
         return view('admin.category.category', compact('categories', 'title', 'getSection', 'getCategories'));
     }
@@ -175,6 +155,11 @@ class CategoryController extends Controller
         $this->invalidateCachedPages('admin.categories.index');
         Cache::forget('admin.category-form.sections.v3');
         Cache::forget('admin.category-form.parents.v3');
+    }
+
+    private function isArrayList(mixed $value): bool
+    {
+        return is_array($value) && array_is_list($value) && collect($value)->every(fn ($record) => is_array($record));
     }
 
 

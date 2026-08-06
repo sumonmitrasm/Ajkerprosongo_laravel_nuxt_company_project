@@ -4,17 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Section;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 
 class SectionController extends Controller
 {
     public function section(Request $request)
     {
-        $sections = $this->cachedPage($request, 'admin.sections.index', fn () =>
-            Section::select('id', 'name', 'status')->latest('id'),
-            fn (Section $section) => $section->only(['id', 'name', 'status'])
-        );
+        $sections = Section::select('id', 'name', 'status')
+            ->latest('id')
+            ->cursorPaginate($this->perPage($request))
+            ->withQueryString()
+            ->through(fn (Section $section) => $section->only(['id', 'name', 'status']));
         $title = "Section Page";
         return view('admin.sections.section', compact('sections', 'title'));
     }
@@ -81,9 +81,6 @@ class SectionController extends Controller
 
     private function clearSectionCache(): void
     {
-        $this->invalidateCachedPages('admin.sections.index');
-        Cache::forget('admin.category-form.sections.v3');
-        Cache::forget('admin.categories.index.v3');
     }
 
 }

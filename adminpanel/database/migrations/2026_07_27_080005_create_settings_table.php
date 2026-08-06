@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
-            $table->string('logo')->nullable();
+            $table->string('image')->nullable();
             $table->string('favicon')->nullable();
             $table->string('perronal_phone')->nullable();
             $table->string('phone')->nullable();
@@ -36,7 +36,6 @@ return new class extends Migration
             $table->string('meta_data')->nullable();
             $table->string('meta_robot')->nullable();
             $table->string('meta_keywords')->nullable();
-            $table->string('image')->nullable();
             $table->string('canonical_tag')->nullable();
             $table->tinyInteger('status')->default(1)->comment('1=Active, 0=Inactive');
             $table->timestamps();

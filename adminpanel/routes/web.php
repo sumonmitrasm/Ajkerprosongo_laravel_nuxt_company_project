@@ -59,6 +59,11 @@ Route::namespace('App\Http\Controllers\Admin')->prefix('/admin')->group(function
         //>>>>>>>>>>>>>>>>>>>>>>>>Category activity<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         //>>>>>>>>>>>>>>>>>>>>>>>>General Settings<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         Route::get('settings', [SettingController::class, 'settings'])->name('settings');
+        Route::post('settings', [SettingController::class, 'store'])->name('admin-setting.store');
+        Route::get('setting/{settings}', [SettingController::class, 'show'])->name('admin-setting.show');
+        Route::put('setting/{settings}', [SettingController::class, 'update'])->name('admin-setting.update');
+        Route::patch('setting/{settings}/status', [SettingController::class, 'updateStatus'])->name('admin-setting.status');
+        Route::delete('setting/{settings}', [SettingController::class, 'destroy'])->name('admin-setting.delete');
         //>>>>>>>>>>>>>>>>>>>>>>>>General Settings<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     });
