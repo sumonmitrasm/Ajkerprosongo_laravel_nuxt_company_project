@@ -85,8 +85,15 @@ class AdminController extends Controller
     {
         $admin = Auth::guard('admin')->user();
         $title = $admin->name;
+        $search = trim((string) $request->query('search', ''));
         if (in_array($admin->type, ['superadmin', 'admin'])) {
             $users = Admin::select('id', 'image', 'ap_id', 'name', 'email', 'type', 'mobile', 'status')
+                ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('mobile', 'like', "%{$search}%")
+                        ->orWhere('type', 'like', "%{$search}%");
+                }))
                 ->latest('id')
                 ->cursorPaginate($this->perPage($request))
                 ->withQueryString()
@@ -224,7 +231,7 @@ class AdminController extends Controller
                 'view_access', 'add_access', 'edit_access', 'delete_access', 'no_access',
             ]))
             ->all();
-        $modules = AdminRole::query()->select('module')->distinct()->orderBy('module')->pluck('module');
+        $modules = $this->permissionModules();
         return view('admin.accounts.permission', compact('user', 'title', 'userPermissions', 'modules'));
     }
     public function updatePermissionUser(Request $request, $id)
@@ -234,7 +241,7 @@ class AdminController extends Controller
 
         // Modules come directly from the existing admin_roles table.
         // This also clears permissions when every checkbox is unchecked.
-        $modules = AdminRole::query()->select('module')->distinct()->orderBy('module')->pluck('module');
+        $modules = $this->permissionModules();
 
         foreach ($modules as $module) {
             $access = $permissions[$module] ?? [];
@@ -259,5 +266,11 @@ class AdminController extends Controller
             'status' => true,
             'message' => 'Permissions updated successfully!'
         ]);
+    }
+
+    private function permissionModules()
+    {
+        return AdminRole::query()->select('module')->distinct()->pluck('module')
+            ->merge(['admin', 'section', 'category', 'setting', 'tag'])->unique()->sort()->values();
     }
 }

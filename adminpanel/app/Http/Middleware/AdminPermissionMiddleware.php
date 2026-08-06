@@ -49,6 +49,11 @@ class AdminPermissionMiddleware
             'admin-category.store' => ['category', 'add'],
             'admin-category.update', 'admin-category.status' => ['category', 'edit'],
             'admin-category.delete' => ['category', 'delete'],
+
+            'settings', 'admin-setting.show' => ['setting', 'view'],
+            'admin-setting.store' => ['setting', 'add'],
+            'admin-setting.update', 'admin-setting.status' => ['setting', 'edit'],
+            'admin-setting.delete' => ['setting', 'delete'],
             default => null,
         };
     }

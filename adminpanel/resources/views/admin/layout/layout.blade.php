@@ -15,7 +15,7 @@
     <title>{{ optional($generalSetting)->side_name ?? '' }}</title>
 
     <!--Favicon -->
-    <link rel="icon" href="{{ url('admin/assets/images/brand/favicon.ico') }}" type="image/x-icon" />
+    <link rel="icon" href="{{ optional($generalSetting)->favicon ? asset('admin/site_settings/' . basename($generalSetting->favicon)) : url('admin/assets/images/brand/favicon.ico') }}" type="image/x-icon" />
 
     <!-- Bootstrap css -->
     <link id="style" href="{{ url('admin/assets/plugins/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet" />
@@ -33,6 +33,36 @@
     <link href="{{ url('admin/assets/plugins/web-fonts/icons.css') }}" rel="stylesheet" />
     <link href="{{ url('admin/assets/plugins/web-fonts/font-awesome/font-awesome.min.css') }}" rel="stylesheet">
     <link href="{{ url('admin/assets/plugins/web-fonts/plugin.css') }}" rel="stylesheet" />
+
+    <style>
+        .table-list-toolbar {
+            min-height: 38px;
+        }
+
+        .table-list-search {
+            margin-left: 0 !important;
+        }
+
+        .table-list-search .input-group {
+            width: 260px;
+        }
+
+        .table-list-search .input-group-text,
+        .table-list-search .form-control,
+        .table-list-search .btn {
+            height: 34px;
+        }
+
+        @media (max-width: 575.98px) {
+            .table-list-search {
+                width: 100%;
+            }
+
+            .table-list-search .input-group {
+                flex: 1;
+            }
+        }
+    </style>
 
 </head>
 
@@ -121,6 +151,7 @@
                     }
 
                     $content.html($newContent.html()).css('opacity', '1');
+                    window.initServerSearch();
                     $('.side-menu .slide-item').removeClass('active');
                     $('.side-menu a[href="' + url + '"]').addClass('active');
 
@@ -172,6 +203,29 @@
             $(document).on('change', '[data-server-per-page]', function () {
                 var url = new URL(window.location.href);
                 url.searchParams.set('per_page', this.value);
+                url.searchParams.delete('page');
+                window.loadAjaxPage(url.href, true);
+            });
+
+            window.initServerSearch = function () {
+                $('[data-server-pagination]').each(function () {
+                    var $table = $(this);
+                    if ($table.data('server-search-ready')) return;
+                    var $toolbar = $table.closest('.card-body').find('[data-server-per-page]').first().closest('div');
+                    if (!$toolbar.length) return;
+                    $table.data('server-search-ready', true);
+                    $toolbar.addClass('flex-wrap table-list-toolbar');
+                    var search = new URL(window.location.href).searchParams.get('search') || '';
+                    $toolbar.append('<form class="d-flex align-items-center gap-2 table-list-search" data-server-search><label class="mb-0 fw-semibold" for="table-search-' + $table.attr('id') + '">Search</label><div class="input-group input-group-sm"><input id="table-search-' + $table.attr('id') + '" type="search" class="form-control" name="search" placeholder="Search records..." value="' + $('<div>').text(search).html() + '"><button class="btn btn-primary" type="submit" aria-label="Search"><i class="fa fa-search"></i></button></div></form>');
+                });
+            };
+
+            window.initServerSearch();
+
+            $(document).on('submit', '[data-server-search]', function (event) {
+                event.preventDefault();
+                var url = new URL(window.location.href), search = $(this).find('[name="search"]').val().trim();
+                if (search) url.searchParams.set('search', search); else url.searchParams.delete('search');
                 url.searchParams.delete('page');
                 window.loadAjaxPage(url.href, true);
             });
@@ -294,10 +348,12 @@
                 return $($button.data('crud-modal'));
             }
 
-            function setImagePreview($form, source) {
-                var $preview = $form.find('[data-image-preview]');
+            function setImagePreview($form, source, $input) {
+                var $preview = $();
+                if ($input && $input.length) $preview = $form.find('[data-image-preview-for="' + $input.attr('name') + '"]');
+                if (!$preview.length) $preview = $form.find('[data-image-preview]').first();
                 if (!$preview.length) {
-                    var $input = $form.find('input[type="file"][data-image-input], input[type="file"][accept*="image"]').first();
+                    $input = $input && $input.length ? $input : $form.find('input[type="file"][data-image-input], input[type="file"][accept*="image"]').first();
                     if (!$input.length) return;
                     $preview = $('<img>', {
                         'data-image-preview': '',
@@ -329,7 +385,7 @@
                 $form.data({ url: $button.data('store-url'), method: 'POST' });
                 $form.find('.js-crud-errors').empty().addClass('d-none');
                 $form.find('[name="email"]').prop('readonly', false);
-                setImagePreview($form, null);
+                $form.find('[data-image-preview], [data-image-preview-for]').attr('src', '').addClass('d-none');
                 $modal.find('[data-crud-title]').text($button.data('create-title') || 'Add Record');
                 $modal.find('[data-password-help]').text('(minimum 6 characters)');
                 bootstrap.Modal.getOrCreateInstance($modal[0]).show();
@@ -351,7 +407,8 @@
                     if (!imageUrl && record.image && $form.data('image-base-url')) {
                         imageUrl = $form.data('image-base-url').replace(/\/$/, '') + '/' + record.image;
                     }
-                    setImagePreview($form, imageUrl);
+                    setImagePreview($form, imageUrl, $form.find('[name="image"]'));
+                    setImagePreview($form, response.favicon_url || record.favicon_url || '', $form.find('[name="favicon"]'));
                     $form.find('.js-crud-errors').empty().addClass('d-none');
                     $modal.find('[data-crud-title]').text('Edit Record');
                     $modal.find('[data-password-help]').text('(leave blank to keep the current password)');
@@ -362,9 +419,9 @@
             $(document).on('change', '[data-crud-form] input[type="file"][data-image-input], [data-crud-form] input[type="file"][accept*="image"]', function () {
                 var file = this.files && this.files[0];
                 var $form = $(this).closest('[data-crud-form]');
-                if (!file) return setImagePreview($form, null);
-                if (!file.type || file.type.indexOf('image/') !== 0) return setImagePreview($form, null);
-                setImagePreview($form, URL.createObjectURL(file));
+                if (!file) return setImagePreview($form, null, $(this));
+                if (!file.type || file.type.indexOf('image/') !== 0) return setImagePreview($form, null, $(this));
+                setImagePreview($form, URL.createObjectURL(file), $(this));
             });
 
             $(document).on('submit', '[data-crud-form]', function (event) {

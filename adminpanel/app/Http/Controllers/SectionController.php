@@ -10,7 +10,9 @@ class SectionController extends Controller
 {
     public function section(Request $request)
     {
+        $search = trim((string) $request->query('search', ''));
         $sections = Section::select('id', 'name', 'status')
+            ->when($search !== '', fn ($query) => $query->where('name', 'like', "%{$search}%"))
             ->latest('id')
             ->cursorPaginate($this->perPage($request))
             ->withQueryString()
