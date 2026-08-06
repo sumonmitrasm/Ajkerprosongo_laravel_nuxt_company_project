@@ -6,7 +6,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\SettingController;
-
+use App\Http\Controllers\TagController;
 
 Route::get('/clear-cache', function() {
     Artisan::call('view:clear');
@@ -60,11 +60,14 @@ Route::namespace('App\Http\Controllers\Admin')->prefix('/admin')->group(function
         //>>>>>>>>>>>>>>>>>>>>>>>>General Settings<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         Route::get('settings', [SettingController::class, 'settings'])->name('settings');
         Route::post('settings', [SettingController::class, 'store'])->name('admin-setting.store');
-        Route::get('setting/{settings}', [SettingController::class, 'show'])->name('admin-setting.show');
-        Route::put('setting/{settings}', [SettingController::class, 'update'])->name('admin-setting.update');
-        Route::patch('setting/{settings}/status', [SettingController::class, 'updateStatus'])->name('admin-setting.status');
-        Route::delete('setting/{settings}', [SettingController::class, 'destroy'])->name('admin-setting.delete');
+        Route::get('setting/{setting}', [SettingController::class, 'show'])->name('admin-setting.show');
+        Route::put('setting/{setting}', [SettingController::class, 'update'])->name('admin-setting.update');
+        Route::patch('setting/{setting}/status', [SettingController::class, 'updateStatus'])->name('admin-setting.status');
+        Route::delete('setting/{setting}', [SettingController::class, 'destroy'])->name('admin-setting.delete');
         //>>>>>>>>>>>>>>>>>>>>>>>>General Settings<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        //>>>>>>>>>>>>>>>>>>>>>>>>Tags activity<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        Route::get('tags', [TagController::class, 'index'])->name('tags');
+        //>>>>>>>>>>>>>>>>>>>>>>>>Tags activity<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     });
 });

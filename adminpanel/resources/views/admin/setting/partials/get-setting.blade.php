@@ -41,8 +41,7 @@
                                         <td>{{ $setting['side_name'] ?? '-' }}</td>
                                         <td>{{ $setting['email'] ?? '-' }}</td>
                                         <td>{{ $setting['phone'] ?? $setting['perronal_phone'] ?? '-' }}</td>
-                                        <td>{{ ($setting['status'] ?? false) ? 'Active' : 'Inactive' }}</td>
-                                         <td>@if ($canEditSetting)<button type="button"
+                                        <td>@if ($canEditSetting)<button type="button"
                                                         class="btn btn-sm {{ ($setting['status'] ?? false) ? 'btn-success' : 'btn-secondary' }}"
                                                         data-crud-status
                                                         data-url="{{ route('admin-setting.status', $setting['id']) }}">{{ ($setting['status'] ?? false) ? 'Active' : 'Inactive' }}</button>@else {{ ($setting['status'] ?? false) ? 'Active' : 'Inactive' }} @endif
@@ -59,7 +58,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="text-center text-muted">No settings found.</td>
+                                        <td colspan="6" class="text-center text-muted">No settings found.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -91,11 +90,13 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Site Logo</label>
-                            <input type="file" name="image" class="form-control" accept="image/*">
+                            <input type="file" name="image" class="form-control" accept="image/*" data-image-input>
+                            <img data-image-preview-for="image" class="d-none mt-2 rounded border" alt="Selected site logo" style="width: 100px; height: 100px; object-fit: cover;">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Site Favicon</label>
-                            <input type="file" name="favicon" class="form-control" accept="image/*">
+                            <input type="file" name="favicon" class="form-control" accept="image/*,.ico" data-image-input>
+                            <img data-image-preview-for="favicon" class="d-none mt-2 rounded border" alt="Selected favicon" style="width: 64px; height: 64px; object-fit: contain;">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Perronal Phone</label>
@@ -131,7 +132,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Linkedin Url</label>
-                            <input type="text" name="perronal_phone" class="form-control" required>
+                            <input type="url" name="linkedin_url" class="form-control" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Instagram Url</label>
@@ -207,7 +208,7 @@
 
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary" data-crud-submit>Save Category</button>
+                    <button type="submit" class="btn btn-primary" data-crud-submit>Save Setting</button>
                 </div>
             </form>
         </div>

@@ -16,8 +16,13 @@ class CategoryController extends Controller
     public function category(Request $request)
     {
         $title = 'Category Page';
+        $search = trim((string) $request->query('search', ''));
         $categories = Category::select('id', 'parent_id', 'section_id', 'category_name', 'status')
             ->with('section:id,name', 'parentcategory:id,category_name')
+            ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
+                $query->where('category_name', 'like', "%{$search}%")
+                    ->orWhereHas('section', fn ($section) => $section->where('name', 'like', "%{$search}%"));
+            }))
             ->latest('id')
             ->cursorPaginate($this->perPage($request))
             ->withQueryString()

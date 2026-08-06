@@ -3,13 +3,13 @@
     <aside class="app-sidebar sidebar-scroll">
         <div class="main-sidebar-header active">
             <a class="desktop-logo logo-light active" href="{{ route('admin.dashboard') }}"><img
-                    src="{{ asset('admin/assets/images/brand/logo.png') }}" class="main-logo" alt="logo"></a>
+                    src="{{ optional($generalSetting)->image ? asset('admin/site_settings/' . basename($generalSetting->image)) : asset('admin/assets/images/brand/logo.png') }}" class="main-logo" alt="logo"></a>
             <a class="desktop-logo logo-dark active" href="{{ route('admin.dashboard') }}"><img
-                    src="{{ asset('admin/assets/images/brand/logo1.png') }}" class="main-logo" alt="logo"></a>
+                    src="{{ optional($generalSetting)->image ? asset('admin/site_settings/' . basename($generalSetting->image)) : asset('admin/assets/images/brand/logo1.png') }}" class="main-logo" alt="logo"></a>
             <a class="logo-icon mobile-logo icon-light active" href="{{ route('admin.dashboard') }}"><img
-                    src="{{ asset('admin/assets/images/brand/favicon.png') }}" alt="logo"></a>
+                    src="{{ optional($generalSetting)->favicon ? asset('admin/site_settings/' . basename($generalSetting->favicon)) : asset('admin/assets/images/brand/favicon.png') }}" alt="logo"></a>
             <a class="logo-icon mobile-logo icon-dark active" href="{{ route('admin.dashboard') }}"><img
-                    src="{{ asset('admin/assets/images/brand/favicon1.png') }}" alt="logo"></a>
+                    src="{{ optional($generalSetting)->favicon ? asset('admin/site_settings/' . basename($generalSetting->favicon)) : asset('admin/assets/images/brand/favicon1.png') }}" alt="logo"></a>
         </div>
         <div class="main-sidemenu">
             <div class="app-sidebar__user">
@@ -20,6 +20,7 @@
                             $canManageAdmins = $admin?->hasModuleAccess('admin', 'view');
                             $canManageSections = $admin?->hasModuleAccess('section', 'view');
                             $canManageCategories = $admin?->hasModuleAccess('category', 'view');
+                            $canManageSettings = $admin?->hasModuleAccess('setting', 'view');
                         @endphp
                         <img src="{{ $admin && $admin->image
                             ? asset('admin/adminimage/' . $admin->image)
@@ -74,7 +75,6 @@
                         </ul>
                     </li>
                 @endif
-
                 <li class="slide">
                     <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -91,7 +91,9 @@
                         <li><a href="form-elements.html" class="slide-item"> Form Elements</a></li>
                     </ul>
                 </li>
-                <li class="slide">
+
+                @if ($canManageSettings)
+                <li class="slide {{ request()->routeIs('settings') ? 'is-expanded' : '' }}">
                     <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0)">
                         <svg class="side-menu__icon" xmlns="http://www.w3.org/2000/svg" width="24"
                             height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -112,29 +114,13 @@
                         <li class="side-menu-label1">
                             <a href="javascript:void(0)">Utilities</a>
                         </li>
-                        <li><a href="{{ route('settings') }}" class="slide-item">General Settings</a></li>
+                        <li><a href="{{ route('tags') }}" class="slide-item {{ request()->routeIs('tags') ? 'active' : '' }}">Tags</a></li>
+                        <li><a href="{{ route('settings') }}" class="slide-item {{ request()->routeIs('settings') ? 'active' : '' }}">General Settings</a></li>
 
                     </ul>
                 </li>
-                <li class="slide">
-                    <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0)">
-                        <svg class="side-menu__icon" xmlns="http://www.w3.org/2000/svg" width="24"
-                            height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path
-                                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
-                            </path>
-                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                        </svg>
-                        <span class="side-menu__label">Widgets</span><i class="angle fe fe-chevron-right"></i></a>
-                    <ul class="slide-menu">
-                        <li class="side-menu-label1">
-                            <a href="javascript:void(0)">Widgets</a>
-                        </li>
-                        <li><a href="widgets-1.html" class="slide-item">Widgets</a></li>
-                    </ul>
-                </li>
+                @endif
+
                 <li class="slide">
                     <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0)">
                         <svg class="side-menu__icon" xmlns="http://www.w3.org/2000/svg" width="24"
