@@ -23,6 +23,7 @@
                                 User</button>@endif
                         </div>
                         <div class="card-body">
+                            <div class="mb-3 d-flex align-items-center gap-2"><label class="mb-0">Show</label><select class="form-select form-select-sm w-auto" data-server-per-page>@foreach ([10,20,50,100] as $size)<option value="{{ $size }}" {{ (int) request('per_page',10) === $size ? 'selected' : '' }}>{{ $size }}</option>@endforeach</select><span>entries</span><button class="btn btn-sm btn-success" data-table-export="#users-table" data-table-export-type="excel">Excel</button><button class="btn btn-sm btn-primary" data-table-export="#users-table" data-table-export-type="word">Word</button></div>
                             <div class="table-responsive">
                                 <table id="users-table" data-server-pagination
                                     class="table table-bordered text-nowrap key-buttons">
@@ -84,7 +85,6 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="mt-3 d-flex align-items-center gap-2"><label class="mb-0">Show</label><select class="form-select form-select-sm w-auto" data-server-per-page>@foreach ([10, 20, 50, 100] as $size)<option value="{{ $size }}" {{ (int) request('per_page', 10) === $size ? 'selected' : '' }}>{{ $size }}</option>@endforeach</select><span>entries</span><button class="btn btn-sm btn-success" data-table-export="#users-table" data-table-export-type="excel">Excel</button><button class="btn btn-sm btn-primary" data-table-export="#users-table" data-table-export-type="word">Word</button></div>
                             @if ($users instanceof \Illuminate\Contracts\Pagination\Paginator)
                                 <div class="mt-3">{{ $users->links() }}</div>
                             @endif

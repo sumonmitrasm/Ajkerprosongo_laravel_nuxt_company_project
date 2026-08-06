@@ -86,13 +86,13 @@ class AdminController extends Controller
         $admin = Auth::guard('admin')->user();
         $title = $admin->name;
         if (in_array($admin->type, ['superadmin', 'admin'])) {
-            $users = $this->cachedPage($request, 'admin.users.index', fn () => Admin::latest(), fn (Admin $user) =>
-                $user->only([
-                        'id', 'image', 'ap_id', 'name', 'email', 'type', 'mobile', 'status',
-                ])
-            );
+            $users = Admin::select('id', 'image', 'ap_id', 'name', 'email', 'type', 'mobile', 'status')
+                ->latest('id')
+                ->cursorPaginate($this->perPage($request))
+                ->withQueryString()
+                ->through(fn (Admin $user) => $user->only(['id', 'image', 'ap_id', 'name', 'email', 'type', 'mobile', 'status']));
         } else {
-            $users = collect([$admin->only(['id', 'image', 'ap_id', 'name', 'email', 'type', 'mobile', 'status'])]);
+            $users = collect([$admin]);
         }
         return view('admin.accounts.admin-user', compact('title', 'users'));
     }
@@ -210,7 +210,6 @@ class AdminController extends Controller
 
     private function clearUserCache(): void
     {
-        $this->invalidateCachedPages('admin.users.index');
     }
 
 
