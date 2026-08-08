@@ -67,6 +67,11 @@ Route::namespace('App\Http\Controllers\Admin')->prefix('/admin')->group(function
         //>>>>>>>>>>>>>>>>>>>>>>>>General Settings<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         //>>>>>>>>>>>>>>>>>>>>>>>>Tags activity<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         Route::get('tags', [TagController::class, 'index'])->name('tags');
+        Route::post('tag', [TagController::class, 'store'])->name('admin-tag.store');
+        Route::get('tag/{tag}', [TagController::class, 'show'])->name('admin-tag.show');
+        Route::put('tag/{tag}', [TagController::class, 'update'])->name('admin-tag.update');
+        Route::patch('tag/{tag}/status', [TagController::class, 'updateStatus'])->name('admin-tag.status');
+        Route::delete('tag/{tag}', [TagController::class, 'destroy'])->name('admin-tag.delete');
         //>>>>>>>>>>>>>>>>>>>>>>>>Tags activity<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     });
