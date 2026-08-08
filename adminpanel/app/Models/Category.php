@@ -43,7 +43,10 @@ class Category extends Model
     }
     public function subcategories(): HasMany
     {
-        return $this->hasMany(Category::class, 'parent_id')->where('status',1);
+        return $this->hasMany(Category::class, 'parent_id')
+            ->where('status', 1)
+            ->orderBy('position')
+            ->orderBy('category_name');
     }
     // public static function categories()
     // {

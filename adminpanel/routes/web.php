@@ -23,8 +23,7 @@ Route::get('/clear-cache', function() {
 //     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 //     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 // });
-Route::redirect('/', '/admin/login');
-
+Route::redirect('/admin/login', '/admin/login');
 Route::namespace('App\Http\Controllers\Admin')->prefix('/admin')->group(function() {
     Route::match(['get', 'post'], 'login', [AdminController::class, 'login'])->name('admin.login');
     Route::middleware(['admin.auth', 'admin.permission'])->group(function () {

@@ -157,7 +157,7 @@ class CategoryController extends Controller
      */
     private function clearCategoryCache(): void
     {
-        $this->invalidateCachedPages('admin.categories.index');
+        Cache::forget('api.sections-with-categories.v1');
         Cache::forget('admin.category-form.sections.v3');
         Cache::forget('admin.category-form.parents.v3');
     }

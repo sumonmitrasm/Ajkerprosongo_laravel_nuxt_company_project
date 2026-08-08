@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="bn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Section Category API ও Cache Guide</title>
+    <style>
+        :root { --primary:#2563eb; --dark:#172033; --muted:#64748b; --bg:#f1f5f9; --ok:#047857; }
+        * { box-sizing:border-box; } body { margin:0; font:16px/1.65 system-ui, sans-serif; color:var(--dark); background:var(--bg); }
+        main { max-width:1000px; margin:32px auto; background:#fff; padding:36px; border-radius:14px; box-shadow:0 8px 30px #0f172a12; }
+        h1 { margin-top:0; } h2 { margin-top:34px; color:var(--primary); border-bottom:1px solid #e2e8f0; padding-bottom:8px; }
+        h3 { margin-top:25px; } code { color:#c2410c; } pre { overflow:auto; padding:16px; border-radius:8px; background:#0f172a; color:#e2e8f0; }
+        .note { border-left:4px solid var(--primary); padding:12px 16px; background:#eff6ff; } .ok { border-left-color:var(--ok); background:#ecfdf5; }
+        table { width:100%; border-collapse:collapse; } th, td { text-align:left; padding:10px; vertical-align:top; border:1px solid #cbd5e1; } th { background:#eff6ff; }
+        .flow { padding:18px; border-radius:8px; background:#f8fafc; font-weight:600; text-align:center; }
+    </style>
+</head>
+<body>
+<main>
+    <h1>Section → Category API এবং Cache কীভাবে কাজ করছে</h1>
+    <p>এই document-এ admin panel থেকে তৈরি Section ও Category কীভাবে Nuxt frontend-এ যাবে এবং cache কেন ব্যবহার করা হয়েছে তার সহজ ব্যাখ্যা আছে।</p>
+
+    <h2>১. API address</h2>
+    <pre>GET http://127.0.0.1:8000/api/sections</pre>
+    <p>এই API শুধু <strong>Active</strong> section, category এবং subcategory পাঠায়।</p>
+
+    <h2>২. Data flow</h2>
+    <div class="flow">Admin Panel → MySQL Database → Laravel API Cache → <code>/api/sections</code> → Nuxt Frontend</div>
+    <ol>
+        <li>Admin থেকে Section তৈরি করবেন।</li>
+        <li>Category তৈরি করার সময় সেই Section select করবেন।</li>
+        <li>Nuxt <code>/api/sections</code> call করবে।</li>
+        <li>প্রথমে section loop হবে; তারপর ওই section-এর ভিতরের category loop হবে।</li>
+    </ol>
+
+    <h2>৩. API response দেখতে কেমন</h2>
+    <pre>{
+  "data": [
+    {
+      "id": 1,
+      "name": "Politics",
+      "categories": [
+        {
+          "id": 10,
+          "name": "Bangladesh Politics",
+          "url": "bangladesh-politics",
+          "image": null,
+          "subcategories": [
+            { "id": 11, "name": "Election", "url": "election", "image": null }
+          ]
+        }
+      ]
+    }
+  ]
+}</pre>
+
+    <h2>৪. কোন file কী কাজ করছে</h2>
+    <table>
+        <thead><tr><th>File</th><th>কাজ</th></tr></thead>
+        <tbody>
+            <tr><td><code>routes/api.php</code></td><td><code>/api/sections</code> route তৈরি করেছে।</td></tr>
+            <tr><td><code>Api/FrontController.php</code></td><td>Database থেকে nested section/category data নেয়, API JSON বানায় এবং cache করে।</td></tr>
+            <tr><td><code>Models/Section.php</code></td><td><code>categories()</code> relation দিয়ে ওই section-এর root category আনে।</td></tr>
+            <tr><td><code>Models/Category.php</code></td><td><code>subcategories()</code> relation দিয়ে একটি category-এর child category আনে।</td></tr>
+            <tr><td><code>SectionController.php</code></td><td>Section change হলে API cache clear করে।</td></tr>
+            <tr><td><code>CategoryController.php</code></td><td>Category change হলে API cache clear করে।</td></tr>
+        </tbody>
+    </table>
+
+    <h2>৫. Cache code-এর কাজ</h2>
+    <pre>Cache::remember('api.sections-with-categories.v1', now()->addHours(6), function () {
+    return $this->sectionPayload();
+});</pre>
+    <ul>
+        <li><code>api.sections-with-categories.v1</code> হলো cache-এর unique নাম।</li>
+        <li>প্রথম API call-এ database query হবে ও result cache-এ জমা হবে।</li>
+        <li>পরের call-গুলো ৬ ঘণ্টা পর্যন্ত database query ছাড়া cache থেকে result পাবে।</li>
+        <li>Section অথবা Category create/update/delete/status change হলেই এই cache remove হয়। পরবর্তী call-এ নতুন data আবার cache হবে।</li>
+    </ul>
+    <pre>Cache::forget('api.sections-with-categories.v1');</pre>
+
+    <div class="note ok"><strong>Safety:</strong> Cache service কাজ না করলেও API বন্ধ হবে না। Laravel live database থেকে data এনে response দেবে; cache error visitor-এর সামনে দেখাবে না।</div>
+
+    <h2>৬. Nuxt-এ section প্রথমে, category ভিতরে</h2>
+    <pre>&lt;script setup&gt;
+const { data: response } = await useFetch('http://127.0.0.1:8000/api/sections')
+const sections = computed(() =&gt; response.value?.data ?? [])
+&lt;/script&gt;
+
+&lt;template&gt;
+  &lt;section v-for="section in sections" :key="section.id"&gt;
+    &lt;h2&gt;{{ section.name }}&lt;/h2&gt;
+
+    &lt;NuxtLink
+      v-for="category in section.categories"
+      :key="category.id"
+      :to="`/${category.url}`"
+    &gt;
+      {{ category.name }}
+    &lt;/NuxtLink&gt;
+  &lt;/section&gt;
+&lt;/template&gt;</pre>
+
+    <h2>৭. বড় production site-এর জন্য</h2>
+    <p>বর্তমানে database cache কাজ করবে। বেশি traffic হলে server-এ Redis চালু করে <code>.env</code>-এ নিচের সেটিং দিন:</p>
+    <pre>CACHE_STORE=redis
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379</pre>
+    <p>Redis চালু না থাকলে এই setting দেবেন না; <code>CACHE_STORE=database</code> রাখবেন।</p>
+
+    <h2>৮. API test</h2>
+    <p>Browser-এ এই address খুলুন:</p>
+    <pre>http://127.0.0.1:8000/api/sections</pre>
+    <p>JSON data এলে API ঠিক আছে। Empty <code>data: []</code> এলে কোনো active section/category নেই অথবা সম্পর্কযুক্ত data নেই।</p>
+
+    <h2>৯. সম্পূর্ণ কাজের ধারাবাহিকতা — একটির পর একটি</h2>
+    <p>নিচের ক্রমে codeগুলো কাজ করে। কোনো অংশ পরিবর্তন করলে তার নিচের অংশে কী প্রভাব পড়বে, সেটাও লেখা আছে।</p>
+
+    <h3>Step 1 — API route তৈরি</h3>
+    <p><strong>File:</strong> <code>routes/api.php</code></p>
+    <pre>use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\FrontController;
+
+Route::get('/sections', [FrontController::class, 'sections'])
+    -&gt;name('api.sections');</pre>
+    <p>এর ফলে browser/Postman/Nuxt থেকে <code>GET /api/sections</code> করলে <code>FrontController</code>-এর <code>sections()</code> method চলবে।</p>
+
+    <h3>Step 2 — Section-এর সাথে Category relation</h3>
+    <p><strong>File:</strong> <code>app/Models/Section.php</code></p>
+    <pre>public function categories(): HasMany
+{
+    return $this-&gt;hasMany(Category::class)
+        -&gt;where('parent_id', 0)
+        -&gt;where('status', true)
+        -&gt;orderBy('position')
+        -&gt;orderBy('category_name');
+}</pre>
+    <p><code>hasMany(Category::class)</code> মানে: একটি section-এর অনেক category থাকতে পারে। <code>parent_id = 0</code> শুধু root/main category নেয়। শুধু active category নেওয়ার জন্য <code>status = true</code> ব্যবহার হয়েছে।</p>
+
+    <h3>Step 3 — Category-এর সাথে Subcategory relation</h3>
+    <p><strong>File:</strong> <code>app/Models/Category.php</code></p>
+    <pre>public function subcategories(): HasMany
+{
+    return $this-&gt;hasMany(Category::class, 'parent_id')
+        -&gt;where('status', 1)
+        -&gt;orderBy('position')
+        -&gt;orderBy('category_name');
+}</pre>
+    <p>এখানে একই <code>categories</code> table ব্যবহার হয়েছে। Child category-এর <code>parent_id</code> তার parent category-এর ID-এর সমান হয়।</p>
+
+    <h3>Step 4 — Database থেকে একবারে nested data নেওয়া</h3>
+    <p><strong>File:</strong> <code>app/Http/Controllers/Api/FrontController.php</code></p>
+    <pre>Section::query()
+    -&gt;select('id', 'name')
+    -&gt;where('status', true)
+    -&gt;with([
+        'categories:id,section_id,parent_id,category_name,url,image,position',
+        'categories.subcategories:id,section_id,parent_id,category_name,url,image,position',
+    ])
+    -&gt;orderBy('name')
+    -&gt;get();</pre>
+    <p><code>with()</code> খুব গুরুত্বপূর্ণ। এটি eager loading করে; অর্থাৎ section, category ও subcategory আলাদা আলাদা অসংখ্য query-তে না এনে অল্প query-তে একবারে আনে। বড় portal-এর জন্য এটি প্রয়োজনীয়।</p>
+
+    <h3>Step 5 — API JSON response সাজানো</h3>
+    <pre>-&gt;map(fn (Section $section) =&gt; [
+    'id' =&gt; $section-&gt;id,
+    'name' =&gt; $section-&gt;name,
+    'categories' =&gt; $section-&gt;categories-&gt;map(fn ($category) =&gt; [
+        'id' =&gt; $category-&gt;id,
+        'name' =&gt; $category-&gt;category_name,
+        'url' =&gt; $category-&gt;url,
+        'subcategories' =&gt; $category-&gt;subcategories-&gt;map(...)-&gt;values()-&gt;all(),
+    ])-&gt;values()-&gt;all(),
+])-&gt;values()-&gt;all();</pre>
+    <p>এখানে admin table-এর অপ্রয়োজনীয় SEO field পাঠানো হচ্ছে না। Nuxt-এর জন্য দরকারি <code>id</code>, <code>name</code>, <code>url</code>, <code>image</code> এবং <code>subcategories</code> পাঠানো হচ্ছে।</p>
+
+    <h3>Step 6 — Cache-এ result রাখা</h3>
+    <pre>try {
+    $sections = Cache::remember(
+        'api.sections-with-categories.v1',
+        now()-&gt;addHours(6),
+        fn () =&gt; $this-&gt;sectionPayload(),
+    );
+} catch (Throwable $exception) {
+    report($exception);
+    $sections = $this-&gt;sectionPayload();
+}</pre>
+    <p>প্রথম API request database থেকে data এনে ৬ ঘণ্টার জন্য cache করে। পরের request দ্রুত cache থেকে data পায়। Cache server/database-এ সমস্যা হলে <code>catch</code> অংশ database থেকে live data পাঠায়, তাই public API 500 error দেয় না।</p>
+
+    <h3>Step 7 — Browser/CDN cache header</h3>
+    <pre>return response()
+    -&gt;json(['data' =&gt; $sections])
+    -&gt;header('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');</pre>
+    <p>Browser/CDN ৫ মিনিট API result রাখতে পারবে। এতে একই visitor বারবার page খুললেও server request কম হয়।</p>
+
+    <h3>Step 8 — Admin থেকে data change হলে cache clear</h3>
+    <p><strong>File:</strong> <code>SectionController.php</code> এবং <code>CategoryController.php</code></p>
+    <pre>private function clearSectionCache(): void
+{
+    Cache::forget('api.sections-with-categories.v1');
+}
+
+private function clearCategoryCache(): void
+{
+    Cache::forget('api.sections-with-categories.v1');
+}</pre>
+    <p>Section/Category add, update, delete অথবা status change method-এর শেষে এই function call হয়। তাই admin থেকে পরিবর্তনের পর পুরনো API data থাকবে না।</p>
+
+    <h3>Step 9 — আজকের API error কেন হয়েছিল এবং কীভাবে ঠিক হয়েছে</h3>
+    <div class="note"><strong>আগের error:</strong> <code>_PHP_Incomplete_Class_Name: Illuminate\Support\Collection</code></div>
+    <p>Database cache Laravel Collection object সঠিকভাবে restore করতে পারেনি। তাই cache-এ object না রেখে plain PHP array পাঠানো হয়েছে।</p>
+    <pre>// ভুল: এটি Collection return করে
+-&gt;values()
+
+// ঠিক: এটি plain array return করে এবং cache-safe
+-&gt;values()-&gt;all()</pre>
+    <p>তারপর পুরনো faulty cache key remove করা হয়েছে:</p>
+    <pre>php artisan cache:forget api.sections-with-categories.v1
+php artisan optimize:clear</pre>
+    <div class="note ok"><strong>পরীক্ষা করা হয়েছে:</strong> <code>http://127.0.0.1:8000/api/sections</code> থেকে 200 OK এবং section → category → subcategory JSON response পাওয়া গেছে।</div>
+</main>
+</body>
+</html>
