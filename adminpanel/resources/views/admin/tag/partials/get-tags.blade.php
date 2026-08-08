@@ -14,16 +14,16 @@
             </div>
             <div class="card">
                 <div class="card-header justify-content-between">
-                            <div class="card-title">{{ $title }}</div>@if ($canAddSetting)<button type="button" class="btn btn-info"
-                                data-crud-create data-crud-modal="#setting-form-modal"
-                                data-store-url="{{ route('admin-setting.store') }}"
-                                data-create-title="Add Setting">Add
-                                Setting</button>@endif
+                            <div class="card-title">{{ $title }}</div>@if ($canAddTag)<button type="button" class="btn btn-info"
+                                data-crud-create data-crud-modal="#tag-form-modal"
+                                data-store-url="{{ route('admin-tag.store') }}"
+                                data-create-title="Add Tag">Add
+                                Tag</button>@endif
                         </div>
                 <div class="card-body">
                     <div class="mb-3 d-flex align-items-center gap-2"><label class="mb-0">Show</label><select class="form-select form-select-sm w-auto" data-server-per-page>@foreach ([10,20,50,100] as $size)<option value="{{ $size }}" {{ (int) request('per_page',10) === $size ? 'selected' : '' }}>{{ $size }}</option>@endforeach</select><span>entries</span><button class="btn btn-sm btn-success" data-table-export="#settings-table" data-table-export-type="excel">Excel</button><button class="btn btn-sm btn-primary" data-table-export="#settings-table" data-table-export-type="word">Word</button></div>
                     <div class="table-responsive">
-                        <table id="settings-table" data-server-pagination class="table table-bordered text-nowrap">
+                        <table id="tags-table" data-server-pagination class="table table-bordered text-nowrap">
                             <thead>
                                 <tr>
                                     <th>ID</th>
@@ -63,7 +63,7 @@
                         </table>
                     </div>
 
-                    <div class="mt-3">{{ $getSettings->links() }}</div>
+                    <div class="mt-3">{{ $getTags->links() }}</div>
 
                 </div>
             </div>
