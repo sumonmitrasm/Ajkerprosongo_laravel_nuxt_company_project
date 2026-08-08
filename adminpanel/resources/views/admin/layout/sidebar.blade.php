@@ -21,6 +21,7 @@
                             $canManageSections = $admin?->hasModuleAccess('section', 'view');
                             $canManageCategories = $admin?->hasModuleAccess('category', 'view');
                             $canManageSettings = $admin?->hasModuleAccess('setting', 'view');
+                            $canManageTags = $admin?->hasModuleAccess('tag', 'view');
                         @endphp
                         <img src="{{ $admin && $admin->image
                             ? asset('admin/adminimage/' . $admin->image)
@@ -92,8 +93,8 @@
                     </ul>
                 </li>
 
-                @if ($canManageSettings)
-                <li class="slide {{ request()->routeIs('settings') ? 'is-expanded' : '' }}">
+                @if ($canManageSettings || $canManageTags)
+                <li class="slide {{ request()->routeIs('settings') || request()->routeIs('tags') ? 'is-expanded' : '' }}">
                     <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0)">
                         <svg class="side-menu__icon" xmlns="http://www.w3.org/2000/svg" width="24"
                             height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -114,8 +115,8 @@
                         <li class="side-menu-label1">
                             <a href="javascript:void(0)">Utilities</a>
                         </li>
-                        <li><a href="{{ route('tags') }}" class="slide-item {{ request()->routeIs('tags') ? 'active' : '' }}">Tags</a></li>
-                        <li><a href="{{ route('settings') }}" class="slide-item {{ request()->routeIs('settings') ? 'active' : '' }}">General Settings</a></li>
+                        @if ($canManageTags)<li><a href="{{ route('tags') }}" class="slide-item {{ request()->routeIs('tags') ? 'active' : '' }}">Tags</a></li>@endif
+                        @if ($canManageSettings)<li><a href="{{ route('settings') }}" class="slide-item {{ request()->routeIs('settings') ? 'active' : '' }}">General Settings</a></li>@endif
 
                     </ul>
                 </li>

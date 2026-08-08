@@ -54,6 +54,11 @@ class AdminPermissionMiddleware
             'admin-setting.store' => ['setting', 'add'],
             'admin-setting.update', 'admin-setting.status' => ['setting', 'edit'],
             'admin-setting.delete' => ['setting', 'delete'],
+
+            'tags', 'admin-tag.show' => ['tag', 'view'],
+            'admin-tag.store' => ['tag', 'add'],
+            'admin-tag.update', 'admin-tag.status' => ['tag', 'edit'],
+            'admin-tag.delete' => ['tag', 'delete'],
             default => null,
         };
     }
