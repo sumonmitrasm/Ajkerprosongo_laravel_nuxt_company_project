@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Section;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 
 class SectionController extends Controller
@@ -83,6 +84,7 @@ class SectionController extends Controller
 
     private function clearSectionCache(): void
     {
+        Cache::forget('api.sections-with-categories.v1');
     }
 
 }
