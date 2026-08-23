@@ -7,6 +7,7 @@ use App\Http\Controllers\SectionController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TagController;
+use App\Http\Controllers\PollController;
 
 Route::get('/clear-cache', function() {
     Artisan::call('view:clear');
@@ -23,7 +24,7 @@ Route::get('/clear-cache', function() {
 //     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 //     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 // });
-Route::redirect('/admin/login', '/admin/login');
+Route::redirect('/', '/admin/login');
 Route::namespace('App\Http\Controllers\Admin')->prefix('/admin')->group(function() {
     Route::match(['get', 'post'], 'login', [AdminController::class, 'login'])->name('admin.login');
     Route::middleware(['admin.auth', 'admin.permission'])->group(function () {
@@ -72,6 +73,14 @@ Route::namespace('App\Http\Controllers\Admin')->prefix('/admin')->group(function
         Route::patch('tag/{tag}/status', [TagController::class, 'updateStatus'])->name('admin-tag.status');
         Route::delete('tag/{tag}', [TagController::class, 'destroy'])->name('admin-tag.delete');
         //>>>>>>>>>>>>>>>>>>>>>>>>Tags activity<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        //>>>>>>>>>>>>>>>>>>>>>>>>Online Polling<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        Route::get('polls', [PollController::class, 'index'])->name('polls');
+        Route::post('poll', [PollController::class, 'store'])->name('admin-poll.store');
+        Route::get('poll/{poll}', [PollController::class, 'show'])->name('admin-poll.show');
+        Route::put('poll/{poll}', [PollController::class, 'update'])->name('admin-poll.update');
+        Route::patch('poll/{poll}/status', [PollController::class, 'updateStatus'])->name('admin-poll.status');
+        Route::delete('poll/{poll}', [PollController::class, 'destroy'])->name('admin-poll.delete');
+        //>>>>>>>>>>>>>>>>>>>>>>>>End Polling<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     });
 });

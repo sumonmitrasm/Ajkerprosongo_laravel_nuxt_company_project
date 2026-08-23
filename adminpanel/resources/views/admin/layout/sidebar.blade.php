@@ -121,7 +121,7 @@
                     </ul>
                 </li>
                 @endif
-
+                @if ($canOnlinePolling)
                 <li class="slide">
                     <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0)">
                         <svg class="side-menu__icon" xmlns="http://www.w3.org/2000/svg" width="24"
@@ -130,14 +130,15 @@
                             <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
                             <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
                         </svg>
-                        <span class="side-menu__label">Charts</span><i class="angle fe fe-chevron-right"></i></a>
+                        <span class="side-menu__label">Online Polling</span><i class="angle fe fe-chevron-right"></i></a>
                     <ul class="slide-menu">
                         <li class="side-menu-label1">
-                            <a href="javascript:void(0)">Charts</a>
+                            <a href="javascript:void(0)">Online Polling</a>
                         </li>
-                        <li><a href="chart-chartist.html" class="slide-item">Chartjs Charts</a></li>
+                        <li><a href="{{ route('polls') }}" class="slide-item">Online Polling</a></li>
                     </ul>
                 </li>
+                @endif
                 <li class="slide">
                     <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0)">
                         <svg class="side-menu__icon" xmlns="http://www.w3.org/2000/svg" width="24"

@@ -24,6 +24,10 @@ class AdminController extends Controller
 
     public function login(Request $request)
     {
+        if ($request->isMethod('get') && Auth::guard('admin')->check()) {
+            return redirect()->route('admin.dashboard');
+        }
+
         if ($request->isMethod('post')) {
             $throttleKey = Str::transliterate(Str::lower($request->input('email')).'|'.$request->ip());
             if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
