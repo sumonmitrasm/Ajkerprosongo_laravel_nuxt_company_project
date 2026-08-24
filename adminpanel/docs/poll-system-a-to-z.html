@@ -1,0 +1,56 @@
+<!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Poll System A–Z Guide</title><style>*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#eef1f7;color:#172033;font:16px/1.7 system-ui,"Noto Sans Bengali",sans-serif}header{padding:45px 24px;color:#fff;background:linear-gradient(125deg,#111936,#4656d9)}header div,main{max-width:1150px;margin:auto}h1{margin:0}main{display:grid;grid-template-columns:240px 1fr;gap:22px;padding:24px}nav,.card{background:#fff;border:1px solid #dce2f0;border-radius:14px}nav{position:sticky;top:18px;align-self:start;padding:16px}nav a{display:block;padding:5px;color:#37436e;text-decoration:none}.card{padding:23px;margin-bottom:20px}h2{margin-top:0}.flow{display:flex;flex-wrap:wrap;gap:7px;align-items:center}.flow span{padding:7px 10px;background:#eef0ff;border-radius:7px}.table{overflow:auto}table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:9px;border:1px solid #dce2f0;text-align:left;vertical-align:top}th{background:#edf0ff}code{padding:2px 5px;background:#eef0ff;color:#2737b8}pre{overflow:auto;padding:14px;background:#10172a;color:#e7edff;border-radius:9px}pre code{padding:0;background:none;color:inherit}.note,.warn{padding:12px;background:#eefbf6;border-left:4px solid #087a55}.warn{background:#fff8e5;border-color:#d39a00}@media(max-width:800px){main{display:block}nav{position:static;margin-bottom:20px}}</style></head><body>
+<!-- Laravel Poll module-এর A–Z developer documentation। -->
+<header><div><h1>Online Poll System — A to Z</h1><p>Model, Controller, JavaScript, routes এবং Blade ID/class কীভাবে link হয়েছে।</p></div></header><main><nav><b>সূচিপত্র</b><a href="#flow">Full flow</a><a href="#files">Files</a><a href="#db">Database</a><a href="#models">Models</a><a href="#routes">Routes</a><a href="#controller">Controller</a><a href="#js">Blade + JS</a><a href="#correct">Correct answer</a><a href="#crud">CRUD</a><a href="#future">Nuxt future</a><a href="#debug">Debug</a></nav><article>
+<section class="card" id="flow"><h2>1. পুরো flow</h2><p>Admin form → JavaScript AJAX request → web route → PollController validation/transaction → Eloquent Models → MySQL। Success হলে modal বন্ধ হয়ে list AJAX-এ refresh হয়।</p><div class="flow"><span>Blade</span>→<span>polls.js</span>→<span>web.php</span>→<span>Controller</span>→<span>Models</span>→<span>Database</span></div><p class="note"><b>বর্তমান scope:</b> এটি admin web module; public/Nuxt API এখনো করা হয়নি।</p></section>
+<section class="card" id="files"><h2>2. File map</h2><pre><code>app/Models/Poll.php
+app/Models/PollOption.php
+app/Models/PollVote.php
+app/Models/PollComment.php
+app/Http/Controllers/Admin/PollController.php
+database/migrations/*poll*.php
+routes/web.php
+resources/views/admin/poll/poll.blade.php
+public/admin/assets/js/polls.js</code></pre><p>শেখা সহজ রাখতে validation, image ও CRUD backend logic Controller-এর মধ্যেই রাখা হয়েছে।</p></section>
+<section class="card" id="db"><h2>3. Database</h2><div class="table"><table><tr><th>Table</th><th>Fields</th><th>কাজ</th></tr><tr><td>polls</td><td>admin_id, title, slug, description, image, poll_type, result_visibility, starts_at, ends_at, status, allow_comments, correct_option_id</td><td>মূল poll ও publishing settings</td></tr><tr><td>poll_options</td><td>poll_id, content, position</td><td>উত্তর ও order</td></tr><tr><td>poll_votes</td><td>poll_id, poll_option_id, user_id, ip_address</td><td>vote history</td></tr><tr><td>poll_comments</td><td>poll_id, user_id, name, comment, status</td><td>comments</td></tr></table></div><p><code>polls 1 → many options/votes/comments</code>। <code>correct_option_id → poll_options.id</code>। Vote count votes table থেকে হিসাব হয়।</p></section>
+<section class="card" id="models"><h2>4. Model relationships</h2><pre><code>// Poll.php
+public function options(){ return $this->hasMany(PollOption::class); }
+public function votes(){ return $this->hasMany(PollVote::class); }
+public function comments(){ return $this->hasMany(PollComment::class); }
+public function correctOption(){
+ return $this->belongsTo(PollOption::class,'correct_option_id');
+}
+
+// PollOption.php
+public function poll(){ return $this->belongsTo(Poll::class); }
+public function votes(){ return $this->hasMany(PollVote::class); }</code></pre><p><code>withCount(['options','votes','comments'])</code> full records না এনে count আনে—বড় list-এর জন্য efficient।</p></section>
+<section class="card" id="routes"><h2>5. Route → Controller</h2><div class="table"><table><tr><th>Request</th><th>Name</th><th>Method</th></tr><tr><td>GET /admin/polls</td><td>polls</td><td>index</td></tr><tr><td>POST /admin/poll</td><td>admin-poll.store</td><td>store</td></tr><tr><td>GET /admin/poll/{poll}</td><td>admin-poll.show</td><td>show</td></tr><tr><td>PUT /admin/poll/{poll}</td><td>admin-poll.update</td><td>update</td></tr><tr><td>PATCH /admin/poll/{poll}/status</td><td>admin-poll.status</td><td>updateStatus</td></tr><tr><td>DELETE /admin/poll/{poll}</td><td>admin-poll.delete</td><td>destroy</td></tr></table></div><p><code>{poll}</code> Route Model Binding করে <code>Poll $poll</code> দেয়।</p></section>
+<section class="card" id="controller"><h2>6. Controller map</h2><div class="table"><table><tr><th>Method</th><th>দায়িত্ব</th></tr><tr><td>index</td><td>search/status/type filter, pagination, summary</td></tr><tr><td>store</td><td>validate → image → transaction → poll/options/correct answer</td></tr><tr><td>show</td><td>Edit modal-এর JSON</td></tr><tr><td>update</td><td>Poll ও existing/new options update</td></tr><tr><td>updateStatus</td><td>draft/published/closed</td></tr><tr><td>destroy</td><td>record ও image delete</td></tr><tr><td>validatePoll</td><td>common rules</td></tr><tr><td>pollData</td><td>clean database data</td></tr><tr><td>saveCorrectAnswer</td><td>position থেকে option ID</td></tr><tr><td>uniqueSlug</td><td>unique slug</td></tr></table></div><pre><code>// Transaction error হলে partial data থাকে না।
+DB::transaction(function () use ($request,$data) {
+ $poll = Poll::create($data);
+ foreach ($request->options as $position=>$option) {
+  $poll->options()->create([
+   'content'=>$option['content'],'position'=>$position
+  ]);
+ }
+ $this->saveCorrectAnswer($poll,$request->correct_option_index);
+});</code></pre></section>
+<section class="card" id="js"><h2>7. Blade selector ↔ JavaScript</h2><div class="table"><table><tr><th>Selector</th><th>কাজ</th></tr><tr><td>.js-poll-create</td><td>reset + modal open</td></tr><tr><td>#poll-form-modal</td><td>Bootstrap modal</td></tr><tr><td>#poll-form</td><td>FormData submit</td></tr><tr><td>#poll-form-errors</td><td>validation errors</td></tr><tr><td>#poll-options-container</td><td>dynamic option rows</td></tr><tr><td>#poll-add-option</td><td>option add</td></tr><tr><td>.js-poll-option-input</td><td>correct dropdown refresh</td></tr><tr><td>#correct-option</td><td>correct_option_index</td></tr><tr><td>.js-poll-edit</td><td>GET + modal fill</td></tr><tr><td>.js-poll-status</td><td>PATCH</td></tr><tr><td>.js-poll-delete</td><td>confirm + DELETE</td></tr><tr><td>#poll-filter-form</td><td>AJAX filter</td></tr></table></div><pre><code>&lt;button class="js-poll-edit"
+ data-url="{{ route('admin-poll.show',$poll) }}"&gt;Edit&lt;/button&gt;
+
+$(document).on('click','.js-poll-edit',function(){
+ $.get($(this).data('url')).done(function(poll){
+  // JSON দিয়ে modal fill
+ });
+});</code></pre><p class="note"><b>Delegated event</b> ব্যবহারে AJAX-এ HTML replace হলেও buttons কাজ করে। তাই polls.js main layout থেকে global load হয়।</p></section>
+<section class="card" id="correct"><h2>8. Correct answer</h2><p>নতুন option-এর database ID আগে নেই। Browser index পাঠায়:</p><pre><code>options[0][content] = "হ্যাঁ"
+options[1][content] = "না"
+correct_option_index = 1</code></pre><div class="flow"><span>index 1</span>→<span>option save</span>→<span>real ID 27</span>→<span>correct_option_id 27</span></div><p>Edit-এর hidden <code>options[index][id]</code> দিয়ে পুরোনো option update, ID ছাড়া option create হয়। <code>reindexOptions()</code> A/B/C labels ও input names ঠিক করে।</p></section>
+<section class="card" id="crud"><h2>9. CRUD flows</h2><h3>Create</h3><ol><li>Empty modal ও minimum 2 options</li><li>JS POST FormData</li><li>Validation ও transaction</li><li>AJAX list refresh</li></ol><h3>Edit</h3><ol><li>data-url-এ GET</li><li>show() JSON</li><li>JS form fill</li><li><code>_method=PUT</code></li></ol><h3>Status/Delete</h3><p>Status-এর জন্য PATCH। Confirmation-এর পরে DELETE; cascade related rows এবং Controller image remove করে।</p><p class="warn"><b>Vote safety:</b> বাদ দেওয়া old option-এ vote থাকলে delete আটকায়, তাই historical vote নষ্ট হয় না।</p></section>
+<section class="card" id="future"><h2>10. Permission, status ও Nuxt future</h2><ul><li>CSRF, validation, DB transaction</li><li>poll view/add/edit/delete permission</li><li>pagination ও withCount</li><li><b>Draft:</b> review/অসম্পূর্ণ; public নয়</li><li><b>Published:</b> schedule valid হলে public</li><li><b>Closed:</b> voting শেষ</li></ul><p>পরে admin/database রেখে API করা যাবে:</p><pre><code>GET /api/polls
+GET /api/polls/{slug}
+POST /api/polls/{poll}/votes
+GET /api/polls/{poll}/results
+POST /api/polls/{poll}/comments</code></pre><p>Nuxt side-এ published status, schedule, result visibility, duplicate-vote rule ও rate limit লাগবে।</p></section>
+<section class="card" id="debug"><h2>11. Debug ও change checklist</h2><ol><li><code>php artisan route:list --name=poll</code></li><li>Network tab: URL, method, status</li><li>422 = validation; 500 = <code>storage/logs/laravel.log</code></li><li>Blade/JS selector spelling</li><li>migration, foreign keys ও permission</li></ol><p><b>নতুন field:</b> migration + Blade name + validation + controller + model মিলান। <b>নতুন action:</b> route + permission + selector + JS request মিলান। শেষে create/edit/status/delete test করুন এবং নতুন code-এর কাজে comment দিন।</p></section>
+<section class="card"><h2>মনে রাখার সূত্র</h2><p>Blade → JavaScript → Route → Controller → Model → Database। এই ছয় জায়গার field name, URL, HTTP method এবং ID/class একই contract মেনে চললেই module ঠিক কাজ করবে।</p></section>
+</article></main></body></html>
