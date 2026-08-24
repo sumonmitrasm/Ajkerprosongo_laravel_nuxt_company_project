@@ -106,6 +106,30 @@
     <!-- Jquery js-->
     <script src="{{ url('admin/assets/js/vendors/jquery.min.js') }}"></script>
 
+    <script>
+        // Do not block the dashboard while optional images, charts, or CDN assets load.
+        // DOMContentLoaded is enough because the dashboard markup is already usable.
+        (function () {
+            var loader = document.getElementById('global-loader');
+            var hideLoader = function () {
+                if (!loader || loader.dataset.hidden === 'true') return;
+                loader.dataset.hidden = 'true';
+                loader.style.transition = 'opacity 180ms ease';
+                loader.style.opacity = '0';
+                window.setTimeout(function () { loader.style.display = 'none'; }, 180);
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', hideLoader, { once: true });
+            } else {
+                hideLoader();
+            }
+
+            // Last-resort protection if another script delays page initialization.
+            window.setTimeout(hideLoader, 3000);
+        }());
+    </script>
+
     <!-- Bootstrap5 js-->
     <script src="{{ url('admin/assets/plugins/bootstrap/js/popper.min.js') }}"></script>
     <script src="{{ url('admin/assets/plugins/bootstrap/js/bootstrap.min.js') }}"></script>
@@ -532,6 +556,9 @@
 
 	 <!-- Switcher-Styles js -->
     <script src="{{ url('admin/assets/js/switcher-styles.js') }}"></script>
+
+    <!-- Poll CRUD js: loaded globally so AJAX sidebar navigation keeps poll actions available. -->
+    <script src="{{ url('admin/assets/js/polls.js') }}"></script>
 
     <!-- Custom js-->
     <script src="{{ url('admin/assets/js/custom.js') }}"></script>

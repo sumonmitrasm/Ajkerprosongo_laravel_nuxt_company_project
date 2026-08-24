@@ -24,6 +24,10 @@ class AdminController extends Controller
 
     public function login(Request $request)
     {
+        if ($request->isMethod('get') && Auth::guard('admin')->check()) {
+            return redirect()->route('admin.dashboard');
+        }
+
         if ($request->isMethod('post')) {
             $throttleKey = Str::transliterate(Str::lower($request->input('email')).'|'.$request->ip());
             if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
@@ -271,6 +275,7 @@ class AdminController extends Controller
     private function permissionModules()
     {
         return AdminRole::query()->select('module')->distinct()->pluck('module')
-            ->merge(['admin', 'section', 'category', 'setting', 'tag'])->unique()->sort()->values();
+            // Keep the permission screen aware of every protected admin module.
+            ->merge(['admin', 'section', 'category', 'setting', 'tag', 'poll'])->unique()->sort()->values();
     }
 }

@@ -11,15 +11,15 @@
         <!-- Title -->
         <title>{{ optional($generalSetting)->side_name ?? '' }}</title>
         <!--Favicon -->
-        {{--
+
         <link
             rel="icon"
             href="{{ $generalSetting->favicon ? asset('admin/site_settings/'.$generalSetting->favicon) : asset('admin/site_settings/no-image.png') }}"
             type="image/x-icon"
-        />
-        --}}
+            />
+
         <!--Favicon -->
-        <link rel="icon" href="{{ asset('admin/assets/images/brand/favicon.ico') }}" type="image/x-icon" />
+        {{-- <link rel="icon" href="{{ asset('admin/assets/images/brand/favicon.ico') }}" type="image/x-icon" /> --}}
         <!-- Bootstrap css -->
         <link id="style" href="{{ url('admin/assets/plugins/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet" />
         <!-- Style css -->
@@ -42,13 +42,13 @@
                     <div class="page-content">
                         <div class="page-single-content">
                             <img
-                                src="{{ asset('admin/assets/images/brand/logos.svg') }}"
+                                src="{{ $generalSetting->image ? asset('admin/site_settings/'.$generalSetting->image) : asset('admin/site_settings/no-image.png') }}"
                                 alt="img"
                                 class="header-brand-img mb-5"
                             />
                             <div class="card-body text-white py-5 px-8 text-center">
                                 <img
-                                    src="{{ asset('admin/assets/images/png/blood.jpg') }}"
+                                    src="{{ $generalSetting->image ? asset('admin/site_settings/'.$generalSetting->image) : asset('admin/site_settings/no-image.png') }}"
                                     alt="img"
                                     class="w-100 mx-auto text-center"
                                 />
@@ -206,15 +206,9 @@
                         },
                         success: function (response) {
                             if (response.status === true) {
-                                $("#alertContainer").html(`
-                        <div class="alert alert-success">
-                            ${response.message} Redirecting...
-                        </div>
-                    `);
-
-                                setTimeout(function () {
-                                    window.location.href = response.redirect_url;
-                                }, 1000);
+                                // Keep the authentication boundary reliable while avoiding
+                                // the artificial one-second delay and login-page history entry.
+                                window.location.replace(response.redirect_url);
                             } else {
                                 $("#alertContainer").html(`
                         <div class="alert alert-danger alert-dismissible fade show">
