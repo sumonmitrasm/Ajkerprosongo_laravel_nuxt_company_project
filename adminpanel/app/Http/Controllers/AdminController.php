@@ -275,6 +275,7 @@ class AdminController extends Controller
     private function permissionModules()
     {
         return AdminRole::query()->select('module')->distinct()->pluck('module')
-            ->merge(['admin', 'section', 'category', 'setting', 'tag'])->unique()->sort()->values();
+            // Keep the permission screen aware of every protected admin module.
+            ->merge(['admin', 'section', 'category', 'setting', 'tag', 'poll'])->unique()->sort()->values();
     }
 }

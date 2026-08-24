@@ -22,6 +22,9 @@
                             $canManageCategories = $admin?->hasModuleAccess('category', 'view');
                             $canManageSettings = $admin?->hasModuleAccess('setting', 'view');
                             $canManageTags = $admin?->hasModuleAccess('tag', 'view');
+
+                            // Show the Online Polling menu only when the admin has poll view access.
+                            $canOnlinePolling = $admin?->hasModuleAccess('poll', 'view');
                         @endphp
                         <img src="{{ $admin && $admin->image
                             ? asset('admin/adminimage/' . $admin->image)

@@ -59,6 +59,12 @@ class AdminPermissionMiddleware
             'admin-tag.store' => ['tag', 'add'],
             'admin-tag.update', 'admin-tag.status' => ['tag', 'edit'],
             'admin-tag.delete' => ['tag', 'delete'],
+
+            // Protect every poll action even when a user enters the URL directly.
+            'polls', 'admin-poll.show' => ['poll', 'view'],
+            'admin-poll.store' => ['poll', 'add'],
+            'admin-poll.update', 'admin-poll.status' => ['poll', 'edit'],
+            'admin-poll.delete' => ['poll', 'delete'],
             default => null,
         };
     }

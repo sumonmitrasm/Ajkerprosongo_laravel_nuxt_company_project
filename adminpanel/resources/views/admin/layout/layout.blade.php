@@ -557,6 +557,9 @@
 	 <!-- Switcher-Styles js -->
     <script src="{{ url('admin/assets/js/switcher-styles.js') }}"></script>
 
+    <!-- Poll CRUD js: loaded globally so AJAX sidebar navigation keeps poll actions available. -->
+    <script src="{{ url('admin/assets/js/polls.js') }}"></script>
+
     <!-- Custom js-->
     <script src="{{ url('admin/assets/js/custom.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

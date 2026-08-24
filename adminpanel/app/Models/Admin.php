@@ -55,28 +55,28 @@ class Admin extends Authenticatable
 
     public function hasModuleAccess(string $module, string $access = 'view'): bool
     {
+        // Superadmins always retain recovery access to every admin module.
         if ($this->type === 'superadmin') {
             return true;
         }
-        $role = $this->roles()->where('module', $module)->first();
-        if (!$role || $role->no_access == 1) {
+
+        // Reuse middleware-loaded roles to avoid one query for every sidebar item.
+        $role = $this->relationLoaded('roles')
+            ? $this->roles->firstWhere('module', $module)
+            : $this->roles()->where('module', $module)->first();
+
+        if (! $role || $role->no_access) {
             return false;
         }
-        if ($access === 'add') {
-            return (bool) $role->add_access;
-        }
 
-        if ($access === 'edit') {
-            return (bool) $role->edit_access;
-        }
-
-        if ($access === 'delete') {
-            return (bool) $role->delete_access;
-        }
-
-        if ($access === 'full') {
-            return $role->view_access && $role->add_access && $role->edit_access && $role->delete_access;
-        }
-        return (bool) $role->view_access;
+        // Map each route action to its matching permission column.
+        return match ($access) {
+            'add' => (bool) $role->add_access,
+            'edit' => (bool) $role->edit_access,
+            'delete' => (bool) $role->delete_access,
+            'full' => (bool) ($role->view_access && $role->add_access && $role->edit_access && $role->delete_access),
+            'view' => (bool) $role->view_access,
+            default => false,
+        };
     }
 }
