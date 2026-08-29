@@ -11,7 +11,8 @@ class PostController extends Controller
      */
     public function index()
     {
-        //
+        // Display the static newsroom editor until Post CRUD is connected.
+        return view('admin.post.post');
     }
 
     /**

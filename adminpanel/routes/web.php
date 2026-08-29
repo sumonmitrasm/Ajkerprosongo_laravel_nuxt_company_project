@@ -8,6 +8,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\PollController;
+use App\Http\Controllers\PostController;
 
 Route::get('/clear-cache', function() {
     Artisan::call('view:clear');
@@ -81,6 +82,14 @@ Route::namespace('App\Http\Controllers\Admin')->prefix('/admin')->group(function
         Route::patch('poll/{poll}/status', [PollController::class, 'updateStatus'])->name('admin-poll.status');
         Route::delete('poll/{poll}', [PollController::class, 'destroy'])->name('admin-poll.delete');
         //>>>>>>>>>>>>>>>>>>>>>>>>End Polling<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        //>>>>>>>>>>>>>>>>>>>>>>>>News Posts<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        Route::get('posts', [PostController::class, 'index'])->name('posts');
+        Route::post('post', [PostController::class, 'store'])->name('admin-post.store');
+        Route::get('post/{post}', [PostController::class, 'show'])->name('admin-post.show');
+        Route::put('post/{post}', [PostController::class, 'update'])->name('admin-post.update');
+        Route::patch('post/{post}/status', [PostController::class, 'updateStatus'])->name('admin-post.status');
+        Route::delete('post/{post}', [PostController::class, 'destroy'])->name('admin-post.delete');
+        //>>>>>>>>>>>>>>>>>>>>>>>>End News Posts<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     });
 });

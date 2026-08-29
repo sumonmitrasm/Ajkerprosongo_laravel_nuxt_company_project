@@ -38,7 +38,6 @@ return new class extends Migration
             $table->string('special_title')->nullable();
             $table->text('summary')->nullable();
             $table->longText('description');
-            $table->text('reporter_details')->nullable();
             $table->string('source')->nullable();
 
             // Store primary media; additional gallery images live in post_images.
