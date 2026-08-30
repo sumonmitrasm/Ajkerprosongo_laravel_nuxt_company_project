@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Tag;
+use App\Support\PostFormLookups;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -31,6 +32,7 @@ class TagController extends Controller
     public function store(Request $request)
     {
         Tag::create($this->validatedData($request));
+        PostFormLookups::forget();
 
         return response()->json(['message' => 'Tag created successfully.'], 201);
     }
@@ -46,6 +48,7 @@ class TagController extends Controller
     public function update(Request $request, Tag $tag)
     {
         $tag->update($this->validatedData($request, $tag));
+        PostFormLookups::forget();
 
         return response()->json(['message' => 'Tag updated successfully.']);
     }
@@ -53,6 +56,7 @@ class TagController extends Controller
     public function updateStatus(Tag $tag)
     {
         $tag->update(['status' => ! $tag->status]);
+        PostFormLookups::forget();
 
         return response()->json(['message' => 'Tag status updated successfully.']);
     }
@@ -61,6 +65,7 @@ class TagController extends Controller
     {
         $this->deleteImage($tag->image);
         $tag->delete();
+        PostFormLookups::forget();
 
         return response()->json(['message' => 'Tag deleted successfully.']);
     }

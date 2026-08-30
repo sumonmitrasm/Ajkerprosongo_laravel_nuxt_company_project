@@ -560,6 +560,11 @@
     <!-- Poll CRUD js: loaded globally so AJAX sidebar navigation keeps poll actions available. -->
     <script src="{{ url('admin/assets/js/polls.js') }}"></script>
 
+    <!-- Post CRUD js: global loading keeps events alive after AJAX navigation. -->
+    <!-- Quill powers the News Post rich-text description editor. -->
+    <script src="{{ url('admin/assets/plugins/quill/quill.min.js') }}"></script>
+    <script src="{{ url('admin/assets/js/posts.js') }}"></script>
+
     <!-- Custom js-->
     <script src="{{ url('admin/assets/js/custom.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Post Module: Complete Architecture & Portable Laravel Handbook</title>
+  <style>
+    :root{--bg:#07101f;--panel:#0d1930;--panel2:#111f3c;--text:#e8eefc;--muted:#9ba9c7;--line:#263757;--brand:#7691ff;--cyan:#3dd9d0;--green:#56d69a;--amber:#ffc56d;--red:#ff7f8d;--code:#050b16}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:linear-gradient(145deg,#07101f,#09142a 55%,#07101f);color:var(--text);font:16px/1.72 system-ui,-apple-system,"Segoe UI","Noto Sans Bengali",sans-serif}
+    a{color:#9fb1ff;text-decoration:none}a:hover{text-decoration:underline}.layout{max-width:1480px;margin:auto;display:grid;grid-template-columns:300px minmax(0,1fr);gap:28px;padding:24px}
+    aside{position:sticky;top:18px;align-self:start;max-height:calc(100vh - 36px);overflow:auto;background:rgba(13,25,48,.96);border:1px solid var(--line);border-radius:18px;padding:20px}
+    aside h2{font-size:16px;margin:0 0 12px}.toc{margin:0;padding-left:22px;font-size:13px}.toc li{margin:5px 0}.toc a{color:#b9c5df}
+    main{min-width:0}.hero{padding:38px;background:linear-gradient(135deg,#17295c,#12204a 60%,#0e3a48);border:1px solid #344d8c;border-radius:22px;margin-bottom:24px}.eyebrow{color:var(--cyan);letter-spacing:.12em;text-transform:uppercase;font-weight:800;font-size:12px}.hero h1{font-size:clamp(30px,5vw,56px);line-height:1.1;margin:10px 0}.hero p{max-width:850px;color:#c6d2eb;font-size:18px}.meta{display:flex;gap:10px;flex-wrap:wrap}.pill,.badge{display:inline-block;padding:4px 10px;border:1px solid #38528a;border-radius:999px;background:#13264f;font-size:12px}.badge.current{border-color:#257b69;color:#83e8c2;background:#0d332e}.badge.portable{border-color:#936a2c;color:#ffd48a;background:#382b16}
+    section{scroll-margin-top:18px;background:rgba(13,25,48,.92);border:1px solid var(--line);border-radius:18px;padding:26px;margin:20px 0}h2{font-size:25px;margin:0 0 14px}h3{font-size:18px;color:#d5dfff;margin:24px 0 8px}h4{margin:18px 0 6px}.lead{font-size:17px;color:#c4d0e8}.muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.card{background:var(--panel2);border:1px solid #2a3d66;border-radius:13px;padding:16px}.card h3,.card h4{margin-top:0}.ok{border-left:4px solid var(--green)}.warn{border-left:4px solid var(--amber)}.danger{border-left:4px solid var(--red)}.info{border-left:4px solid var(--brand)}
+    table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}th,td{text-align:left;vertical-align:top;padding:10px;border-bottom:1px solid var(--line)}th{color:#cdd8f3;background:#101e39}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}
+    code{font-family:Consolas,"Cascadia Code",monospace;background:#111e35;color:#bcd0ff;padding:.12em .35em;border-radius:4px}pre{position:relative;overflow:auto;background:var(--code);border:1px solid #223456;border-radius:12px;padding:17px;color:#d6e3ff;font:13px/1.58 Consolas,"Cascadia Code",monospace;white-space:pre}pre code{padding:0;background:none;color:inherit}.label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--cyan);font-weight:800}.flow{display:flex;gap:9px;align-items:stretch;flex-wrap:wrap;margin:14px 0}.step{flex:1;min-width:130px;background:#111f3c;border:1px solid #304772;border-radius:12px;padding:12px;text-align:center}.arrow{align-self:center;color:var(--cyan);font-size:22px}
+    .status{font-weight:700}.draft{color:#aab7ce}.review{color:#ffd071}.scheduled{color:#a9a4ff}.published{color:#65e1a8}.archived{color:#ff91a0}.checklist li{margin:7px 0}.file{color:#8ee8d5}.anchor{font-size:13px;float:right;color:#7f91b5}.note{background:#0c2b32;border:1px solid #21616a;padding:13px 15px;border-radius:11px}.footer{text-align:center;color:var(--muted);padding:28px}
+    @media(max-width:1020px){.layout{display:block}aside{position:relative;max-height:none;margin-bottom:22px}.grid,.grid.three{grid-template-columns:1fr}}@media print{body{background:#fff;color:#111}.layout{display:block;max-width:none}.hero,section,.card{background:#fff;color:#111;border-color:#aaa;break-inside:avoid}aside{display:none}pre{white-space:pre-wrap}.muted,.lead,.hero p{color:#333}a{color:#163b8c}}
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside>
+    <h2>বিষয়সূচি</h2>
+    <ol class="toc">
+      <li><a href="#scope">Scope ও সত্যতার সীমা</a></li>
+      <li><a href="#map">Module map</a></li>
+      <li><a href="#dependencies">Dependencies</a></li>
+      <li><a href="#architecture">Request architecture</a></li>
+      <li><a href="#database">Database overview</a></li>
+      <li><a href="#posts-table">posts table</a></li>
+      <li><a href="#related-tables">Related tables</a></li>
+      <li><a href="#models">Models ও relations</a></li>
+      <li><a href="#routes">Routes ও middleware</a></li>
+      <li><a href="#permissions">Permission rules</a></li>
+      <li><a href="#index">List, filter, pagination</a></li>
+      <li><a href="#store">Post create flow</a></li>
+      <li><a href="#show-update">Show ও update flow</a></li>
+      <li><a href="#workflow">Editorial status workflow</a></li>
+      <li><a href="#delete">Delete behavior</a></li>
+      <li><a href="#validation">Validation</a></li>
+      <li><a href="#data-helper">Data preparation helpers</a></li>
+      <li><a href="#media">Media ও gallery</a></li>
+      <li><a href="#audit">Revision ও history</a></li>
+      <li><a href="#lookups">Lookup cache</a></li>
+      <li><a href="#blade">Blade page ও loops</a></li>
+      <li><a href="#cascade">Cascading selects</a></li>
+      <li><a href="#javascript">JavaScript/AJAX</a></li>
+      <li><a href="#portable">অন্য project-এ নেওয়া</a></li>
+      <li><a href="#public-api">Public frontend blueprint</a></li>
+      <li><a href="#performance">Performance ও scale</a></li>
+      <li><a href="#security">Security</a></li>
+      <li><a href="#testing">Testing plan</a></li>
+      <li><a href="#troubleshooting">Common errors</a></li>
+      <li><a href="#checklist">Production checklist</a></li>
+    </ol>
+  </aside>
+  <main>
+    <header class="hero">
+      <div class="eyebrow">Newsroom Engineering Handbook</div>
+      <h1>Post Module — Complete Architecture &amp; Portable Laravel Guide</h1>
+      <p>এই document-টি বর্তমান admin Post CRUD, editorial workflow, media, location, revision/history, cache, Blade এবং AJAX code-এর একটি source-based বাংলা মানচিত্র। একই architecture অন্য Laravel project-এ নেওয়ার জন্য শেষে বাস্তব implementation blueprint দেওয়া হয়েছে।</p>
+      <div class="meta"><span class="pill">Laravel 13</span><span class="pill">PHP 8.3+</span><span class="pill">AJAX CRUD</span><span class="pill">Editorial workflow</span><span class="pill">Updated: 30 Aug 2026</span></div>
+    </header>
+
+    <section id="scope">
+      <a class="anchor" href="#">উপরে ↑</a><h2>1. Scope ও সত্যতার সীমা</h2>
+      <div class="grid">
+        <div class="card ok"><span class="badge current">বর্তমান code</span><h3>যা project-এ এখন আছে</h3><p>Admin-side post list, create, edit, soft delete, status change, reviewer restrictions, gallery, tags, location cascade, revision এবং editorial history—সব source file দেখে document করা হয়েছে।</p></div>
+        <div class="card warn"><span class="badge portable">Portable recommendation</span><h3>যা template/recommendation</h3><p>Public Nuxt/API endpoint, queue, CDN/object storage, search engine এবং cache invalidation strategy-এর কিছু অংশ production blueprint; এগুলো বর্তমান admin code-এর দাবি নয়।</p></div>
+      </div>
+      <p class="note"><strong>গুরুত্বপূর্ণ:</strong> এই handbook কোনো migration চালায় না এবং application behavior বদলায় না। এটি documentation-only। অন্য project-এ copy করার সময় সংশ্লিষ্ট project-এর table/model/permission naming অনুযায়ী code adjust করবেন।</p>
+    </section>
+
+    <section id="map">
+      <a class="anchor" href="#">উপরে ↑</a><h2>2. Module map: কোন file কী কাজ করে</h2>
+      <div class="table-wrap"><table><thead><tr><th>Layer</th><th>বর্তমান file</th><th>মূল দায়িত্ব</th></tr></thead><tbody>
+        <tr><td>Routes</td><td class="file">routes/web.php</td><td>URL, HTTP method, route name ও middleware binding</td></tr>
+        <tr><td>Controller</td><td class="file">app/Http/Controllers/PostController.php</td><td>CRUD, validation, authorization, transaction, file handling ও workflow</td></tr>
+        <tr><td>Main model</td><td class="file">app/Models/Post.php</td><td>fillable, casts, soft delete এবং Eloquent relationships</td></tr>
+        <tr><td>Child models</td><td class="file">PostImage.php, PostRevision.php, PostStatusHistory.php</td><td>gallery, content snapshot ও status audit trail</td></tr>
+        <tr><td>Lookup service</td><td class="file">app/Support/PostFormLookups.php</td><td>form dropdown data cache এবং normalized response</td></tr>
+        <tr><td>Blade partial</td><td class="file">resources/views/admin/post/partials/get-post.blade.php</td><td>list table, filters, modal form, loops, inputs এবং history UI</td></tr>
+        <tr><td>Browser logic</td><td class="file">public/admin/assets/js/posts.js</td><td>Quill, AJAX CRUD, cascade filter, preview, gallery ও status action</td></tr>
+        <tr><td>Migrations</td><td class="file">database/migrations/*post*</td><td>posts, images, tag pivot, revisions এবং status histories schema</td></tr>
+        <tr><td>Authorization gateway</td><td class="file">app/Http/Middleware/AdminPermission.php</td><td>route name অনুযায়ী post view/add/edit/delete permission</td></tr>
+      </tbody></table></div>
+      <h3>Folder tree</h3>
+<pre><code>adminpanel/
+├── app/
+│   ├── Http/Controllers/PostController.php
+│   ├── Http/Middleware/AdminPermission.php
+│   ├── Models/{Post,PostImage,PostRevision,PostStatusHistory}.php
+│   └── Support/PostFormLookups.php
+├── database/migrations/
+│   ├── *_create_posts_table.php
+│   ├── *_create_post_images_table.php
+│   ├── *_create_post_tag_table.php
+│   ├── *_create_post_revisions_table.php
+│   └── *_create_post_status_histories_table.php
+├── resources/views/admin/post/partials/get-post.blade.php
+├── public/admin/assets/js/posts.js
+└── routes/web.php</code></pre>
+    </section>
+
+    <section id="dependencies">
+      <a class="anchor" href="#">উপরে ↑</a><h2>3. Runtime ও UI dependencies</h2>
+      <div class="grid three">
+        <div class="card"><h3>Backend</h3><ul><li>PHP <code>^8.3</code></li><li>Laravel Framework <code>^13.8</code></li><li>Eloquent ORM</li><li>Laravel Cache</li><li>DB transaction</li></ul></div>
+        <div class="card"><h3>Admin browser</h3><ul><li>jQuery</li><li>Bootstrap 5 modal/form</li><li>Quill rich editor</li><li>SweetAlert (confirmation)</li><li>FormData + AJAX</li></ul></div>
+        <div class="card"><h3>Media package</h3><p><code>intervention/image ^4.2</code> composer dependency আছে; কিন্তু বর্তমান <code>PostController::upload()</code> raw uploaded file <code>move()</code> করে। resize/optimization এখনো এই flow-তে প্রয়োগ করা হয়নি।</p></div>
+      </div>
+      <p class="warn card"><strong>অন্য project-এ minimum:</strong> matching PHP/Laravel version, authentication model, lookup tables, permission system এবং frontend libraries নিশ্চিত করুন। Laravel version আলাদা হলে middleware registration ও bootstrap structure সংশ্লিষ্ট version-এর নিয়মে বসাতে হবে।</p>
+    </section>
+
+    <section id="architecture">
+      <a class="anchor" href="#">উপরে ↑</a><h2>4. একটি request-এর end-to-end architecture</h2>
+      <div class="flow"><div class="step">Browser / Blade</div><div class="arrow">→</div><div class="step">Route + admin.auth</div><div class="arrow">→</div><div class="step">Permission middleware</div><div class="arrow">→</div><div class="step">PostController</div><div class="arrow">→</div><div class="step">Models + DB</div></div>
+      <h3>List page load</h3>
+      <ol><li>Browser <code>GET /admin/posts</code>, <code>/mine</code> বা <code>/review-queue</code> পাঠায়।</li><li>Authentication এবং named-route permission check হয়।</li><li><code>index()</code> user role/route অনুযায়ী query scope দেয়, filters প্রয়োগ করে এবং 10 row paginate করে।</li><li><code>PostFormLookups::get()</code> cached dropdown data যোগ করে।</li><li>Blade table/form render করে; পরবর্তী filter/edit/status actions <code>posts.js</code> AJAX-এ চালায়।</li></ol>
+      <h3>Create/update request</h3>
+      <div class="flow"><div class="step">Serialize FormData</div><div class="arrow">→</div><div class="step">Validate</div><div class="arrow">→</div><div class="step">Authorize</div><div class="arrow">→</div><div class="step">Upload new files</div><div class="arrow">→</div><div class="step">DB transaction</div><div class="arrow">→</div><div class="step">JSON + refresh</div></div>
+      <p class="note">Database rows transaction-এর মধ্যে atomic; file system transaction-aware নয়। তাই controller failure হলে নতুন upload cleanup করে এবং successful update-এর পরে পুরোনো file সরায়।</p>
+    </section>
+
+    <section id="database">
+      <a class="anchor" href="#">উপরে ↑</a><h2>5. Database overview</h2>
+      <p class="lead">Post module সরাসরি পাঁচটি post-specific table ব্যবহার করে এবং content classification, geography ও admin ownership-এর জন্য আরও lookup/identity table reference করে।</p>
+      <div class="table-wrap"><table><thead><tr><th>Table</th><th>ধরন</th><th>ব্যবহার</th><th>Delete rule</th></tr></thead><tbody>
+        <tr><td><code>posts</code></td><td>Primary</td><td>Article content, workflow, SEO, media pointers, flags, analytics</td><td>Soft delete</td></tr>
+        <tr><td><code>post_images</code></td><td>One-to-many</td><td>Story gallery এবং ordered images</td><td>Post hard-delete হলে cascade</td></tr>
+        <tr><td><code>post_tag</code></td><td>Many-to-many pivot</td><td>Post ↔ Tag mapping</td><td>Post/tag hard-delete হলে cascade</td></tr>
+        <tr><td><code>post_revisions</code></td><td>Audit snapshot</td><td>Edit-এর আগের content version ও change note</td><td>Post hard-delete হলে cascade</td></tr>
+        <tr><td><code>post_status_histories</code></td><td>Audit event</td><td>কে, কখন, কোন status থেকে কোন status করেছে</td><td>Post hard-delete হলে cascade</td></tr>
+        <tr><td><code>sections, categories, tags</code></td><td>Classification</td><td>Editorial taxonomy</td><td>Post FK null / pivot cascade</td></tr>
+        <tr><td><code>divisions, districts, upazilas</code></td><td>Geography</td><td>Location hierarchy</td><td>Post FK null</td></tr>
+        <tr><td><code>admins</code></td><td>Identity</td><td>author, creator, updater, reviewer, publisher, deleter, history actor</td><td>FK null</td></tr>
+      </tbody></table></div>
+      <h3>Relationship picture</h3>
+<pre><code>sections  ─┐             ┌─ post_images (1:N)
+categories ├─&gt; posts ────┼─ post_revisions (1:N)
+locations ─┤             ├─ post_status_histories (1:N)
+admins ────┘             └─ post_tag (N:M) ─&gt; tags
+
+section ─&gt; categories       division ─&gt; districts ─&gt; upazilas</code></pre>
+    </section>
+
+    <section id="posts-table">
+      <a class="anchor" href="#">উপরে ↑</a><h2>6. <code>posts</code> table: column-by-column purpose</h2>
+      <div class="table-wrap"><table><thead><tr><th>Group</th><th>Columns</th><th>কাজ</th></tr></thead><tbody>
+        <tr><td>Identity</td><td><code>id</code>, <code>post_type</code></td><td>Primary key; news/article/opinion/video/photo_story content type</td></tr>
+        <tr><td>Classification</td><td><code>section_id</code>, <code>category_id</code></td><td>Section/category grouping; nullable foreign keys</td></tr>
+        <tr><td>Location</td><td><code>division_id</code>, <code>district_id</code>, <code>upazila_id</code></td><td>বাংলাদেশ location hierarchy; nullable</td></tr>
+        <tr><td>Ownership</td><td><code>author_id</code>, <code>created_by</code>, <code>updated_by</code></td><td>Byline/owner এবং audit actor</td></tr>
+        <tr><td>Workflow actors</td><td><code>reviewed_by</code>, <code>published_by</code>, <code>deleted_by</code></td><td>Reviewer assignment/actor, publisher ও deleter</td></tr>
+        <tr><td>Main content</td><td><code>title</code>, <code>slug</code>, <code>special_title</code>, <code>summary</code>, <code>description</code>, <code>source</code></td><td>Headline, unique URL key এবং article body/meta content</td></tr>
+        <tr><td>Main media</td><td><code>featured_image</code>, <code>image_caption</code>, <code>image_alt</code>, <code>video_url</code>, <code>video_type</code></td><td>Lead image/video এবং accessibility/context text</td></tr>
+        <tr><td>Workflow state</td><td><code>status</code>, <code>scheduled_at</code>, <code>reviewed_at</code>, <code>published_at</code>, <code>last_edited_at</code></td><td>Draft-to-publish lifecycle timestamps</td></tr>
+        <tr><td>Priority/comments</td><td><code>is_breaking</code>, <code>is_featured</code>, <code>is_pinned</code>, <code>allow_comments</code>, <code>featured_positions</code></td><td>Homepage/display switches এবং JSON position array</td></tr>
+        <tr><td>SEO</td><td><code>meta_title</code>, <code>meta_description</code>, <code>meta_keywords</code>, <code>meta_image</code>, <code>meta_robots</code>, <code>canonical_url</code>, <code>schema_markup</code></td><td>Search/social metadata; schema is JSON cast</td></tr>
+        <tr><td>Analytics</td><td><code>views_count</code>, <code>reading_time</code></td><td>View counter এবং calculated minutes</td></tr>
+        <tr><td>Lifecycle</td><td><code>created_at</code>, <code>updated_at</code>, <code>deleted_at</code></td><td>Laravel timestamps + SoftDeletes</td></tr>
+      </tbody></table></div>
+      <h3>Indexes কেন আছে</h3>
+      <ul><li><code>(status, published_at)</code>: published/scheduled feed.</li><li><code>(category_id, status, published_at)</code> এবং <code>(section_id, status, published_at)</code>: taxonomy feeds.</li><li><code>(is_breaking, status, published_at)</code> ও <code>(is_featured, status, published_at)</code>: priority widgets.</li><li><code>slug</code> unique: stable public lookup এবং duplicate URL prevention.</li></ul>
+<pre><code>// Migration-এর representative অংশ
+$table-&gt;string('slug')-&gt;unique();
+$table-&gt;string('status')-&gt;default('draft');
+$table-&gt;json('featured_positions')-&gt;nullable();
+$table-&gt;softDeletes();
+$table-&gt;index(['status', 'published_at']);</code></pre>
+    </section>
+
+    <section id="related-tables">
+      <a class="anchor" href="#">উপরে ↑</a><h2>7. Related post tables</h2>
+      <div class="grid">
+        <div class="card"><h3><code>post_images</code></h3><p><code>post_id, image, caption, alt_text, source, photographer, position, is_featured</code>। <code>(post_id, position)</code> index ordered gallery load দ্রুত করে।</p></div>
+        <div class="card"><h3><code>post_tag</code></h3><p><code>post_id + tag_id</code> unique pair। একই tag একই post-এ দ্বিতীয়বার ঢুকবে না; <code>sync()</code> pivot state মিলিয়ে দেয়।</p></div>
+        <div class="card"><h3><code>post_revisions</code></h3><p><code>version</code>, editor এবং edit-এর আগের title/summary/description/image/caption snapshot। <code>(post_id, version)</code> unique। Laravel automatic timestamps বন্ধ; শুধু <code>created_at</code>।</p></div>
+        <div class="card"><h3><code>post_status_histories</code></h3><p><code>changed_by, from_status, to_status, note, created_at</code>। Create event-এ <code>from_status = null</code>; history chronological order-এ দেখানো হয়।</p></div>
+      </div>
+      <p class="note"><strong>Migration order:</strong> lookup/admin tables আগে, এরপর <code>posts</code>, তারপর চারটি child/pivot table। কারণ foreign key target আগে থাকতে হয়। বর্তমান project-এ existing migration ব্যবহার করা হয়েছে; এই handbook কোনো migration execute করেনি।</p>
+    </section>
+
+    <section id="models">
+      <a class="anchor" href="#">উপরে ↑</a><h2>8. Models, casts ও relationships</h2>
+      <h3><code>Post</code> model</h3>
+      <p><code>SoftDeletes</code> trait ব্যবহারে delete query row সরায় না; <code>deleted_at</code> বসায়। Booleans, JSON arrays এবং datetimes cast হওয়ায় controller/Blade raw string নিয়ে কাজ করতে হয় না।</p>
+<pre><code>class Post extends Model
+{
+    use SoftDeletes;
+
+    protected $casts = [
+        'scheduled_at' =&gt; 'datetime',
+        'reviewed_at' =&gt; 'datetime',
+        'published_at' =&gt; 'datetime',
+        'is_breaking' =&gt; 'boolean',
+        'is_featured' =&gt; 'boolean',
+        'is_pinned' =&gt; 'boolean',
+        'allow_comments' =&gt; 'boolean',
+        'featured_positions' =&gt; 'array',
+        'schema_markup' =&gt; 'array',
+    ];
+
+    public function images(): HasMany
+    {
+        return $this-&gt;hasMany(PostImage::class)-&gt;orderBy('position');
+    }
+
+    public function tags(): BelongsToMany
+    {
+        return $this-&gt;belongsToMany(Tag::class)-&gt;withTimestamps();
+    }
+}</code></pre>
+      <div class="table-wrap"><table><thead><tr><th>Method</th><th>Relation</th><th>Meaning</th></tr></thead><tbody>
+        <tr><td><code>section(), category()</code></td><td>belongsTo</td><td>Taxonomy parent</td></tr>
+        <tr><td><code>division(), district(), upazila()</code></td><td>belongsTo</td><td>Geographic parents</td></tr>
+        <tr><td><code>author(), creator(), updater()</code></td><td>belongsTo Admin</td><td>Content owner ও audit users</td></tr>
+        <tr><td><code>reviewer(), publisher()</code></td><td>belongsTo Admin</td><td>Workflow actors</td></tr>
+        <tr><td><code>images(), revisions(), statusHistories()</code></td><td>hasMany</td><td>Child records; history created_at তারপর id order</td></tr>
+        <tr><td><code>tags()</code></td><td>belongsToMany</td><td><code>post_tag</code> pivot</td></tr>
+      </tbody></table></div>
+      <h3>Child models</h3>
+      <ul><li><code>PostImage</code>: fillable metadata, boolean <code>is_featured</code>, belongs to Post.</li><li><code>PostRevision</code>: <code>$timestamps = false</code>, created_at datetime cast, belongs to Post/editor.</li><li><code>PostStatusHistory</code>: <code>$timestamps = false</code>, created_at datetime cast, belongs to Post এবং <code>changedBy</code> Admin.</li></ul>
+      <p class="warn card"><strong>Port করার সময়:</strong> শুধু model copy করলে হবে না। Related Section/Category/Tag/location/Admin model namespaces এবং database keys একই না হলে relationship method ও foreign keys বদলাতে হবে।</p>
+    </section>
+
+    <section id="routes">
+      <a class="anchor" href="#">উপরে ↑</a><h2>9. Admin routes</h2>
+      <div class="table-wrap"><table><thead><tr><th>Method</th><th>URI</th><th>Name</th><th>Controller</th></tr></thead><tbody>
+        <tr><td>GET</td><td><code>/admin/posts</code></td><td><code>posts</code></td><td><code>index</code></td></tr>
+        <tr><td>GET</td><td><code>/admin/posts/mine</code></td><td><code>posts.mine</code></td><td><code>index</code></td></tr>
+        <tr><td>GET</td><td><code>/admin/posts/review-queue</code></td><td><code>posts.review</code></td><td><code>index</code></td></tr>
+        <tr><td>POST</td><td><code>/admin/post</code></td><td><code>admin-post.store</code></td><td><code>store</code></td></tr>
+        <tr><td>GET</td><td><code>/admin/post/{post}</code></td><td><code>admin-post.show</code></td><td><code>show</code></td></tr>
+        <tr><td>PUT</td><td><code>/admin/post/{post}</code></td><td><code>admin-post.update</code></td><td><code>update</code></td></tr>
+        <tr><td>PATCH</td><td><code>/admin/post/{post}/status</code></td><td><code>admin-post.status</code></td><td><code>updateStatus</code></td></tr>
+        <tr><td>DELETE</td><td><code>/admin/post/{post}</code></td><td><code>admin-post.delete</code></td><td><code>destroy</code></td></tr>
+      </tbody></table></div>
+<pre><code>Route::middleware(['admin.auth', 'admin.permission'])
+    -&gt;prefix('admin')
+    -&gt;group(function () {
+        Route::get('/posts', [PostController::class, 'index'])-&gt;name('posts');
+        Route::post('/post', [PostController::class, 'store'])-&gt;name('admin-post.store');
+        Route::get('/post/{post}', [PostController::class, 'show'])-&gt;name('admin-post.show');
+        Route::put('/post/{post}', [PostController::class, 'update'])-&gt;name('admin-post.update');
+        Route::patch('/post/{post}/status', [PostController::class, 'updateStatus'])-&gt;name('admin-post.status');
+        Route::delete('/post/{post}', [PostController::class, 'destroy'])-&gt;name('admin-post.delete');
+    });</code></pre>
+      <p>Route-model binding-এর <code>{post}</code> ID থেকে Laravel স্বয়ংক্রিয়ভাবে <code>Post $post</code> resolve করে। Soft-deleted row default binding-এ পাওয়া যায় না।</p>
+    </section>
+
+    <section id="permissions">
+      <a class="anchor" href="#">উপরে ↑</a><h2>10. Permission ও record-level authorization</h2>
+      <p>নিরাপত্তা দুই স্তরের: middleware বলে “এই feature ব্যবহার করতে পারবে কি না”, controller বলে “এই নির্দিষ্ট post-এ action করতে পারবে কি না”। UI button লুকানো তৃতীয় সুবিধামূলক স্তর—এটি security boundary নয়।</p>
+      <div class="table-wrap"><table><thead><tr><th>Route</th><th>Middleware permission</th><th>Controller record rule</th></tr></thead><tbody>
+        <tr><td>list/mine/review/show</td><td><code>post view</code></td><td>Superadmin / owner / assigned reviewer; list scope route-dependent</td></tr>
+        <tr><td>store</td><td><code>post add</code></td><td>Authenticated admin; submitted foreign keys validated</td></tr>
+        <tr><td>update</td><td><code>post edit</code></td><td>Superadmin, owner or assigned reviewer</td></tr>
+        <tr><td>status</td><td><code>post edit</code></td><td>Superadmin/assigned reviewer; owner কেবল draft বা review করতে পারে</td></tr>
+        <tr><td>delete</td><td><code>post delete</code></td><td>Superadmin বা owner</td></tr>
+      </tbody></table></div>
+      <p class="danger card"><strong>কখনো শুধু JavaScript/Blade permission-এর উপর নির্ভর করবেন না।</strong> DevTools দিয়ে button/HTTP request বানানো যায়। Middleware + server-side record authorization দুটোই রাখুন।</p>
+    </section>
+
+    <section id="index">
+      <a class="anchor" href="#">উপরে ↑</a><h2>11. List, scope, filter, eager loading ও pagination</h2>
+      <h3>Route name থেকে list scope</h3>
+      <div class="grid three"><div class="card"><h4><code>posts.mine</code></h4><p><code>created_by = current admin</code> অথবা <code>author_id = current admin</code>।</p></div><div class="card"><h4><code>posts.review</code></h4><p><code>reviewed_by = current admin</code> এবং <code>status = review</code>। Edit permission-ও লাগে।</p></div><div class="card"><h4><code>posts</code></h4><p>Superadmin সব দেখে; অন্য admin নিরাপত্তার জন্য mine scope-এ সীমাবদ্ধ।</p></div></div>
+      <h3>Query optimization</h3>
+<pre><code>$posts = $visibleQuery()
+    -&gt;select([
+        'id', 'title', 'status', 'category_id', 'author_id',
+        'featured_image', 'is_breaking', 'is_featured',
+        'scheduled_at', 'published_at', 'created_at',
+    ])
+    -&gt;with(['category:id,name', 'author:id,name'])
+    -&gt;when($request-&gt;search, fn ($q, $search) =&gt;
+        $q-&gt;where('title', 'like', "%{$search}%"))
+    -&gt;when($request-&gt;status, fn ($q, $status) =&gt;
+        $q-&gt;where('status', $status))
+    -&gt;latest()
+    -&gt;paginate(10)
+    -&gt;withQueryString();</code></pre>
+      <ul><li><code>select()</code> list-এ অপ্রয়োজনীয় long description/SEO JSON আনে না।</li><li><code>with()</code> category/author-এর N+1 query আটকায়। Loop-এর ভিতরে প্রতিটি post-এর জন্য নতুন query হয় না।</li><li><code>paginate(10)</code> সব row memory-তে তোলে না এবং filters পরের page link-এ থাকে।</li><li>Dashboard cards চার query না চালিয়ে একটি conditional aggregate query-তে total/published/draft-review/scheduled count নেয়।</li></ul>
+      <p class="warn card"><strong>Search scale note:</strong> <code>LIKE %keyword%</code> B-tree index পুরোপুরি ব্যবহার করতে পারে না। লক্ষ/কোটি article ও complex Bengali search-এর জন্য Meilisearch/OpenSearch/Elasticsearch বা Laravel Scout বিবেচনা করুন।</p>
+    </section>
+
+    <section id="store">
+      <a class="anchor" href="#">উপরে ↑</a><h2>12. Create flow: <code>store()</code></h2>
+      <div class="flow"><div class="step">validatePost()</div><div class="arrow">→</div><div class="step">upload featured/meta/gallery</div><div class="arrow">→</div><div class="step">DB transaction</div><div class="arrow">→</div><div class="step">Post::create</div><div class="arrow">→</div><div class="step">tags + gallery + history</div></div>
+      <ol><li>Shared validation সব scalar, FK, file, array এবং conditional field পরীক্ষা করে।</li><li>নতুন featured/meta/gallery files public directory-তে upload হয়; paths একটি cleanup list-এ রাখা হয়।</li><li>Transaction-এর মধ্যে normalized <code>postData()</code> দিয়ে Post তৈরি হয়।</li><li><code>$post-&gt;tags()-&gt;sync($tagIds)</code> pivot rows exact selection অনুযায়ী বসায়।</li><li><code>saveGallery()</code> image rows positionসহ রাখে।</li><li>Initial status history: <code>from_status = null</code>, <code>to_status = selected status</code>, note “Post created.”</li><li>Success-এ HTTP 201 JSON; exception হলে DB rollback এবং নতুন uploaded files cleanup।</li></ol>
+<pre><code>DB::transaction(function () use ($data, $request, $paths) {
+    $post = Post::create($this-&gt;postData($data, $request, $paths));
+    $post-&gt;tags()-&gt;sync($data['tag_ids'] ?? []);
+    $this-&gt;saveGallery($post, $request, $paths['gallery'] ?? []);
+
+    $post-&gt;statusHistories()-&gt;create([
+        'changed_by' =&gt; Auth::guard('admin')-&gt;id(),
+        'from_status' =&gt; null,
+        'to_status' =&gt; $post-&gt;status,
+        'note' =&gt; 'Post created.',
+        'created_at' =&gt; now(),
+    ]);
+});</code></pre>
+      <p class="info card"><strong>কেন upload transaction-এর আগে?</strong> UploadedFile move database query নয়, তাই DB transaction file rollback করতে পারে না। Code explicit cleanup list ব্যবহার করে failure compensate করে। Object storage ব্যবহার করলে একই compensating cleanup pattern রাখতে হবে।</p>
+    </section>
+
+    <section id="show-update">
+      <a class="anchor" href="#">উপরে ↑</a><h2>13. Edit data load ও <code>update()</code></h2>
+      <h3><code>show()</code>: modal-এর JSON source</h3>
+      <p>প্রথমে record authorization হয়; এরপর কেবল edit-এর দরকারি relations load হয়: <code>tags</code>, ordered <code>images</code>, এবং <code>statusHistories.changedBy</code>। Response-এ raw attributes-এর সঙ্গে <code>tag_ids</code>, asset URLs, HTML datetime-local value, mapped gallery ও Dhaka timezone formatted editorial history যোগ হয়।</p>
+<pre><code>$post-&gt;load([
+    'tags:id',
+    'images',
+    'statusHistories.changedBy:id,name',
+]);
+
+return response()-&gt;json([
+    ...$post-&gt;attributesToArray(),
+    'tag_ids' =&gt; $post-&gt;tags-&gt;pluck('id')-&gt;values(),
+    'scheduled_at_input' =&gt; optional($post-&gt;scheduled_at)-&gt;format('Y-m-d\TH:i'),
+    'editorial_history' =&gt; $formattedHistory,
+]);</code></pre>
+      <h3><code>update()</code>: old snapshot আগে, mutation পরে</h3>
+      <ol><li>Edit ও requested status authorization.</li><li>Shared validation এবং optional replacement files upload.</li><li>Transaction শুরু; <code>saveRevision()</code> update-এর আগের content snapshot রাখে।</li><li>Post fields update, tags sync, requested gallery rows delete, new gallery rows create.</li><li>Status সত্যিই বদলালে history row create; একই থাকলে duplicate history নয়।</li><li>Transaction fail হলে নতুন upload মুছে যায়। Success হলে replaced featured/meta image এবং removed gallery files disk থেকে সরানো হয়।</li></ol>
+      <p class="note">Revision “before image” রাখে; status history “event” রাখে। দুটির কাজ আলাদা। Revision body/title rollback বা audit-এ সহায়ক, history editorial movement বোঝায়।</p>
+    </section>
+
+    <section id="workflow">
+      <a class="anchor" href="#">উপরে ↑</a><h2>14. Editorial status workflow</h2>
+      <div class="flow"><div class="step status draft">Draft</div><div class="arrow">→</div><div class="step status review">Review</div><div class="arrow">→</div><div class="step status scheduled">Scheduled</div><div class="arrow">→</div><div class="step status published">Published</div><div class="arrow">→</div><div class="step status archived">Archived</div></div>
+      <div class="table-wrap"><table><thead><tr><th>Status</th><th>Meaning</th><th>Extra behavior</th><th>কারা করতে পারে</th></tr></thead><tbody>
+        <tr><td class="status draft">draft</td><td>Work in progress</td><td>Publishing timestamps জরুরি নয়</td><td>Owner, assigned reviewer, superadmin</td></tr>
+        <tr><td class="status review">review</td><td>Editor review queue</td><td>Assigned reviewer আবশ্যক</td><td>Owner submit করতে পারে; reviewer/superadmin</td></tr>
+        <tr><td class="status scheduled">scheduled</td><td>Future publication</td><td><code>scheduled_at</code> required</td><td>Assigned reviewer বা superadmin</td></tr>
+        <tr><td class="status published">published</td><td>Live-ready record</td><td><code>published_at</code> এবং <code>published_by</code> set হয়</td><td>Assigned reviewer বা superadmin</td></tr>
+        <tr><td class="status archived">archived</td><td>Editorially withdrawn/old</td><td>History preserved</td><td>Assigned reviewer বা superadmin</td></tr>
+      </tbody></table></div>
+      <h3>Dedicated status endpoint</h3>
+<pre><code>PATCH /admin/post/{post}/status
+{
+  "status": "published",
+  "note": "Final desk approval after headline correction."
+}</code></pre>
+      <p><code>updateStatus()</code> enum validate করে, record/status permission যাচাই করে, review-এ reviewer assignment নিশ্চিত করে, workflow timestamps/actors update করে এবং <strong>প্রতিটি পরিবর্তনের</strong> history row লেখে। Browser request fail করলে select আগের status-এ ফিরিয়ে দেয়।</p>
+      <div class="warn card"><strong>Scheduler boundary:</strong> বর্তমান admin module scheduled state/time সংরক্ষণ করে। নির্দিষ্ট সময়ে automatically publish করতে Laravel Scheduler/command/queue-এর আলাদা production job প্রয়োজন—এই controller নিজে clock-based publish worker নয়।</div>
+    </section>
+
+    <section id="delete">
+      <a class="anchor" href="#">উপরে ↑</a><h2>15. Delete behavior</h2>
+      <p><code>destroy()</code> delete authorization-এর পরে <code>deleted_by</code> update করে এবং <code>SoftDeletes</code> দিয়ে row soft-delete করে। Featured/gallery files ইচ্ছাকৃতভাবে রাখা হয়, যাতে restore সম্ভব হলে content broken না হয়।</p>
+<pre><code>$post-&gt;update(['deleted_by' =&gt; Auth::guard('admin')-&gt;id()]);
+$post-&gt;delete(); // deleted_at set; row/file স্থায়ীভাবে মুছে যায় না</code></pre>
+      <div class="grid"><div class="card ok"><h3>সুবিধা</h3><p>Accidental deletion recoverable; audit actor থাকে; child rows ও media অক্ষত।</p></div><div class="card warn"><h3>বর্তমান সীমা</h3><p>Restore/force-delete/admin trash route এই CRUD flow-তে নেই। Production-এ retention policy এবং orphan cleanup job স্পষ্টভাবে যোগ করুন।</p></div></div>
+    </section>
+
+    <section id="validation">
+      <a class="anchor" href="#">উপরে ↑</a><h2>16. Validation contract</h2>
+      <div class="table-wrap"><table><thead><tr><th>Group</th><th>প্রধান rules</th><th>কেন</th></tr></thead><tbody>
+        <tr><td>Foreign keys</td><td><code>nullable|exists:...</code> / required where needed</td><td>Invalid taxonomy/admin/location ID আটকায়</td></tr>
+        <tr><td>Post type</td><td><code>news, article, opinion, video, photo_story</code></td><td>Known content types only</td></tr>
+        <tr><td>Content</td><td>title required, slug unique ignoring current post, description required</td><td>Publishable core data</td></tr>
+        <tr><td>Workflow</td><td>five known statuses; scheduled time conditional; reviewer constraints controller-এ</td><td>State consistency</td></tr>
+        <tr><td>Switches</td><td>breaking/featured/pinned/comments required boolean</td><td>Unchecked checkbox missing-value problem এড়ায়</td></tr>
+        <tr><td>Positions</td><td>array items in home_top/home_middle/category_top/sidebar</td><td>Unknown placement আটকায়</td></tr>
+        <tr><td>Images</td><td>jpg/jpeg/png/webp, max 5 MB; gallery max 20</td><td>Type/size abuse সীমিত</td></tr>
+        <tr><td>Tags/gallery</td><td>array + each exists/id; removable gallery IDs validated</td><td>Pivot/child integrity</td></tr>
+        <tr><td>SEO/schema</td><td>lengths, URL, JSON</td><td>Valid metadata structure</td></tr>
+        <tr><td>Audit note</td><td>nullable string max 1000</td><td>Bounded editorial comment</td></tr>
+      </tbody></table></div>
+<pre><code>'slug' =&gt; [
+    'nullable', 'string', 'max:255',
+    Rule::unique('posts', 'slug')-&gt;ignore($post?-&gt;id),
+],
+'gallery_images' =&gt; ['nullable', 'array', 'max:20'],
+'gallery_images.*' =&gt; ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+'schema_markup' =&gt; ['nullable', 'json'],</code></pre>
+      <p class="danger card"><strong>HTML content:</strong> Quill description HTML দেয়। Validation “required” হলেও XSS sanitize করে না। শুধু trusted newsroom users হলেও public render-এর আগে server-side HTML allowlist sanitizer ব্যবহার করা production-এর জন্য নিরাপদ।</p>
+    </section>
+
+    <section id="data-helper">
+      <a class="anchor" href="#">উপরে ↑</a><h2>17. <code>postData()</code>, slug ও reading time</h2>
+      <ul><li>Request data থেকে DB-ready array তৈরি করে; controller-এর create/update duplication কমায়।</li><li>Checkbox values explicit boolean cast হয়।</li><li><code>featured_positions</code> Laravel array cast-এর জন্য array থাকে; <code>schema_markup</code> validated JSON থেকে decode হয়।</li><li>Create-এ author না দিলে logged admin default; create/update audit user এবং <code>last_edited_at</code> বসে।</li><li>Status অনুযায়ী reviewed/published actors ও timestamps বসে।</li><li>Reading time: plain-text word count ÷ 220, তারপর <code>ceil()</code>; minimum behavior code অনুযায়ী।</li></ul>
+<pre><code>private function uniqueSlug(?string $requested, string $title, ?int $ignoreId = null): string
+{
+    $base = Str::slug($requested ?: $title) ?: 'post';
+    $slug = $base;
+    $suffix = 2;
+
+    while (Post::where('slug', $slug)
+        -&gt;when($ignoreId, fn ($q) =&gt; $q-&gt;whereKeyNot($ignoreId))
+        -&gt;exists()) {
+        $slug = $base.'-'.$suffix++;
+    }
+    return $slug;
+}</code></pre>
+      <p>অর্থাৎ “My News” আগে থাকলে নতুনটি <code>my-news-2</code>, এরপর <code>my-news-3</code>। Database unique index concurrency-এর শেষ protection; খুব উচ্চ concurrent create হলে duplicate-key exception retry strategy যোগ করা যায়।</p>
+    </section>
+
+    <section id="media">
+      <a class="anchor" href="#">উপরে ↑</a><h2>18. Featured image, meta image ও story gallery</h2>
+      <div class="table-wrap"><table><thead><tr><th>Media</th><th>Storage path</th><th>DB location</th></tr></thead><tbody>
+        <tr><td>Featured image</td><td><code>public/admin/postimages/main</code></td><td><code>posts.featured_image</code></td></tr>
+        <tr><td>Meta/social image</td><td><code>public/admin/postimages/main</code></td><td><code>posts.meta_image</code></td></tr>
+        <tr><td>Gallery images</td><td><code>public/admin/postimages/gallery</code></td><td><code>post_images.image</code></td></tr>
+      </tbody></table></div>
+      <p>Filename timestamp + random token দিয়ে তৈরি হয়। <code>basename()</code>/<code>dirname()</code> normalizationসহ cleanup helper কেবল expected upload paths সরায়। Gallery position বের করতে প্রতিটি image-এর জন্য max query নয়—একবার current maximum নিয়ে memory-তে increment করে।</p>
+<pre><code>$nextPosition = ((int) $post-&gt;images()-&gt;max('position')) + 1;
+
+foreach ($galleryPaths as $index =&gt; $path) {
+    $post-&gt;images()-&gt;create([
+        'image' =&gt; $path,
+        'caption' =&gt; $request-&gt;input("gallery_captions.$index"),
+        'position' =&gt; $nextPosition++,
+    ]);
+}</code></pre>
+      <div class="warn card"><strong>Production upgrade:</strong> বর্তমান raw public move ছোট setup-এ সহজ। High traffic-এ Laravel <code>Storage</code>, private/origin bucket, CDN URL, queued resizing/WebP/AVIF, image dimensions এবং malware/type verification ব্যবহার করুন। DB-তে absolute URL নয়, storage key রাখাই portable।</div>
+    </section>
+
+    <section id="audit">
+      <a class="anchor" href="#">উপরে ↑</a><h2>19. Revision বনাম Editorial History</h2>
+      <div class="grid"><div class="card info"><h3>Content Revision</h3><p>প্রতিটি full update-এর আগে আগের title, special title, summary, description, featured image এবং caption snapshot। Editor, sequential version, change note থাকে।</p></div><div class="card ok"><h3>Status History</h3><p>প্রতিটি status event-এ actor, previous status, next status, note ও exact created_at। Modal timeline-এ human-readableভাবে দেখানো হয়।</p></div></div>
+<pre><code>// Revision version is per-post
+$version = ((int) $post-&gt;revisions()-&gt;max('version')) + 1;
+
+$post-&gt;revisions()-&gt;create([
+    'editor_id' =&gt; $adminId,
+    'version' =&gt; $version,
+    'title' =&gt; $post-&gt;title,
+    'description' =&gt; $post-&gt;description,
+    'change_note' =&gt; $request-&gt;input('change_note'),
+    'created_at' =&gt; now(),
+]);</code></pre>
+      <h3>Timeline display contract</h3>
+      <p><code>show()</code> history eager-load করে এবং প্রতিটি row থেকে <code>from_status → to_status</code>, actor name, Asia/Dhaka formatted date/time এবং note পাঠায়। Actor delete হলেও nullable FK-এর কারণে history থাকে; UI fallback name ব্যবহার করতে পারে। JavaScript user text <code>.text()</code> দিয়ে বসায়, HTML concatenate করে inject করে না।</p>
+      <p class="note"><strong>Audit integrity:</strong> সাধারণ CRUD UI থেকে audit rows edit/delete route দেবেন না। Compliance দরকার হলে append-only DB permission, immutable log storage অথবা event-outbox যোগ করুন।</p>
+    </section>
+
+    <section id="lookups">
+      <a class="anchor" href="#">উপরে ↑</a><h2>20. <code>PostFormLookups</code> cache</h2>
+      <p>Post form-এর sections, categories, tags, admins, reviewers, divisions, districts এবং upazilas এক service-এ load হয়। Cache key <code>admin.post-form-lookups.v1</code>, TTL 6 hours। Cache miss-এ database query; hit-এ cache থেকে normalized data। Cache backend বর্তমানে project config অনুযায়ী database হতে পারে; Redis driver করলে একই service code বদলাতে হয় না।</p>
+<pre><code>final class PostFormLookups
+{
+    private const CACHE_KEY = 'admin.post-form-lookups.v1';
+
+    public static function get(): array
+    {
+        return Cache::remember(
+            self::CACHE_KEY,
+            now()-&gt;addHours(6),
+            fn () =&gt; self::queryDatabase()
+        );
+    }
+
+    public static function forget(): void
+    {
+        Cache::forget(self::CACHE_KEY);
+    }
+}</code></pre>
+      <ul><li>Section/Category/Tag/Admin/permission-related mutation controllers cache invalidate করে; তাই dropdown change দেখাতে 6 ঘণ্টা অপেক্ষা করতে হয় না।</li><li>এটি post list বা public news cache করে না। নতুন post create করলেই frontend visibility আটকায়—এমন lookup cache behavior নেই।</li><li>Cached parent IDs-ই cascading category/district/upazila filter চালায়।</li></ul>
+      <p>আরও line-by-line ব্যাখ্যার জন্য একই folder-এর <a href="post-form-lookups-complete-guide.html">PostFormLookups Complete Guide</a> দেখুন।</p>
+    </section>
+
+    <section id="blade">
+      <a class="anchor" href="#">উপরে ↑</a><h2>21. Blade page structure ও loops</h2>
+      <p>একটি partial একই সঙ্গে stat cards, filters, paginated table এবং add/edit modal render করে। Top <code>@php</code> block display maps তৈরি করে; database query করা Blade-এর কাজ নয়।</p>
+      <div class="table-wrap"><table><thead><tr><th>Loop/condition</th><th>Input collection</th><th>Output</th></tr></thead><tbody>
+        <tr><td><code>@foreach ($statCards as ...)</code></td><td>Controller summary counts</td><td>Four dashboard cards</td></tr>
+        <tr><td>Status/category filter loops</td><td>Static status map + cached categories</td><td>Filter dropdown options</td></tr>
+        <tr><td><code>@forelse ($posts as $post)</code></td><td>10-row paginator</td><td>Post rows; empty state automatically</td></tr>
+        <tr><td>Per-row permission conditions</td><td>Admin role, owner/reviewer, permission flags</td><td>Edit/delete/status controls</td></tr>
+        <tr><td>Form status/admin/reviewer loops</td><td>Status map + cached staff</td><td>Workflow inputs</td></tr>
+        <tr><td>Section/category/tag loops</td><td>Cached taxonomy</td><td>Classification inputs</td></tr>
+        <tr><td>Division/district/upazila loops</td><td>Cached geography</td><td>Location options with parent data attributes</td></tr>
+        <tr><td>Priority/position loops</td><td>Local label maps</td><td>Consistent toggle and placement UI</td></tr>
+      </tbody></table></div>
+<pre><code>@forelse ($posts as $post)
+    &lt;tr&gt;
+        &lt;td&gt;{{ $post-&gt;title }}&lt;/td&gt;
+        &lt;td&gt;{{ $post-&gt;category?-&gt;name ?? '—' }}&lt;/td&gt;
+        &lt;td&gt;{{ $post-&gt;author?-&gt;name ?? '—' }}&lt;/td&gt;
+    &lt;/tr&gt;
+@empty
+    &lt;tr&gt;&lt;td colspan="..."&gt;No posts found.&lt;/td&gt;&lt;/tr&gt;
+@endforelse
+
+{{ $posts-&gt;links() }}</code></pre>
+      <p><code>{{ }}</code> escaped output ব্যবহার করে। Description editor content public view-এ render করলে sanitizer-এর পরে সীমিত raw HTML output করা উচিত।</p>
+    </section>
+
+    <section id="cascade">
+      <a class="anchor" href="#">উপরে ↑</a><h2>22. Section→Category এবং Division→District→Upazila</h2>
+      <p>এটি edit form খোলার সময় আলাদা API call করে না। সব options Blade-এ cached lookup data থেকে আসে; child option-এ parent ID <code>data-*</code> attribute থাকে। JavaScript parent select বদলালে unmatched options hide + disable করে।</p>
+      <div class="grid"><div class="card"><h3>Classification</h3><pre><code>&lt;select id="post-section" name="section_id"&gt;...&lt;/select&gt;
+
+&lt;select id="post-category" name="category_id"&gt;
+  &lt;option data-section="{{ $category-&gt;section_id }}"
+          value="{{ $category-&gt;id }}"&gt;
+    {{ $category-&gt;name }}
+  &lt;/option&gt;
+&lt;/select&gt;</code></pre></div><div class="card"><h3>Location</h3><pre><code>district option: data-division="division_id"
+upazila option:  data-district="district_id"
+
+Division change
+  └─ filter District + reset Upazila
+District change
+  └─ filter Upazila</code></pre></div></div>
+<pre><code>function optionFilter($select, key, value, keepValue = null) {
+    $select.find('option').each(function () {
+        const $option = $(this);
+        const visible = !$option.val() || String($option.data(key)) === String(value);
+        $option.prop('disabled', !visible).prop('hidden', !visible);
+    });
+
+    if (keepValue !== null) $select.val(String(keepValue));
+}</code></pre>
+      <p>Edit flow-এ আগে parent set, পরে filter, শেষে existing child value restore করা হয়। এই order না মানলে valid saved category/district/upazila blank হয়ে যেতে পারে।</p>
+    </section>
+
+    <section id="javascript">
+      <a class="anchor" href="#">উপরে ↑</a><h2>23. <code>posts.js</code>: function এবং event map</h2>
+      <div class="table-wrap"><table><thead><tr><th>Function/event</th><th>কাজ</th></tr></thead><tbody>
+        <tr><td><code>elements()</code></td><td>বর্তমান partial-এর jQuery references সংগ্রহ</td></tr>
+        <tr><td><code>richEditor()</code>, <code>setEditorHtml()</code></td><td>Quill initialize, hidden textarea sync, word/reading count</td></tr>
+        <tr><td><code>errors()</code></td><td>Laravel 422 validation errors সংশ্লিষ্ট input-এর পাশে দেখায়</td></tr>
+        <tr><td><code>refresh()</code></td><td>AJAX response HTML দিয়ে post content replace এবং UI re-bind</td></tr>
+        <tr><td><code>slug()</code></td><td>Title থেকে browser-side preview slug; server unique slug authoritative</td></tr>
+        <tr><td><code>optionFilter()</code></td><td>Parent data attribute অনুযায়ী cascading options</td></tr>
+        <tr><td><code>galleryRow()</code>, <code>preview()</code></td><td>Dynamic gallery input এবং local image preview</td></tr>
+        <tr><td><code>showEditorialHistory()</code></td><td>API history timeline safe text nodes দিয়ে render</td></tr>
+        <tr><td><code>resetForm()</code></td><td>Create mode-এর clean state</td></tr>
+        <tr><td>Create/Edit click</td><td>Modal reset অথবা GET show JSON → fields fill</td></tr>
+        <tr><td>Form submit</td><td><code>FormData</code>, checkbox 1/0, PUT spoofing, AJAX JSON</td></tr>
+        <tr><td>Filter/pagination</td><td>GET AJAX; full page reload ছাড়া list replace</td></tr>
+        <tr><td>Status change</td><td>PATCH; failure হলে previous select value restore</td></tr>
+        <tr><td>Delete click</td><td>SweetAlert confirm → method-spoofed DELETE</td></tr>
+      </tbody></table></div>
+      <h3>এক form, দুই HTTP action</h3>
+<pre><code>// Create
+POST /admin/post
+
+// Edit: browser FormData POST পাঠায়, Laravel method spoofing করে
+POST /admin/post/42
+_method=PUT
+
+// Checkbox unchecked হলেও server যেন explicit false পায়
+formData.set('allow_comments', $('#allow-comments').is(':checked') ? '1' : '0');</code></pre>
+      <p>AJAX refresh DOM replace করতে পারে বলে event delegation ব্যবহার গুরুত্বপূর্ণ: <code>$(document).on('click', '.edit-post', handler)</code>। শুধু initial element-এ direct <code>.click()</code> bind করলে refresh-এর পর নতুন button কাজ করবে না।</p>
+      <div class="danger card"><strong>ID/name contract:</strong> Blade input <code>name</code> validation/database key-এর সঙ্গে এবং JS selector <code>id</code>-এর সঙ্গে মেলাতে হবে। যেমন <code>#allow-comments</code> + <code>name="allow_comments"</code>। UI redesign করলেও এই contract না ভাঙা জরুরি।</div>
+    </section>
+
+    <section id="portable">
+      <a class="anchor" href="#">উপরে ↑</a><h2>24. অন্য Laravel project-এ apply করার step-by-step blueprint</h2>
+      <span class="badge portable">Portable implementation</span>
+      <ol class="checklist">
+        <li><strong>Target audit:</strong> Laravel/PHP version, auth guard/model, table names, media storage, rich editor এবং permission package লিখে নিন।</li>
+        <li><strong>Dependencies আগে:</strong> admins/users, sections, categories, tags এবং location tables/models বানান বা nullable/alternative fields ঠিক করুন।</li>
+        <li><strong>Migrations order:</strong> primary <code>posts</code> → images → tag pivot → revisions → status histories। নতুন project-এ migrate; existing production DB-তে reviewed change plan/backup ছাড়া চালাবেন না।</li>
+        <li><strong>Models:</strong> namespaces, fillable/casts/SoftDeletes ও relations copy করে target keys অনুযায়ী adjust করুন।</li>
+        <li><strong>Lookup service:</strong> query columns target schema-র সঙ্গে মিলিয়ে cache key version দিন; taxonomy mutations-এ <code>forget()</code> যোগ করুন।</li>
+        <li><strong>Controller:</strong> validation → authorization → upload → transaction → audit order বজায় রেখে guard/model names বদলান।</li>
+        <li><strong>Middleware/routes:</strong> target auth/permission system-এ named routes map করুন। Route names বদলালে JS <code>data-url</code>/Blade links update করুন।</li>
+        <li><strong>Blade:</strong> stat/list/form blocks আনুন; layout assets, CSRF meta, pagination theme এবং component classes target UI-তে map করুন।</li>
+        <li><strong>JavaScript:</strong> jQuery/Quill/Swal load order নিশ্চিত করে selectors, endpoint URLs ও response format মিলান।</li>
+        <li><strong>Storage:</strong> local public path নাকি S3/CDN—আগে সিদ্ধান্ত নিন; upload/url/delete তিন helper একই disk contract ব্যবহার করবে।</li>
+        <li><strong>Seed permissions:</strong> <code>post view/add/edit/delete</code> (বা target naming) roles-এ assign করুন।</li>
+        <li><strong>Feature tests:</strong> role matrix, validation, transaction rollback, status rules, files, cache invalidation, N+1 এবং soft delete test করুন।</li>
+      </ol>
+      <h3>Target project-এ import checklist</h3>
+<pre><code>// Controller imports (namespaces target project অনুযায়ী)
+use App\Models\Post;
+use App\Support\PostFormLookups;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;</code></pre>
+      <div class="warn card"><strong>Copy-paste boundary:</strong> <code>Admin</code> target project-এ <code>User</code> হলে সব FK relation/guard/controller calls বদলাতে হবে। Location feature না থাকলে columns, validation, relationships, lookup queries, Blade এবং JS—ছয় জায়গা থেকেই সমন্বিতভাবে বাদ দিন।</div>
+    </section>
+
+    <section id="public-api">
+      <a class="anchor" href="#">উপরে ↑</a><h2>25. Public frontend / Nuxt API blueprint</h2>
+      <span class="badge portable">বর্তমান admin CRUD-এর বাইরে recommendation</span>
+      <p>Admin <code>PostController</code> public news delivery controller নয়। Public site-এর জন্য আলাদা read-only API বানালে permission logic, response shape, cache এবং SEO-friendly lookup পরিষ্কার থাকে।</p>
+<pre><code>// routes/api.php
+Route::get('/news', [PublicPostController::class, 'index']);
+Route::get('/news/{post:slug}', [PublicPostController::class, 'show']);
+
+// Only live content
+$base = Post::query()
+    -&gt;where('status', 'published')
+    -&gt;whereNotNull('published_at')
+    -&gt;where('published_at', '&lt;=', now());
+
+// List: do not select long body
+return PostCardResource::collection(
+    $base-&gt;select('id', 'title', 'slug', 'summary', 'featured_image',
+                  'category_id', 'published_at', 'reading_time')
+         -&gt;with('category:id,name,slug')
+         -&gt;latest('published_at')
+         -&gt;cursorPaginate(20)
+);</code></pre>
+      <h3>API Resource কেন</h3>
+      <ul><li>Database columns accidentalভাবে সব expose হয় না।</li><li>Media URL, dates, author/category nested object consistent থাকে।</li><li>Admin audit IDs, deleted_by, internal notes public response থেকে বাদ থাকে।</li><li>Schema বদলালেও frontend contract stable রাখা যায়।</li></ul>
+      <h3>Publish visibility + cache invalidation</h3>
+<pre><code>// Example keys/tags (driver capability অনুযায়ী)
+public:news:latest:v1
+public:news:slug:{slug}:v1
+public:category:{categoryId}:page:{cursor}:v1
+
+Post published/updated/archived/deleted event
+  └─ forget affected detail + listing/category/home caches</code></pre>
+      <p class="note">Lookup cache নতুন news আটকায় না; কিন্তু public list/detail cache করলে publish event-এ invalidation বাধ্যতামূলক। Scheduled publisher job status পরিবর্তনের একই service/event path ব্যবহার করলে cache, history এবং timestamps consistent থাকে।</p>
+    </section>
+
+    <section id="performance">
+      <a class="anchor" href="#">উপরে ↑</a><h2>26. High-traffic performance strategy</h2>
+      <div class="table-wrap"><table><thead><tr><th>Layer</th><th>বর্তমান ভালো দিক</th><th>Scale হলে পরবর্তী পদক্ষেপ</th></tr></thead><tbody>
+        <tr><td>Admin list</td><td>Selected columns, eager loading, pagination, aggregate counts</td><td>Slow query log, query plan, indexed filters; search engine for full-text</td></tr>
+        <tr><td>Form lookup</td><td>6-hour cache + mutation invalidation</td><td>Redis shared cache, cache metrics, stampede protection if needed</td></tr>
+        <tr><td>Writes</td><td>DB transactions + compensating file cleanup</td><td>Short transactions, retry deadlocks, domain service/events</td></tr>
+        <tr><td>Images</td><td>Validated type/size, unique filename</td><td>Object storage + CDN + queued transforms + responsive variants</td></tr>
+        <tr><td>Public reads</td><td>Not mixed into admin controller</td><td>API resources, Redis/edge cache, cursor pagination, read replicas</td></tr>
+        <tr><td>Publishing</td><td>Status/timestamps/audit exist</td><td>Scheduler every minute, idempotent publish job, queue monitoring</td></tr>
+        <tr><td>Analytics</td><td><code>views_count</code> column exists</td><td>Do not update hot row per request; buffer/stream then batch aggregate</td></tr>
+      </tbody></table></div>
+      <h3>Redis configuration idea</h3>
+<pre><code># .env (example; values deployment-specific)
+CACHE_STORE=redis
+REDIS_CLIENT=phpredis
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
+
+# Then deploy-safe config refresh
+php artisan optimize:clear
+php artisan config:cache</code></pre>
+      <p>Redis server/extension/container আগে health-check করুন। Local database cache থেকে Redis-এ গেলে <code>PostFormLookups</code> code একই থাকে, কারণ এটি Laravel Cache facade ব্যবহার করে। Production config কখনো documentation-এর example credential দিয়ে blind copy করবেন না।</p>
+      <h3>যা measure করবেন</h3>
+      <ul><li>p50/p95/p99 response time; DB query count/time; cache hit ratio.</li><li>Upload processing time/queue depth; API payload size; CDN hit rate.</li><li>Slow query log এবং <code>EXPLAIN</code>; PHP workers/DB connections/Redis memory.</li><li>Error rate, failed jobs, scheduler lag এবং status-history inconsistencies.</li></ul>
+    </section>
+
+    <section id="security">
+      <a class="anchor" href="#">উপরে ↑</a><h2>27. Security checklist</h2>
+      <div class="grid"><div class="card ok"><h3>বর্তমান protections</h3><ul><li>Auth + permission middleware</li><li>Record-level controller authorization</li><li>Laravel validation + exists/unique checks</li><li>CSRF-aware admin requests</li><li>File mime/size rules</li><li>Eloquent parameter binding</li><li>Soft delete + audit actors</li></ul></div><div class="card warn"><h3>Production hardening</h3><ul><li>Rich HTML allowlist sanitizer</li><li>Real MIME/signature + image decode validation</li><li>Private origin/object storage</li><li>Rate limits and upload quotas</li><li>Immutable/security audit logs</li><li>Strong CSP and safe embed/video domains</li><li>Least-privilege DB/storage credentials</li></ul></div></div>
+      <p class="danger card"><strong>Mass assignment discipline:</strong> broad <code>$fillable</code> থাকলে controller কখনো <code>$post-&gt;update($request-&gt;all())</code> করবে না। বর্তমান normalized/validated <code>postData()</code> pattern বজায় রাখুন, যাতে <code>created_by</code>, <code>published_by</code> বা analytics client forge করতে না পারে।</p>
+    </section>
+
+    <section id="testing">
+      <a class="anchor" href="#">উপরে ↑</a><h2>28. Testing plan</h2>
+      <div class="table-wrap"><table><thead><tr><th>Test group</th><th>Must verify</th></tr></thead><tbody>
+        <tr><td>Authentication</td><td>Guest প্রতিটি admin endpoint-এ blocked/redirected</td></tr>
+        <tr><td>Permissions</td><td>view/add/edit/delete permission matrix এবং superadmin behavior</td></tr>
+        <tr><td>Ownership</td><td>Owner, non-owner, assigned reviewer এবং unrelated reviewer actions</td></tr>
+        <tr><td>Create</td><td>Post + tags + gallery + initial history atomic; invalid input 422</td></tr>
+        <tr><td>Update</td><td>Old revision snapshot, tag sync, replacements, removed gallery, status history only on change</td></tr>
+        <tr><td>Status</td><td>Review requires reviewer; schedule needs time; restricted publish; note stored</td></tr>
+        <tr><td>Delete</td><td><code>deleted_by</code> and <code>deleted_at</code>; files remain; row absent from normal queries</td></tr>
+        <tr><td>List</td><td>mine/review/all scope, filters, pagination query string, no N+1</td></tr>
+        <tr><td>Cache</td><td>cold/hit result identical; taxonomy mutation invalidates; cache outage fallback behavior</td></tr>
+        <tr><td>Media</td><td>type/size rejected, failure cleanup, update keeps old file on rollback</td></tr>
+        <tr><td>Browser</td><td>Dark mode toggles, cascade create/edit, Quill sync, 422 errors, AJAX refresh delegated events</td></tr>
+      </tbody></table></div>
+<pre><code>// Representative feature-test shape
+public function assigned_reviewer_can_publish_and_history_is_written(): void
+{
+    $this-&gt;actingAs($reviewer, 'admin')
+        -&gt;patchJson(route('admin-post.status', $post), [
+            'status' =&gt; 'published',
+            'note' =&gt; 'Approved by desk.',
+        ])
+        -&gt;assertOk();
+
+    $this-&gt;assertDatabaseHas('post_status_histories', [
+        'post_id' =&gt; $post-&gt;id,
+        'changed_by' =&gt; $reviewer-&gt;id,
+        'from_status' =&gt; 'review',
+        'to_status' =&gt; 'published',
+    ]);
+}</code></pre>
+      <p>Test-এ <code>Storage::fake()</code> ব্যবহার করতে চাইলে প্রথমে controller raw <code>move()</code> থেকে Storage disk abstraction-এ নিতে হবে। বর্তমান implementation test করতে temporary public path isolation/cleanup দরকার।</p>
+    </section>
+
+    <section id="troubleshooting">
+      <a class="anchor" href="#">উপরে ↑</a><h2>29. Common errors ও diagnosis map</h2>
+      <div class="table-wrap"><table><thead><tr><th>Symptom</th><th>সম্ভাব্য কারণ</th><th>কোথায় দেখবেন</th></tr></thead><tbody>
+        <tr><td>Dropdown-এ নতুন category নেই</td><td>Lookup cache invalidation missing বা wrong key</td><td>Mutation controller + <code>PostFormLookups::forget()</code></td></tr>
+        <tr><td>Category select blank</td><td><code>data-section</code> mismatch বা parent/filter/value set order ভুল</td><td>Blade option attributes + <code>optionFilter()</code></td></tr>
+        <tr><td>Upazila edit-এ হারায়</td><td>Division→district→upazila restore sequence ভুল</td><td>Edit AJAX fill logic</td></tr>
+        <tr><td>Checkbox সবসময় false/true</td><td>Unchecked value FormData-তে নেই বা ID/name mismatch</td><td>Submit handler + Blade input</td></tr>
+        <tr><td>422 but error দেখা যায় না</td><td>Validation key এবং input <code>name</code> mismatch</td><td><code>errors()</code> mapping</td></tr>
+        <tr><td>Edit click refresh-এর পর কাজ করে না</td><td>Direct event binding</td><td>Delegated <code>$(document).on(...)</code></td></tr>
+        <tr><td>Unauthorized user status বদলায়</td><td>শুধু UI hide; server record authorization missing</td><td>Middleware + <code>authorizePost()</code>/<code>authorizeStatus()</code></td></tr>
+        <tr><td>Duplicate slug exception</td><td>Concurrent insert race বা manual duplicate</td><td><code>uniqueSlug()</code> + DB unique index/log</td></tr>
+        <tr><td>DB rollback কিন্তু image রয়ে গেছে</td><td>Compensating cleanup path incomplete</td><td>store/update catch blocks</td></tr>
+        <tr><td>List slow</td><td>N+1, body selected, wildcard search, missing index</td><td>Laravel query log/Telescope + DB <code>EXPLAIN</code></td></tr>
+        <tr><td>Scheduled news live নয়</td><td>Scheduler publisher job নেই/চলছে না</td><td>Scheduler/queue logs; এটি admin controller-এর কাজ নয়</td></tr>
+        <tr><td>History actor blank</td><td>Admin deleted বা relation not eager loaded</td><td>nullable FK + <code>changedBy</code> relation/fallback</td></tr>
+      </tbody></table></div>
+      <h3>Safe diagnostic commands</h3>
+<pre><code>php artisan route:list --name=post
+php artisan config:show cache
+php artisan about
+php artisan test --filter=Post
+
+# Development only when inspecting SQL behavior:
+# enable query logging/Telescope, reproduce one request, then disable.</code></pre>
+    </section>
+
+    <section id="checklist">
+      <a class="anchor" href="#">উপরে ↑</a><h2>30. Production-ready handoff checklist</h2>
+      <div class="grid">
+        <div class="card"><h3>Schema &amp; data</h3><ul class="checklist"><li>□ Foreign keys/indexes target schema-তে verified</li><li>□ Status values এক জায়গায় enum/config করা</li><li>□ Soft-delete retention/restore/force-delete policy</li><li>□ Audit backup/retention defined</li></ul></div>
+        <div class="card"><h3>Application</h3><ul class="checklist"><li>□ Every write validates + authorizes</li><li>□ Transaction boundaries short</li><li>□ File cleanup failure observable</li><li>□ Scheduled publisher idempotent</li></ul></div>
+        <div class="card"><h3>Frontend</h3><ul class="checklist"><li>□ Dark/light and mobile layout checked</li><li>□ ID/name/data attribute contracts tested</li><li>□ Loading/double-submit state handled</li><li>□ Accessible labels/alt text supported</li></ul></div>
+        <div class="card"><h3>Infrastructure</h3><ul class="checklist"><li>□ Redis/cache health and invalidation</li><li>□ Object storage/CDN lifecycle</li><li>□ Queue/scheduler supervisor + alerts</li><li>□ Logs, metrics, backups, restore drill</li></ul></div>
+      </div>
+      <h3>Portable module-এর recommended service boundary</h3>
+<pre><code>Admin UI / API
+    ├─ PostQueryService       (list/filter/read projections)
+    ├─ PostCommandService     (create/update/delete transaction)
+    ├─ EditorialService       (status rules + history)
+    ├─ PostMediaService       (upload/delete/variants)
+    └─ PostFormLookups        (cached form reference data)
+
+Domain events
+    ├─ PostPublished  ─&gt; invalidate public cache / notify / index search
+    ├─ PostUpdated    ─&gt; refresh detail/search index
+    └─ PostArchived   ─&gt; remove from feeds/search/cache</code></pre>
+      <p>বর্তমান controller compact project-এর জন্য workable এবং query/cache optimizations আছে। Module বড় হলে উপরের service boundaries ধাপে ধাপে extract করবেন—একবারে rewrite নয়। Feature tests আগে থাকলে extraction behavior-safe হয়।</p>
+      <p class="note"><strong>শেষ কথা:</strong> অন্য project-এ সফল reuse-এর মূল হলো file copy নয়—schema, identity, permission, storage, response contract ও workflow rules একসঙ্গে map করা। এই document সেই map হিসেবে ব্যবহার করুন।</p>
+    </section>
+
+    <footer class="footer">Post Module Complete Handbook · documentation-only · current implementation + clearly marked portable blueprint</footer>
+  </main>
+</div>
+</body>
+</html>

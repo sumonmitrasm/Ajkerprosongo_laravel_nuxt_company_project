@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use App\Models\Admin;
 use App\Models\AdminRole;
+use App\Support\PostFormLookups;
 use Intervention\Image\Drivers\Gd\Driver as GdDriver;
 use Intervention\Image\Format;
 use Intervention\Image\ImageManager;
@@ -221,6 +222,7 @@ class AdminController extends Controller
 
     private function clearUserCache(): void
     {
+        PostFormLookups::forget();
     }
 
 
@@ -266,6 +268,7 @@ class AdminController extends Controller
                 ]
             );
         }
+        $this->clearUserCache();
         return response()->json([
             'status' => true,
             'message' => 'Permissions updated successfully!'
@@ -276,6 +279,6 @@ class AdminController extends Controller
     {
         return AdminRole::query()->select('module')->distinct()->pluck('module')
             // Keep the permission screen aware of every protected admin module.
-            ->merge(['admin', 'section', 'category', 'setting', 'tag', 'poll'])->unique()->sort()->values();
+            ->merge(['admin', 'section', 'category', 'setting', 'tag', 'poll', 'post'])->unique()->sort()->values();
     }
 }
