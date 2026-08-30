@@ -253,13 +253,13 @@ function names() {
     }
 
     // index2 charts
-    if(document.querySelector('#myfirstchart') !== null){
+    if(document.querySelector('#myfirstchart') !== null && typeof myfirstchart === 'function'){
         myfirstchart();
     }
-    if(document.querySelector('.canvasDoughnut') !== null){
+    if(document.querySelector('.canvasDoughnut') !== null && typeof canvasDoughnut === 'function'){
         canvasDoughnut();
     }
-    if(document.querySelector('#chart-circle-primary') !== null){
+    if(document.querySelector('#chart-circle-primary') !== null && typeof chartcircleprimary === 'function'){
         chartcircleprimary();
     }
 
