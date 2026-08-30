@@ -290,7 +290,7 @@
                                 <p class="mb-1">Your Fax Number</p>
                                 <a class="font-weight-bold" href="javascript:void(0)">88 8888 8888</a>
                             </div>
-                            <a href="{{route('logout-admin')}}">Logout</a>
+                            <a href="{{route('logout-admin')}}" data-no-ajax>Logout</a>
                         </div>
                         <div class="ms-auto">
                             <a class="nav-link icon p-0" href="javascript:void(0)">

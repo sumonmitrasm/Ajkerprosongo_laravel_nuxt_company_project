@@ -40,7 +40,10 @@ class PostController extends Controller
             ->when($search,fn($q)=>$q->where('title','like',"%{$search}%"))
             ->when($status,fn($q)=>$q->where('status',$status))
             ->when($categoryId,fn($q)=>$q->where('category_id',$categoryId))
-            ->latest()->paginate(10)->withQueryString();
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->paginate(10)
+            ->withQueryString();
 
         // One aggregate scan replaces four independent COUNT queries.
         $counts=(clone $visiblePosts)->selectRaw(

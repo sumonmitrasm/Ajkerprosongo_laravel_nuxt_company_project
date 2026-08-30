@@ -176,6 +176,9 @@
 
                     $content.html($newContent.html()).css('opacity', '1');
                     window.initServerSearch();
+                    if (window.ensureDashboardAssets) {
+                        window.ensureDashboardAssets();
+                    }
                     $('.side-menu .slide-item').removeClass('active');
                     $('.side-menu a[href="' + url + '"]').addClass('active');
 
@@ -193,7 +196,7 @@
             $(document).on('click', '.side-menu a[href]', function (event) {
                 var href = $(this).attr('href');
 
-                if (!href || href === '#' || href.indexOf('javascript:') === 0 || this.target ||
+                if (!href || href === '#' || href.indexOf('javascript:') === 0 || this.hasAttribute('data-no-ajax') || this.target ||
                     event.ctrlKey || event.metaKey || event.shiftKey || event.which === 2) {
                     return;
                 }
@@ -540,17 +543,6 @@
     });
     </script>
 
-    <!-- Daterangepicker js-->
-    <script src="{{ url('admin/assets/plugins/bootstrap-daterangepicker/daterangepicker.js') }}"></script>
-    <script src="{{ url('admin/assets/js/daterange.js') }}"></script>
-
-    <!--Chart js -->
-    <script src="{{ url('admin/assets/plugins/chart/chart.min.js') }}"></script>
-
-    <!-- ECharts js-->
-    <script src="{{ url('admin/assets/plugins/echarts/echarts.js') }}"></script>
-    <script src="{{ url('admin/assets/js/index2.js') }}"></script>
-
     <!-- Color Theme js -->
      <script src="{{ url('admin/assets/js/themeColors.js') }}"></script>
 
@@ -568,6 +560,65 @@
     <!-- Custom js-->
     <script src="{{ url('admin/assets/js/custom.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Dashboard-only charts are the largest admin assets. Load them after the
+        // shell is visible, and also when Dashboard is opened through AJAX.
+        (function () {
+            var dashboardAssetsPromise = null;
+
+            function loadScript(src) {
+                return new Promise(function (resolve, reject) {
+                    var existing = document.querySelector('script[data-lazy-src="' + src + '"]');
+                    if (existing) {
+                        if (existing.dataset.loaded === 'true') resolve();
+                        else existing.addEventListener('load', resolve, { once: true });
+                        return;
+                    }
+
+                    var script = document.createElement('script');
+                    script.src = src;
+                    script.dataset.lazySrc = src;
+                    script.onload = function () {
+                        script.dataset.loaded = 'true';
+                        resolve();
+                    };
+                    script.onerror = reject;
+                    document.body.appendChild(script);
+                });
+            }
+
+            window.ensureDashboardAssets = function () {
+                if (!document.querySelector('#myfirstchart, .canvasDoughnut, #chart-circle-primary, #daterange-btn')) {
+                    return Promise.resolve();
+                }
+
+                if (!dashboardAssetsPromise) {
+                    dashboardAssetsPromise = loadScript("{{ url('admin/assets/plugins/bootstrap-daterangepicker/daterangepicker.js') }}")
+                        .then(function () { return loadScript("{{ url('admin/assets/js/daterange.js') }}"); })
+                        .then(function () { return loadScript("{{ url('admin/assets/plugins/chart/chart.min.js') }}"); })
+                        .then(function () { return loadScript("{{ url('admin/assets/plugins/echarts/echarts.js') }}"); })
+                        .then(function () { return loadScript("{{ url('admin/assets/js/index2.js') }}"); })
+                        .catch(function (error) {
+                            dashboardAssetsPromise = null;
+                            console.error('Dashboard assets could not be loaded.', error);
+                        });
+                }
+
+                return dashboardAssetsPromise.then(function () {
+                    // AJAX navigation creates fresh chart elements, so initialize
+                    // widgets on every Dashboard entry even when files are cached.
+                    if (document.querySelector('#myfirstchart') && typeof myfirstchart === 'function') myfirstchart();
+                    if (document.querySelector('.canvasDoughnut') && typeof canvasDoughnut === 'function') canvasDoughnut();
+                    if (document.querySelector('#chart-circle-primary') && typeof chartcircleprimary === 'function') chartcircleprimary();
+                });
+            };
+
+            window.addEventListener('load', function () {
+                window.setTimeout(window.ensureDashboardAssets, 0);
+            }, { once: true });
+        }());
+    </script>
 </body>
 
 </html>
