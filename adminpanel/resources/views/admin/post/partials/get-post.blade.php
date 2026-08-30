@@ -534,6 +534,29 @@
     .post-modal textarea.form-control { min-height: auto; padding: .7rem .8rem; line-height: 1.55; }
     .post-modal .form-control:focus,
     .post-modal .form-select:focus { border-color: #7380ec; box-shadow: 0 0 0 .2rem rgba(79, 95, 231, .12); }
+    .post-modal #post-tags {
+        min-height: 118px;
+        padding: .35rem;
+        background-image: none !important;
+    }
+    .post-modal #post-tags option {
+        margin: 2px 0;
+        padding: .48rem .6rem;
+        border-radius: 6px;
+    }
+    .post-modal #post-tags option:checked {
+        color: #fff !important;
+        background: linear-gradient(135deg, #4f5fe7, #7080f4) !important;
+        font-weight: 700;
+    }
+    .post-modal .post-tag-selection {
+        margin-top: .45rem;
+        color: var(--editor-muted);
+        font-size: .74rem;
+        line-height: 1.45;
+    }
+    .post-modal .post-tag-selection.has-selection { color: #4f5fe7; font-weight: 650; }
+    .dark-mode .post-modal .post-tag-selection.has-selection { color: #aeb8ff; }
     .post-modal .hint { margin-top: .38rem; color: var(--editor-muted); line-height: 1.4; }
     .post-modal .upload-box { background: rgba(79, 95, 231, .025); transition: border-color .18s ease, background .18s ease; }
     .post-modal .upload-box:hover { background: rgba(79, 95, 231, .06); border-color: var(--p); }
@@ -1110,6 +1133,9 @@
                                                             <option value="{{ $item->id }}">{{ $item->name }}</option>
                                                         @endforeach
                                                     </select>
+                                                    <div id="post-tag-selection" class="post-tag-selection" aria-live="polite">
+                                                        No tags selected. Use Ctrl to select more than one tag.
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
