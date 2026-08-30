@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Section;
+use App\Support\PostFormLookups;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -160,6 +161,7 @@ class CategoryController extends Controller
         Cache::forget('api.sections-with-categories.v1');
         Cache::forget('admin.category-form.sections.v3');
         Cache::forget('admin.category-form.parents.v3');
+        PostFormLookups::forget();
     }
 
     private function isArrayList(mixed $value): bool

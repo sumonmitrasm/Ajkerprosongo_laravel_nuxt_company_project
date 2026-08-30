@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="bn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PostFormLookups — সম্পূর্ণ বাংলা গাইড</title>
+    <style>
+        :root { --ink:#152238; --muted:#5f6f86; --line:#dce5f1; --brand:#4f5fe7; --brand2:#172554; --soft:#eef2ff; --ok:#067647; --warn:#a16207; --code:#0d1730; }
+        * { box-sizing:border-box; }
+        html { scroll-behavior:smooth; }
+        body { margin:0; color:var(--ink); background:#f5f7fb; font:16px/1.72 "Noto Sans Bengali", "Segoe UI", Arial, sans-serif; }
+        header { padding:58px 22px 50px; color:#fff; background:linear-gradient(125deg,var(--brand2),#3544c8 58%,#6676f5); }
+        header .wrap, main { width:min(1120px,calc(100% - 32px)); margin:auto; }
+        h1 { margin:0 0 9px; font-size:clamp(30px,5vw,48px); line-height:1.15; }
+        header p { max-width:800px; margin:0; color:#dbe2ff; font-size:1.05rem; }
+        main { padding:26px 0 70px; }
+        nav, section { margin:18px 0; padding:25px; background:#fff; border:1px solid var(--line); border-radius:15px; box-shadow:0 8px 28px rgba(21,34,56,.045); }
+        nav ul { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px 20px; margin:12px 0 0; padding-left:20px; }
+        nav a { color:#3544c8; text-decoration:none; }
+        h2 { margin:0 0 13px; font-size:1.45rem; }
+        h3 { margin:24px 0 8px; font-size:1.08rem; }
+        p { margin:9px 0; }
+        code { padding:2px 6px; color:#9d174d; background:#fff0f5; border-radius:5px; font-family:Consolas,"Courier New",monospace; }
+        pre { overflow:auto; margin:12px 0; padding:17px; color:#e9efff; background:var(--code); border:1px solid #22345c; border-radius:10px; font:13.5px/1.62 Consolas,"Courier New",monospace; tab-size:4; }
+        pre code { padding:0; color:inherit; background:none; }
+        table { width:100%; border-collapse:collapse; margin:12px 0; }
+        th,td { padding:10px 12px; border:1px solid var(--line); text-align:left; vertical-align:top; }
+        th { background:#edf2ff; }
+        .flow { display:flex; flex-wrap:wrap; gap:9px; align-items:center; margin:15px 0; }
+        .flow span { padding:9px 12px; color:#3040bd; background:var(--soft); border:1px solid #cfd6ff; border-radius:8px; font-weight:700; }
+        .flow b { color:#8793a8; }
+        .note,.ok,.warning { margin:14px 0; padding:14px 16px; border-radius:9px; }
+        .note { color:#414c60; background:#f0f6ff; border-left:4px solid #3972d5; }
+        .ok { color:#075c3a; background:#ecfdf3; border-left:4px solid var(--ok); }
+        .warning { color:#754d05; background:#fff8e6; border-left:4px solid var(--warn); }
+        .path { overflow-wrap:anywhere; color:#3347c8; font-family:Consolas,monospace; }
+        .badge { display:inline-block; padding:2px 8px; color:#fff; background:var(--brand); border-radius:99px; font-size:.76rem; font-weight:700; }
+        li + li { margin-top:6px; }
+        footer { padding:25px; color:#667085; text-align:center; }
+        @media (max-width:650px) { nav,section{padding:19px} th,td{padding:8px;font-size:.9rem} }
+    </style>
+</head>
+<body>
+<header>
+    <div class="wrap">
+        <span class="badge">Laravel Admin Performance</span>
+        <h1>PostFormLookups: সম্পূর্ণ বাংলা গাইড</h1>
+        <p>কেন service-টি তৈরি হয়েছে, প্রতিটি method কী করে, কোথায় import/use করতে হয়, cache কখন তৈরি ও clear হয়, নতুন news-এর ওপর প্রভাব এবং Database থেকে Redis-এ যাওয়ার সম্পূর্ণ নির্দেশনা।</p>
+    </div>
+</header>
+<main>
+    <nav aria-label="সূচিপত্র">
+        <h2>সূচিপত্র</h2>
+        <ul>
+            <li><a href="#purpose">উদ্দেশ্য ও scope</a></li>
+            <li><a href="#flow">সম্পূর্ণ request flow</a></li>
+            <li><a href="#service">Service code ব্যাখ্যা</a></li>
+            <li><a href="#payload">Lookup payload queries</a></li>
+            <li><a href="#imports">Import কোথায় লাগবে</a></li>
+            <li><a href="#controller">PostController integration</a></li>
+            <li><a href="#invalidation">Cache invalidation</a></li>
+            <li><a href="#lifecycle">৬ ঘণ্টার lifecycle</a></li>
+            <li><a href="#news">নতুন News ও frontend</a></li>
+            <li><a href="#performance">Performance result</a></li>
+            <li><a href="#redis">Database cache ও Redis</a></li>
+            <li><a href="#testing">Testing ও troubleshooting</a></li>
+            <li><a href="#extend">নতুন lookup যোগ করা</a></li>
+            <li><a href="#faq">সংক্ষিপ্ত FAQ</a></li>
+            <li><a href="#checklist">Implementation checklist</a></li>
+        </ul>
+    </nav>
+
+    <section id="purpose">
+        <h2>১. কেন PostFormLookups তৈরি হয়েছে?</h2>
+        <p>Post Add/Edit form খুলতে একই ধরনের lookup data বারবার লাগে: Section, Category, Tag, Author/Admin, Reviewer এবং বাংলাদেশের Location data। আগে প্রতিটি Post list request-এ এগুলোর জন্য আলাদা database query চলত।</p>
+        <table><thead><tr><th>Cache-এর আগে</th><th>Cache warm হওয়ার পরে</th></tr></thead><tbody>
+            <tr><td>প্রতি request-এ একাধিক lookup table query</td><td>একটি cache read</td></tr>
+            <tr><td>একই data বারবার sort ও serialize</td><td>আগে প্রস্তুত করা payload reuse</td></tr>
+            <tr><td>Database connection বেশি ব্যস্ত</td><td>Database cache-এ ১ query; Redis-এ DB query শূন্য</td></tr>
+        </tbody></table>
+        <div class="warning"><strong>Scope:</strong> এটি Post/News record cache করে না। শুধু Post form-এর dropdown/options cache করে। তাই নতুন news প্রকাশ আটকে যায় না।</div>
+    </section>
+
+    <section id="flow">
+        <h2>২. সম্পূর্ণ Request Flow</h2>
+        <div class="flow"><span>Post page request</span><b>→</b><span>PostController::index()</span><b>→</b><span>PostFormLookups::get()</span><b>→</b><span>Cache check</span><b>→</b><span>Blade view</span></div>
+        <h3>Cache hit</h3>
+        <div class="flow"><span>Key পাওয়া গেছে</span><b>→</b><span>Cached array</span><b>→</b><span>Object collection</span><b>→</b><span>Form render</span></div>
+        <h3>Cache miss</h3>
+        <div class="flow"><span>Key নেই/expired</span><b>→</b><span>payload() queries</span><b>→</b><span>Cache save</span><b>→</b><span>Form render</span></div>
+    </section>
+
+    <section id="service">
+        <h2>৩. Service File এবং প্রতিটি অংশ</h2>
+        <p class="path">File: app/Support/PostFormLookups.php</p>
+        <p><code>app/Support</code> হলো reusable application service রাখার জায়গা। এটি Model নয়, Controller নয় এবং database table-ও নয়। এটি কয়েকটি Model query ও Laravel Cache facade-কে একটি reusable API-তে আনে।</p>
+
+        <h3>Namespace ও imports</h3>
+        <pre><code>&lt;?php
+
+namespace App\Support;
+
+use App\Models\{Admin, Category, District, Division, Section, Tag, Upazila};
+use Illuminate\Support\Facades\Cache;
+use Throwable;</code></pre>
+        <table><thead><tr><th>Import</th><th>কাজ</th></tr></thead><tbody>
+            <tr><td><code>App\Models\...</code></td><td>Lookup table থেকে data query করে।</td></tr>
+            <tr><td><code>Cache</code></td><td>Configured cache driver—database বা Redis—ব্যবহার করে।</td></tr>
+            <tr><td><code>Throwable</code></td><td>Cache server/driver ব্যর্থ হলেও fallback চালাতে সাহায্য করে।</td></tr>
+        </tbody></table>
+
+        <h3>একটি versioned cache key</h3>
+        <pre><code>private const CACHE_KEY = 'admin.post-form-lookups.v1';</code></pre>
+        <p><code>v1</code> রাখার সুবিধা হলো payload structure ভবিষ্যতে বদলালে key-কে <code>v2</code> করে পুরোনো cache নিরাপদে বাদ দেওয়া যায়।</p>
+
+        <h3>get(): cache read/create</h3>
+        <pre><code>public static function get(): array
+{
+    try {
+        $payload = Cache::remember(
+            self::CACHE_KEY,
+            now()-&gt;addHours(6),
+            fn () =&gt; self::payload(),
+        );
+    } catch (Throwable $exception) {
+        report($exception);
+        $payload = self::payload();
+    }
+
+    return collect($payload)-&gt;map(
+        fn (array $records) =&gt; collect($records)
+            -&gt;map(fn (array $record) =&gt; (object) $record),
+    )-&gt;all();
+}</code></pre>
+        <ol>
+            <li><code>Cache::remember()</code> প্রথমে key খোঁজে।</li>
+            <li>Key থাকলে database query না করে cached payload দেয়।</li>
+            <li>Key না থাকলে <code>payload()</code> চালায় এবং result ছয় ঘণ্টার জন্য save করে।</li>
+            <li>Cache connection error হলে exception log হয়, তারপর সরাসরি <code>payload()</code> চালিয়ে page সচল রাখে।</li>
+            <li>Cached array-কে object collection করা হয়, কারণ Blade-এ existing code <code>$item-&gt;id</code> ও <code>$item-&gt;name</code> ব্যবহার করে।</li>
+        </ol>
+        <div class="note"><strong>কেন array cache করা হয়?</strong> Eloquent Model serialize না করে plain array রাখলে cache driver পরিবর্তন, model serialization এবং security compatibility সহজ হয়।</div>
+
+        <h3>forget(): targeted invalidation</h3>
+        <pre><code>public static function forget(): void
+{
+    try {
+        Cache::forget(self::CACHE_KEY);
+    } catch (Throwable $exception) {
+        report($exception);
+    }
+}</code></pre>
+        <p>পুরো application cache clear করা হয় না। শুধু <code>admin.post-form-lookups.v1</code> key মুছে যায়। পরবর্তী Post page request fresh payload তৈরি করে।</p>
+    </section>
+
+    <section id="payload">
+        <h2>৪. payload() কোন data query করে?</h2>
+        <pre><code>private static function payload(): array
+{
+    return [
+        'sections' =&gt; Section::where('status', true)
+            -&gt;orderBy('name')-&gt;get(['id', 'name'])-&gt;toArray(),
+
+        'categories' =&gt; Category::where('status', true)
+            -&gt;orderBy('category_name')
+            -&gt;get(['id', 'section_id', 'category_name'])-&gt;toArray(),
+
+        'tags' =&gt; Tag::where('status', true)
+            -&gt;orderBy('name')-&gt;get(['id', 'name'])-&gt;toArray(),
+
+        'admins' =&gt; Admin::where('status', true)
+            -&gt;orderBy('name')
+            -&gt;get(['id', 'name', 'type', 'rank', 'position'])-&gt;toArray(),
+
+        'reviewers' =&gt; Admin::where('status', true)
+            -&gt;where(fn ($query) =&gt; $query-&gt;where('type', 'superadmin')
+                -&gt;orWhereHas('roles', fn ($role) =&gt; $role
+                    -&gt;where('module', 'post')
+                    -&gt;where('edit_access', true)
+                    -&gt;where('no_access', false)))
+            -&gt;orderBy('name')
+            -&gt;get(['id', 'name', 'type', 'rank', 'position'])-&gt;toArray(),
+
+        'divisions' =&gt; Division::orderBy('name')
+            -&gt;get(['id', 'name', 'bn_name'])-&gt;toArray(),
+        'districts' =&gt; District::orderBy('name')
+            -&gt;get(['id', 'division_id', 'name', 'bn_name'])-&gt;toArray(),
+        'upazilas' =&gt; Upazila::orderBy('name')
+            -&gt;get(['id', 'district_id', 'name', 'bn_name'])-&gt;toArray(),
+    ];
+}</code></pre>
+        <p>প্রতিটি query-তে প্রয়োজনীয় column-ই select করা হয়েছে। <code>division_id</code> ও <code>district_id</code> cascading location dropdown filter করার জন্য রাখা হয়েছে।</p>
+    </section>
+
+    <section id="imports">
+        <h2>৫. কোথায় কী Import করতে হবে?</h2>
+        <p>যে Controller <code>PostFormLookups::get()</code> বা <code>::forget()</code> call করবে, তার namespace-এর নিচে এই import দিতে হবে:</p>
+        <pre><code>use App\Support\PostFormLookups;</code></pre>
+        <table><thead><tr><th>File</th><th>কেন import</th><th>Call</th></tr></thead><tbody>
+            <tr><td><code>PostController.php</code></td><td>Form options পড়তে</td><td><code>PostFormLookups::get()</code></td></tr>
+            <tr><td><code>SectionController.php</code></td><td>Section বদলালে stale cache সরাতে</td><td><code>PostFormLookups::forget()</code></td></tr>
+            <tr><td><code>CategoryController.php</code></td><td>Category বদলালে stale cache সরাতে</td><td><code>PostFormLookups::forget()</code></td></tr>
+            <tr><td><code>TagController.php</code></td><td>Tag বদলালে stale cache সরাতে</td><td><code>PostFormLookups::forget()</code></td></tr>
+            <tr><td><code>AdminController.php</code></td><td>Author/reviewer/permission বদলালে cache সরাতে</td><td><code>PostFormLookups::forget()</code></td></tr>
+        </tbody></table>
+        <div class="warning">একই namespace-এ না থাকলে শুধু class name লিখে call করা যাবে না। Import না দিলে PHP <code>App\Http\Controllers\PostFormLookups</code> খুঁজবে এবং “Class not found” error দেবে।</div>
+    </section>
+
+    <section id="controller">
+        <h2>৬. PostController-এ Integration</h2>
+        <p class="path">File: app/Http/Controllers/PostController.php</p>
+        <h3>Step 1: import</h3>
+        <pre><code>namespace App\Http\Controllers;
+
+use App\Models\Post;
+use App\Support\PostFormLookups;
+use Illuminate\Http\Request;</code></pre>
+        <h3>Step 2: view data-এর সঙ্গে spread</h3>
+        <pre><code>return view('admin.post.post', [
+    'posts' =&gt; $posts,
+    'summary' =&gt; $summary,
+    'search' =&gt; $search,
+    'status' =&gt; $status,
+    'categoryId' =&gt; $categoryId,
+    'scope' =&gt; $scope,
+    'pageTitle' =&gt; $pageTitle,
+    'pageSubtitle' =&gt; $pageSubtitle,
+    'indexRoute' =&gt; $indexRoute,
+    'canManageAll' =&gt; $canManageAll,
+
+    ...PostFormLookups::get(),
+]);</code></pre>
+        <p>Array spread-এর ফলে service-এর keys সরাসরি Blade variable হয়:</p>
+        <pre><code>$lookups = [
+    'sections' =&gt; [...],
+    'categories' =&gt; [...],
+    'tags' =&gt; [...],
+];
+
+// Blade-এ পাওয়া যাবে:
+$sections
+$categories
+$tags</code></pre>
+        <h3>Blade usage</h3>
+        <pre><code>@@foreach($sections as $item)
+    &lt;option value="{{ $item-&gt;id }}"&gt;
+        {{ $item-&gt;name }}
+    &lt;/option&gt;
+@@endforeach</code></pre>
+        <div class="note"><code>@@</code> document-এ Blade directive দেখানোর জন্য লেখা হয়েছে। আসল Blade file-এ একটি <code>@</code> থাকবে।</div>
+    </section>
+
+    <section id="invalidation">
+        <h2>৭. Cache Invalidation: data বদলালে সঙ্গে সঙ্গে fresh</h2>
+        <p>Cache-এর সবচেয়ে গুরুত্বপূর্ণ নিয়ম: source data বদলালে সংশ্লিষ্ট key forget করতে হবে। তা না হলে TTL শেষ হওয়া পর্যন্ত পুরোনো option দেখা যাবে।</p>
+
+        <h3>SectionController</h3>
+        <pre><code>use App\Support\PostFormLookups;
+
+private function clearSectionCache(): void
+{
+    Cache::forget('api.sections-with-categories.v1');
+    PostFormLookups::forget();
+}</code></pre>
+
+        <h3>CategoryController</h3>
+        <pre><code>use App\Support\PostFormLookups;
+
+private function clearCategoryCache(): void
+{
+    Cache::forget('api.sections-with-categories.v1');
+    Cache::forget('admin.category-form.sections.v3');
+    Cache::forget('admin.category-form.parents.v3');
+    PostFormLookups::forget();
+}</code></pre>
+
+        <h3>TagController</h3>
+        <pre><code>use App\Support\PostFormLookups;
+
+public function store(Request $request)
+{
+    Tag::create($this-&gt;validatedData($request));
+    PostFormLookups::forget();
+
+    return response()-&gt;json(['message' =&gt; 'Tag created successfully.'], 201);
+}</code></pre>
+        <p>একই <code>forget()</code> Tag-এর <code>update</code>, <code>updateStatus</code> ও <code>destroy</code>-এর successful database change-এর পরে call করতে হবে।</p>
+
+        <h3>Admin/Reviewer permission</h3>
+        <pre><code>use App\Support\PostFormLookups;
+
+private function clearUserCache(): void
+{
+    PostFormLookups::forget();
+}
+
+// Admin create/update/delete/status-এর পরে:
+$this-&gt;clearUserCache();
+
+// Reviewer permission update loop সফল হওয়ার পরে:
+$this-&gt;clearUserCache();</code></pre>
+        <div class="ok"><strong>Result:</strong> নতুন Section/Category/Tag/Admin বা Reviewer permission save হওয়ার পর key মুছে যায়। পরবর্তী Post page request fresh options পায়—ছয় ঘণ্টা অপেক্ষা করে না।</div>
+    </section>
+
+    <section id="lifecycle">
+        <h2>৮. Cache Lifecycle: ছয় ঘণ্টা মানে কী?</h2>
+        <table><thead><tr><th>ঘটনা</th><th>কী হয়?</th></tr></thead><tbody>
+            <tr><td>প্রথম Post page request</td><td>Cache miss → source queries → payload save → response।</td></tr>
+            <tr><td>পরবর্তী request</td><td>একই key cache থেকে read; source lookup queries চলে না।</td></tr>
+            <tr><td>৬ ঘণ্টা পার হয়</td><td>Key expired; পরবর্তী request নতুন payload তৈরি করে। Expire নিজে error নয়।</td></tr>
+            <tr><td>Tag/Category/Admin পরিবর্তন</td><td><code>forget()</code> সঙ্গে সঙ্গে key সরায়; পরবর্তী request fresh data পায়।</td></tr>
+            <tr><td>Cache server সাময়িক down</td><td>Exception report হয়; service source database queries দিয়ে response দেয়।</td></tr>
+            <tr><td>সরাসরি DB edit</td><td>Controller invalidation চলে না; key expire/ম্যানুয়াল forget না হওয়া পর্যন্ত পুরোনো option থাকতে পারে।</td></tr>
+        </tbody></table>
+        <h3>সময় পরিবর্তন</h3>
+        <pre><code>// 30 minutes
+now()-&gt;addMinutes(30)
+
+// 6 hours (বর্তমান)
+now()-&gt;addHours(6)
+
+// 1 day
+now()-&gt;addDay()</code></pre>
+        <p>Invalidation ঠিক থাকলে দীর্ঘ TTL নিরাপদ এবং বেশি কার্যকর। Location data খুব কম বদলায়; Tag/Admin পরিবর্তনে explicit invalidation আছে।</p>
+    </section>
+
+    <section id="news">
+        <h2>৯. নতুন News যোগ করলে frontend-এ কী হবে?</h2>
+        <p><code>PostFormLookups</code> শুধু form options cache করে। এটি <code>posts</code> table-এর news list, post body বা published API response cache করে না।</p>
+        <div class="flow"><span>Post save</span><b>→</b><span>posts table insert/update</span><b>→</b><span>Admin list refresh</span><b>→</b><span>নতুন Post দেখা যায়</span></div>
+        <table><thead><tr><th>Data</th><th>এই service cache করে?</th><th>Fresh হওয়ার নিয়ম</th></tr></thead><tbody>
+            <tr><td>Post/news record</td><td>না</td><td>পরবর্তী database-backed list request-এ fresh</td></tr>
+            <tr><td>Post title/description/status</td><td>না</td><td>Save হওয়ার সঙ্গে DB-তে fresh</td></tr>
+            <tr><td>Section/Category/Tag options</td><td>হ্যাঁ</td><td>Related CRUD-এর <code>forget()</code></td></tr>
+            <tr><td>Public Nuxt/API response</td><td>না</td><td>সেই API/CDN cache policy আলাদা</td></tr>
+        </tbody></table>
+        <div class="warning"><strong>Published frontend cache আলাদা বিষয়:</strong> ভবিষ্যতে homepage, category page বা single-news API cache করলে Post publish/update/delete-এর পরে সেই public cache keys আলাদাভাবে invalidate করতে হবে। <code>PostFormLookups::forget()</code> public news cache clear করে না।</div>
+    </section>
+
+    <section id="performance">
+        <h2>১০. বর্তমান Performance Result</h2>
+        <p>Local MySQL এবং বর্তমান database cache driver-এ মাপা ফল:</p>
+        <table><thead><tr><th>অবস্থা</th><th>Query</th><th>Local সময়</th></tr></thead><tbody>
+            <tr><td>Cold lookup</td><td>10</td><td>প্রায় 27ms</td></tr>
+            <tr><td>Warm lookup</td><td>1</td><td>প্রায় 0.86ms</td></tr>
+        </tbody></table>
+        <p>সংখ্যাগুলো local machine-এর measurement, production guarantee নয়। Database cache-এ warm request একটি <code>cache</code> table query করে; Redis ব্যবহার করলে এই lookup মূল MySQL database-এ যায় না।</p>
+    </section>
+
+    <section id="redis">
+        <h2>১১. Database Cache থেকে Redis</h2>
+        <p><code>PostFormLookups</code> কোনো নির্দিষ্ট driver hard-code করে না। Laravel-এর <code>Cache</code> facade default driver ব্যবহার করে। তাই application code না বদলিয়েই environment দিয়ে driver বদলানো যায়।</p>
+
+        <h3>বর্তমান Database cache</h3>
+        <pre><code>CACHE_STORE=database
+REDIS_CLIENT=predis
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379</code></pre>
+        <p>এ অবস্থায় payload Laravel-এর <code>cache</code> database table-এ থাকে। এটি development/medium traffic-এর জন্য কার্যকর, তবে cache read-ও MySQL connection ব্যবহার করে।</p>
+
+        <h3>Laragon Redis server test</h3>
+        <pre><code>C:\laragon\bin\redis\redis-x64-5.0.14.1\redis-cli.exe ping</code></pre>
+        <p>Expected output: <code>PONG</code>। Connection refused হলে Redis server আগে start করতে হবে।</p>
+
+        <h3>Predis client install</h3>
+        <pre><code>cd C:\laragon\www\laravel_nuxt_company_project\adminpanel
+composer require predis/predis</code></pre>
+
+        <h3>Redis cache .env</h3>
+        <pre><code>CACHE_STORE=redis
+
+REDIS_CLIENT=predis
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+REDIS_DB=0
+REDIS_CACHE_DB=1
+
+# প্রথম ধাপে এগুলো অপরিবর্তিত রাখা নিরাপদ
+SESSION_DRIVER=file
+QUEUE_CONNECTION=database</code></pre>
+
+        <h3>Config reload</h3>
+        <pre><code>php artisan optimize:clear</code></pre>
+
+        <h3>Laravel থেকে test</h3>
+        <pre><code>php artisan tinker
+
+Cache::put('redis_test', 'working', 60);
+Cache::get('redis_test');
+config('cache.default');</code></pre>
+        <p>Expected result: <code>working</code> এবং <code>redis</code>।</p>
+
+        <h3>Rollback</h3>
+        <pre><code># .env
+CACHE_STORE=database
+
+# তারপর
+php artisan optimize:clear</code></pre>
+        <div class="warning"><strong>Switch করার নিয়ম:</strong> Redis server-এর <code>PONG</code> এবং Predis installation সফল হওয়ার আগে <code>CACHE_STORE=redis</code> করবেন না। Default cache unavailable হলে login rate limiterসহ PostFormLookups-এর বাইরের Laravel features error করতে পারে।</div>
+        <div class="note"><strong>Production:</strong> Laragon-এর bundled Redis local development-এর জন্য। Production-এ maintained Linux/managed Redis, authentication, private networking, monitoring এবং persistence policy ব্যবহার করা উচিত।</div>
+    </section>
+
+    <section id="testing">
+        <h2>১২. Testing ও Troubleshooting</h2>
+        <h3>PHP syntax</h3>
+        <pre><code>php -l app/Support/PostFormLookups.php
+php -l app/Http/Controllers/PostController.php</code></pre>
+
+        <h3>Cache rebuild test</h3>
+        <pre><code>php artisan tinker
+
+App\Support\PostFormLookups::forget();
+$lookups = App\Support\PostFormLookups::get();
+array_keys($lookups);
+$lookups['sections']-&gt;count();</code></pre>
+        <p>Expected keys: <code>sections</code>, <code>categories</code>, <code>tags</code>, <code>admins</code>, <code>reviewers</code>, <code>divisions</code>, <code>districts</code>, <code>upazilas</code>।</p>
+
+        <h3>Common errors</h3>
+        <table><thead><tr><th>Error/লক্ষণ</th><th>সম্ভাব্য কারণ</th><th>সমাধান</th></tr></thead><tbody>
+            <tr><td>Class PostFormLookups not found</td><td>Controller import নেই বা file namespace ভুল</td><td><code>use App\Support\PostFormLookups;</code> এবং <code>namespace App\Support;</code> যাচাই</td></tr>
+            <tr><td>Redis connection refused</td><td>Redis server বন্ধ</td><td>Server start করে <code>redis-cli ping</code></td></tr>
+            <tr><td>Class Predis Client not found</td><td>Composer package নেই</td><td><code>composer require predis/predis</code></td></tr>
+            <tr><td>নতুন Tag form-এ নেই</td><td>Invalidation বাদ গেছে বা direct DB edit</td><td><code>PostFormLookups::forget()</code>; প্রয়োজনে <code>php artisan cache:clear</code></td></tr>
+            <tr><td>Blade-এ array property error</td><td>Cached array object collection-এ convert হয়নি</td><td><code>get()</code>-এর final <code>collect()-&gt;map()</code> block রাখুন</td></tr>
+            <tr><td>Cache expire হওয়ার পরে প্রথম request একটু বেশি</td><td>Cold cache rebuild</td><td>Expected behavior; পরবর্তী request warm হবে</td></tr>
+        </tbody></table>
+    </section>
+
+    <section id="extend">
+        <h2>১৩. নতুন Lookup যোগ করার নিয়ম</h2>
+        <p>উদাহরণ: Post form-এ active Sources dropdown যোগ করতে হবে।</p>
+        <ol>
+            <li><code>PostFormLookups.php</code>-এ Model import করুন।</li>
+            <li><code>payload()</code>-এ প্রয়োজনীয় columnsসহ একটি key যোগ করুন।</li>
+            <li>Source create/update/delete/status controller-এ <code>PostFormLookups::forget()</code> যোগ করুন।</li>
+            <li>Blade-এ service key-এর নাম অনুযায়ী variable ব্যবহার করুন।</li>
+            <li>Payload structure incompatible হলে cache key <code>v1</code> থেকে <code>v2</code> করুন।</li>
+        </ol>
+        <pre><code>use App\Models\Source;
+
+// payload()
+'sources' =&gt; Source::where('status', true)
+    -&gt;orderBy('name')
+    -&gt;get(['id', 'name'])
+    -&gt;toArray(),
+
+// SourceController mutation-এর পরে
+PostFormLookups::forget();
+
+// Blade
+@@foreach($sources as $source)
+    &lt;option value="{{ $source-&gt;id }}"&gt;{{ $source-&gt;name }}&lt;/option&gt;
+@@endforeach</code></pre>
+    </section>
+
+    <section id="faq">
+        <h2>১৪. সংক্ষিপ্ত FAQ</h2>
+        <h3>Cache expire হলে কি error হবে?</h3>
+        <p>না। পরবর্তী request <code>payload()</code> চালিয়ে নতুন cache তৈরি করবে।</p>
+        <h3>নতুন Post save করলে lookup cache clear করতে হবে?</h3>
+        <p>না। Post record এই cache-এর অংশ নয়।</p>
+        <h3>নতুন Category/Tag save করলে?</h3>
+        <p>হ্যাঁ—সংশ্লিষ্ট Controller ইতিমধ্যে <code>forget()</code> call করে।</p>
+        <h3>Database cache table রাখা যাবে?</h3>
+        <p>হ্যাঁ। Redis driver চালু হলেও database <code>cache</code> table থাকা ক্ষতিকর নয় এবং rollback সহজ করে।</p>
+        <h3>Redis-এ গেলে service code বদলাতে হবে?</h3>
+        <p>না। শুধু Redis server/client এবং <code>.env</code> driver configure করতে হবে।</p>
+        <h3>Cache down হলেও Post page কেন চলে?</h3>
+        <p><code>get()</code>-এর <code>catch</code> block source database থেকে payload আনে। তবে application-এর অন্য cache-dependent feature-এর জন্য healthy cache service জরুরি।</p>
+    </section>
+
+    <section id="checklist">
+        <h2>১৫. Implementation Checklist</h2>
+        <ul>
+            <li><code>app/Support/PostFormLookups.php</code> namespace ঠিক আছে।</li>
+            <li>PostController-এ import ও <code>...PostFormLookups::get()</code> আছে।</li>
+            <li>Section/Category/Tag/Admin mutation-এর পরে targeted <code>forget()</code> আছে।</li>
+            <li>Reviewer permission update-এর পরেও invalidation আছে।</li>
+            <li>Cache payload plain array; return value Blade-compatible object collections।</li>
+            <li>TTL ছয় ঘণ্টা; expiry automatic rebuild করে।</li>
+            <li>News record/public API cache এই service থেকে আলাদা।</li>
+            <li>Redis switch-এর আগে server ping ও client test সফল।</li>
+            <li>Production-এ <code>APP_DEBUG=false</code> এবং monitored Redis ব্যবহার করা হবে।</li>
+        </ul>
+        <div class="ok"><strong>মূল নীতি:</strong> Read অনেকবার, build একবার; source data বদলালে শুধু সংশ্লিষ্ট key invalidate; cache ব্যর্থ হলেও newsroom form available।</div>
+    </section>
+</main>
+<footer>Project document · adminpanel/docs/post-form-lookups-complete-guide.html</footer>
+</body>
+</html>

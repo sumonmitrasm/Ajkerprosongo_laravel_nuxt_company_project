@@ -65,6 +65,12 @@ class AdminPermissionMiddleware
             'admin-poll.store' => ['poll', 'add'],
             'admin-poll.update', 'admin-poll.status' => ['poll', 'edit'],
             'admin-poll.delete' => ['poll', 'delete'],
+
+            // Protect every news post action and its editorial workflow.
+            'posts', 'posts.mine', 'posts.review', 'admin-post.show' => ['post', 'view'],
+            'admin-post.store' => ['post', 'add'],
+            'admin-post.update', 'admin-post.status' => ['post', 'edit'],
+            'admin-post.delete' => ['post', 'delete'],
             default => null,
         };
     }

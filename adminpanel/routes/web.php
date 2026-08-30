@@ -84,6 +84,8 @@ Route::namespace('App\Http\Controllers\Admin')->prefix('/admin')->group(function
         //>>>>>>>>>>>>>>>>>>>>>>>>End Polling<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         //>>>>>>>>>>>>>>>>>>>>>>>>News Posts<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         Route::get('posts', [PostController::class, 'index'])->name('posts');
+        Route::get('posts/mine', [PostController::class, 'index'])->name('posts.mine');
+        Route::get('posts/review-queue', [PostController::class, 'index'])->name('posts.review');
         Route::post('post', [PostController::class, 'store'])->name('admin-post.store');
         Route::get('post/{post}', [PostController::class, 'show'])->name('admin-post.show');
         Route::put('post/{post}', [PostController::class, 'update'])->name('admin-post.update');
