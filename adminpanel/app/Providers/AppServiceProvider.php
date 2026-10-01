@@ -24,6 +24,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::useBootstrap();
-        View::share('generalSetting', Setting::first());
+        // Fetch settings only when rendering an admin page, not on every API or CLI call.
+        View::composer(['admin.layout.layout', 'admin.login'], function ($view) {
+            $view->with('generalSetting', Setting::first());
+        });
     }
 }

@@ -14,7 +14,7 @@
 
         <link
             rel="icon"
-            href="{{ $generalSetting->favicon ? asset('admin/site_settings/'.$generalSetting->favicon) : asset('admin/site_settings/no-image.png') }}"
+            href="{{ optional($generalSetting)->favicon ? asset('admin/site_settings/'.basename($generalSetting->favicon)) : asset('admin/assets/images/brand/favicon.ico') }}"
             type="image/x-icon"
             />
 
@@ -42,13 +42,13 @@
                     <div class="page-content">
                         <div class="page-single-content">
                             <img
-                                src="{{ $generalSetting->image ? asset('admin/site_settings/'.$generalSetting->image) : asset('admin/site_settings/no-image.png') }}"
+                                src="{{ optional($generalSetting)->image ? asset('admin/site_settings/'.basename($generalSetting->image)) : asset('admin/assets/images/brand/logo.png') }}"
                                 alt="img"
                                 class="header-brand-img mb-5"
                             />
                             <div class="card-body text-white py-5 px-8 text-center">
                                 <img
-                                    src="{{ $generalSetting->image ? asset('admin/site_settings/'.$generalSetting->image) : asset('admin/site_settings/no-image.png') }}"
+                                    src="{{ optional($generalSetting)->image ? asset('admin/site_settings/'.basename($generalSetting->image)) : asset('admin/assets/images/brand/logo.png') }}"
                                     alt="img"
                                     class="w-100 mx-auto text-center"
                                 />

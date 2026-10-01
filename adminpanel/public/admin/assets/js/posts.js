@@ -46,7 +46,7 @@
     function setEditorHtml(html) {
         var quill = richEditor();
         if (!quill) return $("#post-description").val(html || "");
-        quill.clipboard.dangerouslyPasteHTML(html || "");
+        quill.clipboard.dangerouslyPasteHTML(window.cleanEditorHtml(html));
     }
     function errors(xhr) {
         var e = elements(),
@@ -326,7 +326,7 @@
     $(document).on("submit", "#post-form", function (ev) {
         ev.preventDefault();
         var quill = richEditor();
-        if (quill) $("#post-description").val(quill.root.innerHTML === "<p><br></p>" ? "" : quill.root.innerHTML);
+        if (quill) $("#post-description").val(window.cleanEditorHtml(quill.root.innerHTML === "<p><br></p>" ? "" : quill.root.innerHTML));
         var e = elements(),
             data = new FormData(this),
             $s = $("#post-submit");

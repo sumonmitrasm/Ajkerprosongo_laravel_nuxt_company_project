@@ -3,8 +3,18 @@
 namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int|null $ap_id
+ * @property string|null $name
+ * @property string $email
+ * @property string|null $image
+ * @property string|null $mobile
+ * @property string|null $type
+ * @property bool $status
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, AdminRole> $roles
+ */
 class Admin extends Authenticatable
 {
     use HasFactory;
@@ -25,45 +35,24 @@ class Admin extends Authenticatable
         return $this->hasMany(AdminRole::class, 'admin_id');
     }
 
-    /**
-     * Check a module permission for the logged-in admin.
-     */
-    // public function hasModuleAccess(string $module, string $access = 'view'): bool
-    // {
-    //     // The super admin must always be able to manage permissions and recover access.
-    //     if ($this->type === 'superadmin') {
-    //         return true;
-    //     }
-
-    //     $role = $this->relationLoaded('roles')
-    //         ? $this->roles->firstWhere('module', $module)
-    //         : $this->roles()->where('module', $module)->first();
-
-    //     if (! $role || $role->no_access) {
-    //         return false;
-    //     }
-
-    //     return match ($access) {
-    //         'add' => (bool) $role->add_access,
-    //         'edit' => (bool) $role->edit_access,
-    //         'delete' => (bool) $role->delete_access,
-    //         'full' => (bool) ($role->view_access && $role->add_access && $role->edit_access && $role->delete_access),
-    //         'view' => (bool) $role->view_access,
-    //         default => false,
-    //     };
-    // }
-
     public function hasModuleAccess(string $module, string $access = 'view'): bool
     {
+        if (! $this->status) {
+            return false;
+        }
+
         // Superadmins always retain recovery access to every admin module.
         if ($this->type === 'superadmin') {
             return true;
         }
 
-        // Reuse middleware-loaded roles to avoid one query for every sidebar item.
-        $role = $this->relationLoaded('roles')
-            ? $this->roles->firstWhere('module', $module)
-            : $this->roles()->where('module', $module)->first();
+        // Granting permissions remains restricted to superadmins.
+        if ($module === 'admin' && $access === 'full') {
+            return false;
+        }
+
+        $this->loadMissing('roles');
+        $role = $this->roles->firstWhere('module', $module);
 
         if (! $role || $role->no_access) {
             return false;
@@ -78,5 +67,47 @@ class Admin extends Authenticatable
             'view' => (bool) $role->view_access,
             default => false,
         };
+    }
+
+    // Can this admin change the target account without gaining more permissions?
+    public function canManageAccount(Admin $target): bool
+    {
+        if (! $this->status) {
+            return false;
+        }
+        if ($this->type === 'superadmin') {
+            return true;
+        }
+        if ($target->type === 'superadmin') {
+            return false;
+        }
+
+        $this->loadMissing('roles');
+        $target->loadMissing('roles');
+
+        // Password/status changes must not give access to a more powerful account.
+        // Check stored permissions even when the target account is disabled.
+        foreach ($target->roles as $role) {
+            if ($role->no_access) {
+                continue;
+            }
+            if (! $role->view_access && ! $role->add_access && ! $role->edit_access && ! $role->delete_access) {
+                continue;
+            }
+
+            $myRole = $this->roles->firstWhere('module', $role->module);
+            if (! $myRole || $myRole->no_access) {
+                return false;
+            }
+
+            if (($role->view_access && ! $myRole->view_access)
+                || ($role->add_access && ! $myRole->add_access)
+                || ($role->edit_access && ! $myRole->edit_access)
+                || ($role->delete_access && ! $myRole->delete_access)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
