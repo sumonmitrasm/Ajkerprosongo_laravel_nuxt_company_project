@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -40,8 +39,8 @@ class AdminController extends Controller
             }
             $data = $request->only('email', 'password');
             $validator = Validator::make($data, [
-                'email' => ['required', 'email', 'max:40'],
-                'password' => ['required', 'string', 'max:20'],
+                'email' => ['required', 'email', 'max:255'],
+                'password' => ['required', 'string', 'max:255'],
             ], [
                 'email.required' => 'Email is required.',
                 'email.email' => 'Please enter a valid email address.',
@@ -92,7 +91,7 @@ class AdminController extends Controller
         $title = $admin->name;
         $search = trim((string) $request->query('search', ''));
         if (in_array($admin->type, ['superadmin', 'admin'])) {
-            $users = Admin::select('id', 'image', 'ap_id', 'name', 'email', 'type', 'mobile', 'status')
+            $users = Admin::with('roles')->select('id', 'image', 'ap_id', 'name', 'email', 'type', 'mobile', 'status')
                 ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
                     $query->where('name', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%")
@@ -101,8 +100,7 @@ class AdminController extends Controller
                 }))
                 ->latest('id')
                 ->cursorPaginate($this->perPage($request))
-                ->withQueryString()
-                ->through(fn (Admin $user) => $user->only(['id', 'image', 'ap_id', 'name', 'email', 'type', 'mobile', 'status']));
+                ->withQueryString();
         } else {
             $users = collect([$admin]);
         }
@@ -116,11 +114,6 @@ class AdminController extends Controller
         ]);
     }
 
-    // public function storeUser(Request $request)
-    // {
-    //     Admin::create($this->validateUser($request));
-    //     return response()->json(['message' => 'User added successfully.'], 201);
-    // }
     public function storeUser(Request $request)
     {
         $data = $this->validateUser($request);
@@ -135,7 +128,7 @@ class AdminController extends Controller
             'message' => 'User added successfully.'
         ], 201);
     }
-   public function updateUser(Request $request, Admin $user)
+    public function updateUser(Request $request, Admin $user)
     {
         $data = $this->validateUser($request, $user);
         if ($request->hasFile('image')) {
@@ -149,7 +142,7 @@ class AdminController extends Controller
 
     public function deleteUser(Admin $user)
     {
-        if ($user->is(Auth::guard('admin')->user())) {
+        if ($user->id === Auth::guard('admin')->id()) {
             return response()->json(['message' => 'You cannot delete the logged-in user.'], 422);
         }
         $this->deleteOldImage($user->image);
@@ -160,6 +153,10 @@ class AdminController extends Controller
 
     public function updateUserStatus(Admin $user)
     {
+        if ($user->id === Auth::guard('admin')->id()) {
+            return response()->json(['message' => 'You cannot disable your own account.'], 422);
+        }
+
         $user->update(['status' => ! $user->status]);
         $this->clearUserCache();
         return response()->json(['message' => 'User status updated successfully.']);
@@ -167,10 +164,22 @@ class AdminController extends Controller
 
     private function validateUser(Request $request, ?Admin $user = null): array
     {
+        $actor = Auth::guard('admin')->user();
+        if ($actor->type !== 'superadmin') {
+            abort_if($request->input('type') === 'superadmin', 403, 'Only a superadmin can assign this type.');
+            abort_if($user && $request->input('type') !== $user->type, 403, 'Only a superadmin can change account types.');
+        }
+
+        // Keep the current account from accidentally losing its own access.
+        if ($user && $user->is($actor)) {
+            abort_if($request->input('type') !== $user->type || ! $request->boolean('status'),
+                422, 'You cannot remove your own account access.');
+        }
+
         $data = $request->validate([
             'ap_id' => ['nullable', 'integer'],
             'name' => ['required', 'string', 'max:100'],
-            'type' => ['nullable', 'string', 'max:100'],
+            'type' => ['required', Rule::in(['superadmin', 'admin', 'crospondent', 'manager', 'reporter'])],
             'mobile' => ['nullable', 'string', 'max:30'],
             'email' => ['required', 'email', 'max:255', Rule::unique('admins', 'email')->ignore($user)],
             'password' => $user ? ['nullable', 'string', 'min:6', 'max:255'] : ['required', 'string', 'min:6', 'max:255'],

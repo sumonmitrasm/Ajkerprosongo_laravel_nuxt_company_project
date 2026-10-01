@@ -46,7 +46,7 @@
     function setEditorHtml(html) {
         var quill = richEditor();
         if (!quill) return $("#post-description").val(html || "");
-        quill.clipboard.dangerouslyPasteHTML(html || "");
+        quill.clipboard.dangerouslyPasteHTML(window.cleanEditorHtml(html));
     }
     function errors(xhr) {
         var e = elements(),
@@ -131,6 +131,25 @@
     function setValue(name, value) {
         $('#post-form [name="' + name + '"]').val(value == null ? "" : value);
     }
+    function setSelectedTags(tagIds) {
+        var selectedIds = new Set((tagIds || []).map(String));
+        $("#post-tags option").each(function () {
+            this.selected = selectedIds.has(String(this.value));
+        });
+        updateTagSelection();
+    }
+    function updateTagSelection() {
+        var names = $("#post-tags option:selected")
+            .map(function () { return $(this).text().trim(); })
+            .get();
+        var $summary = $("#post-tag-selection");
+
+        $summary
+            .toggleClass("has-selection", names.length > 0)
+            .text(names.length
+                ? names.length + " selected: " + names.join(", ")
+                : "No tags selected. Use Ctrl to select more than one tag.");
+    }
     // Present every immutable status transition without allowing manual editing.
     function showEditorialHistory(history) {
         var $audit = $("#post-audit");
@@ -165,7 +184,7 @@
         $("#gallery-list").append(galleryRow());
         $("#allow-comments").prop("checked", true);
         $("#post-form input[type=checkbox]:not(#allow-comments)").prop("checked", false);
-        $("#post-tags").val([]);
+        setSelectedTags([]);
         $("#post-form [name=reviewed_by]").val("").prop("required", false);
         $("[data-image-preview]").addClass("d-none").attr("src", "");
         $("[data-upload-text]").removeClass("d-none");
@@ -180,6 +199,7 @@
         var needsReviewer = this.value === "review";
         $("#post-form [name=reviewed_by]").prop("required", needsReviewer);
     });
+    $(document).on("change", "#post-tags", updateTagSelection);
     $(document).on("click", ".js-post-create", function () {
         resetForm();
         bootstrap.Modal.getOrCreateInstance(elements().modal).show();
@@ -230,7 +250,7 @@
                 $("#is-breaking").prop("checked", !!p.is_breaking);
                 $("#is-featured").prop("checked", !!p.is_featured);
                 $("#is-pinned").prop("checked", !!p.is_pinned);
-                $("#post-tags").val((p.tag_ids || []).map(String));
+                setSelectedTags(p.tag_ids || []);
                 (p.featured_positions || []).forEach(function (v) {
                     $("#place-" + v).prop("checked", true);
                 });
@@ -306,7 +326,7 @@
     $(document).on("submit", "#post-form", function (ev) {
         ev.preventDefault();
         var quill = richEditor();
-        if (quill) $("#post-description").val(quill.root.innerHTML === "<p><br></p>" ? "" : quill.root.innerHTML);
+        if (quill) $("#post-description").val(window.cleanEditorHtml(quill.root.innerHTML === "<p><br></p>" ? "" : quill.root.innerHTML));
         var e = elements(),
             data = new FormData(this),
             $s = $("#post-submit");

@@ -10,12 +10,7 @@ use App\Http\Controllers\TagController;
 use App\Http\Controllers\PollController;
 use App\Http\Controllers\PostController;
 
-Route::get('/clear-cache', function() {
-    Artisan::call('view:clear');
-    Artisan::call('cache:clear');
-    Artisan::call('config:clear');
-    return "All cache cleared successfully!";
-});
+// Run maintenance commands from the terminal, never from a public URL.
 // Route::get('/dashboard', function () {
 //     return view('dashboard');
 // })->middleware(['auth', 'verified'])->name('dashboard');

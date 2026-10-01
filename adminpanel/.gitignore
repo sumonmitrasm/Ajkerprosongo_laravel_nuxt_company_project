@@ -14,12 +14,15 @@
 /.zed
 /auth.json
 /node_modules
+/.npm-cache
 /public/build
 /public/fonts-manifest.dev.json
 /public/hot
 /public/storage
 /storage/*.key
 /storage/pail
+/storage/framework/chrome-security-test*/
+/storage/framework/editor-test-*.txt
 /vendor
 .history/
 _ide_helper.php

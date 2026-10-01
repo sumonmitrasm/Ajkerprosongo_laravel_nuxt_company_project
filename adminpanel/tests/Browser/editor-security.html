@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Editor security smoke test</title>
+<link rel="stylesheet" href="../../public/admin/assets/plugins/quill/quill.snow.css">
+<div id="editor"></div>
+<pre id="result">RUNNING</pre>
+<script src="../../public/admin/assets/plugins/dompurify/purify.min.js"></script>
+<script src="../../public/admin/assets/plugins/quill/quill.min.js"></script>
+<script src="../../public/admin/assets/js/editor-security.js"></script>
+<script src="../../public/admin/assets/plugins/moment/moment.js"></script>
+<script src="../../public/admin/assets/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+<script>
+try {
+    function assert(condition, message) {
+        if (!condition) throw new Error(message);
+    }
+    var clean = window.cleanEditorHtml('<p><strong>Hello</strong></p><img src="x" onerror="alert(1)"><a href="javascript:alert(1)">link</a><iframe src="https://untrusted.example/"></iframe>');
+    assert(clean.includes('<strong>Hello</strong>'), 'Formatting was lost');
+    assert(!/onerror|javascript:|iframe/.test(clean), 'Unsafe markup survived');
+    assert(window.cleanEditorHtml('<iframe src="https://www.youtube.com/embed/test"></iframe>').includes('iframe'), 'Trusted video was lost');
+    var editor = new Quill('#editor', { theme: 'snow' });
+    editor.clipboard.dangerouslyPasteHTML(clean);
+    assert(editor.getText().includes('Hello'), 'Editor import failed');
+    editor.setContents([{ insert: 'One' }, { insert: '\n', attributes: { list: 'bullet' } }]);
+    assert(editor.getSemanticHTML().includes('<ul>'), 'List export failed');
+    var savedList = window.cleanEditorHtml(editor.root.innerHTML);
+    editor.clipboard.dangerouslyPasteHTML(savedList);
+    assert(editor.getContents().ops.some(function (op) { return op.attributes && op.attributes.list === 'bullet'; }), 'Bullet list changed after save/reopen');
+    editor.insertEmbed(0, 'video', 'https://example.test/"> <img src=x onerror=alert(1)>');
+    var exported = new DOMParser().parseFromString(editor.getSemanticHTML(), 'text/html');
+    assert(!exported.querySelector('[onerror], [onload], script, a[href^="javascript:"]'), 'Unsafe exported HTML survived: ' + exported.body.innerHTML);
+    assert(moment('2026-09-30').format('YYYY-MM-DD') === '2026-09-30', 'Moment failed');
+    assert(typeof Swal.fire === 'function', 'Local SweetAlert failed');
+    document.getElementById('result').textContent = 'PASS: editor import, formatting, lists, safe export, videos, Moment and SweetAlert';
+} catch (error) {
+    document.getElementById('result').textContent = 'FAIL: ' + error.message;
+}
+</script>
+</html>

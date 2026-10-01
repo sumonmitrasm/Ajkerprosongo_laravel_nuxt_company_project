@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Admin;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,11 +17,26 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::guard('admin')->check()) {
+        $admin = Auth::guard('admin')->user();
+
+        if (! ($admin instanceof Admin)) {
             return redirect()->route('admin.login');
         }
 
-        Auth::guard('admin')->user()->loadMissing('roles');
+        // Disabling an account also ends its existing login on the next request.
+        if (! $admin->status) {
+            Auth::guard('admin')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Your account is disabled.'], 403);
+            }
+
+            return redirect()->route('admin.login');
+        }
+
+        $admin->loadMissing('roles');
 
         return $next($request);
     }

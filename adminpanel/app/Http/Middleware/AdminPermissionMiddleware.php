@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Admin;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,15 +21,18 @@ class AdminPermissionMiddleware
         [$module, $access] = $permission;
         $admin = Auth::guard('admin')->user();
 
-        if ($admin && $admin->hasModuleAccess($module, $access)) {
-            return $next($request);
+        if (! ($admin instanceof Admin) || ! $admin->hasModuleAccess($module, $access)) {
+            abort(403, 'You do not have permission to perform this action.');
         }
 
-        if ($request->expectsJson() || $request->ajax()) {
-            return response()->json(['message' => 'You do not have permission to perform this action.'], 403);
+        $target = $request->route('user');
+
+        if ($module === 'admin' && $access !== 'view'
+            && $target instanceof Admin && ! $admin->canManageAccount($target)) {
+            abort(403, 'You cannot change this account.');
         }
 
-        abort(403, 'You do not have permission to access this page.');
+        return $next($request);
     }
 
     private function permissionForRoute(?string $routeName): ?array

@@ -25,6 +25,7 @@
 
     <!-- Plugin css -->
     <link href="{{ url('admin/assets/css/plugin.css') }}" rel="stylesheet" />
+    <link href="{{ asset('admin/assets/plugins/quill/quill.snow.css') }}" rel="stylesheet" />
 
     <!-- Animate css -->
     <link href="{{ url('admin/assets/css/animated.css') }}" rel="stylesheet" />
@@ -153,7 +154,7 @@
     <script src="{{ url('admin/assets/js/sticky.js') }}"></script>
 
     <!--Moment js-->
-    <script src="{{ url('admin/assets/plugins/moment/moment.js') }}"></script>
+    <script src="{{ asset('admin/assets/plugins/moment/moment.js') }}"></script>
 
     <!-- Admin AJAX navigation, pagination, export, and reusable CRUD -->
     <script>
@@ -409,6 +410,9 @@
             $(document).on('click', '[data-crud-create]', function () {
                 var $button = $(this), $modal = crudModal($button), $form = $modal.find('[data-crud-form]');
                 $form[0].reset();
+                $form.find('[data-lock-account-type] option').each(function () {
+                    this.disabled = this.value === '';
+                });
                 $form.data({ url: $button.data('store-url'), method: 'POST' });
                 $form.find('.js-crud-errors').empty().addClass('d-none');
                 $form.find('[name="email"]').prop('readonly', false);
@@ -428,6 +432,9 @@
                         var $field = $form.find('[name="' + field + '"]');
                         if (!$field.length || field === 'password' || $field.is('[type="file"]')) return;
                         $field.val(field === 'status' ? (value ? '1' : '0') : (value || ''));
+                    });
+                    $form.find('[data-lock-account-type] option').each(function () {
+                        this.disabled = this.value !== record.type;
                     });
                     $form.find('[name="email"]').prop('readonly', true);
                     var imageUrl = response.image_url || record.image_url || '';
@@ -554,12 +561,14 @@
 
     <!-- Post CRUD js: global loading keeps events alive after AJAX navigation. -->
     <!-- Quill powers the News Post rich-text description editor. -->
-    <script src="{{ url('admin/assets/plugins/quill/quill.min.js') }}"></script>
-    <script src="{{ url('admin/assets/js/posts.js') }}"></script>
+    <script src="{{ asset('admin/assets/plugins/dompurify/purify.min.js') }}"></script>
+    <script src="{{ asset('admin/assets/plugins/quill/quill.min.js') }}"></script>
+    <script src="{{ asset('admin/assets/js/editor-security.js') }}"></script>
+    <script src="{{ asset('admin/assets/js/posts.js') }}"></script>
 
     <!-- Custom js-->
     <script src="{{ url('admin/assets/js/custom.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('admin/assets/plugins/sweetalert2/sweetalert2.all.min.js') }}"></script>
 
     <script>
         // Dashboard-only charts are the largest admin assets. Load them after the

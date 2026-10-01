@@ -17,13 +17,29 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header justify-content-between">
-                            <div class="card-title">{{ $title }}</div>@if ($canAddUsers)<button type="button" class="btn btn-info"
-                                data-crud-create data-crud-modal="#user-form-modal"
-                                data-store-url="{{ route('admin-user.store') }}" data-create-title="Add User">Add
-                                User</button>@endif
+                            <div class="card-title">{{ $title }}</div>
+                            @if ($canAddUsers)
+                                <button type="button" class="btn btn-info"
+                                    data-crud-create data-crud-modal="#user-form-modal"
+                                    data-store-url="{{ route('admin-user.store') }}" data-create-title="Add User">
+                                    Add User
+                                </button>
+                            @endif
                         </div>
                         <div class="card-body">
-                            <div class="mb-3 d-flex align-items-center gap-2"><label class="mb-0">Show</label><select class="form-select form-select-sm w-auto" data-server-per-page>@foreach ([10,20,50,100] as $size)<option value="{{ $size }}" {{ (int) request('per_page',10) === $size ? 'selected' : '' }}>{{ $size }}</option>@endforeach</select><span>entries</span><button class="btn btn-sm btn-success" data-table-export="#users-table" data-table-export-type="excel">Excel</button><button class="btn btn-sm btn-primary" data-table-export="#users-table" data-table-export-type="word">Word</button></div>
+                            <div class="mb-3 d-flex align-items-center gap-2">
+                                <label class="mb-0">Show</label>
+                                <select class="form-select form-select-sm w-auto" data-server-per-page>
+                                    @foreach ([10, 20, 50, 100] as $size)
+                                        <option value="{{ $size }}" @selected((int) request('per_page', 10) === $size)>
+                                            {{ $size }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <span>entries</span>
+                                <button class="btn btn-sm btn-success" data-table-export="#users-table" data-table-export-type="excel">Excel</button>
+                                <button class="btn btn-sm btn-primary" data-table-export="#users-table" data-table-export-type="word">Word</button>
+                            </div>
                             <div class="table-responsive">
                                 <table id="users-table" data-server-pagination
                                     class="table table-bordered text-nowrap key-buttons">
@@ -42,11 +58,22 @@
                                     </thead>
                                     <tbody>
                                         @foreach ($users as $user)
+                                            @php
+                                                // The same account rule is checked by the middleware.
+                                                $canManageThisUser = $currentAdmin->canManageAccount($user);
+                                                $isMyAccount = $user->id === $currentAdmin->id;
+                                                $canEditThisUser = $canEditUsers && $canManageThisUser;
+                                                $canChangeStatus = $canEditThisUser && ! $isMyAccount;
+                                                $canDeleteThisUser = $canDeleteUsers && $canManageThisUser && ! $isMyAccount;
+
+                                                $statusText = $user->status ? 'Active' : 'Inactive';
+                                                $statusClass = $user->status ? 'btn-success' : 'btn-secondary';
+                                            @endphp
                                             <tr>
-                                                <td>{{ $user['id'] ?? '-' }}</td>
+                                                <td>{{ $user->id }}</td>
                                                 <td>
-                                                    @if ($user['image'] ?? false)
-                                                        <img src="{{ asset('admin/adminimage/' . $user['image']) }}"
+                                                    @if ($user->image)
+                                                        <img src="{{ asset('admin/adminimage/' . $user->image) }}"
                                                             alt="Avatar" class="rounded-circle" width="40"
                                                             height="40">
                                                     @else
@@ -55,29 +82,47 @@
                                                             height="40">
                                                     @endif
                                                 </td>
-                                                <td>{{ $user['ap_id'] ?? '-' }}</td>
-                                                <td>{{ $user['name'] ?? '-' }}</td>
-                                                <td>{{ $user['email'] ?? '-' }}</td>
-                                                <td>{{ $user['type'] ?? '-' }}</td>
-                                                <td>{{ $user['mobile'] ?? '-' }}</td>
-                                                <td>@if ($canEditUsers)<button type="button"
-                                                        class="btn btn-sm {{ ($user['status'] ?? false) ? 'btn-success' : 'btn-secondary' }}"
-                                                        data-crud-status
-                                                        data-url="{{ route('admin-user.status', $user['id']) }}">{{ ($user['status'] ?? false) ? 'Active' : 'Inactive' }}</button>@else {{ ($user['status'] ?? false) ? 'Active' : 'Inactive' }} @endif
+                                                <td>{{ $user->ap_id ?? '-' }}</td>
+                                                <td>{{ $user->name ?? '-' }}</td>
+                                                <td>{{ $user->email ?? '-' }}</td>
+                                                <td>{{ $user->type ?? '-' }}</td>
+                                                <td>{{ $user->mobile ?? '-' }}</td>
+                                                <td>
+                                                    @if ($canChangeStatus)
+                                                        <button type="button"
+                                                            class="btn btn-sm {{ $statusClass }}"
+                                                            data-crud-status
+                                                            data-url="{{ route('admin-user.status', $user->id) }}">
+                                                            {{ $statusText }}
+                                                        </button>
+                                                    @else
+                                                        {{ $statusText }}
+                                                    @endif
                                                 </td>
-                                                <td>@if ($canEditUsers)<button type="button" class="btn btn-sm btn-primary" data-crud-edit
-                                                        data-crud-modal="#user-form-modal"
-                                                        data-url="{{ route('admin-user.show', $user['id']) }}"
-                                                        data-update-url="{{ route('admin-user.update', $user['id']) }}">Edit</button>@endif
-                                                    @if ($canDeleteUsers)
-                                                    <button type="button" class="btn btn-sm btn-danger"
-                                                        data-crud-delete
-                                                        data-url="{{ route('admin-user.delete', $user['id']) }}">Delete</button>@endif
+                                                <td>
+                                                    @if ($canEditThisUser)
+                                                        <button type="button" class="btn btn-sm btn-primary"
+                                                            data-crud-edit
+                                                            data-crud-modal="#user-form-modal"
+                                                            data-url="{{ route('admin-user.show', $user->id) }}"
+                                                            data-update-url="{{ route('admin-user.update', $user->id) }}">
+                                                            Edit
+                                                        </button>
+                                                    @endif
+
+                                                    @if ($canDeleteThisUser)
+                                                        <button type="button" class="btn btn-sm btn-danger"
+                                                            data-crud-delete
+                                                            data-url="{{ route('admin-user.delete', $user->id) }}">
+                                                            Delete
+                                                        </button>
+                                                    @endif
 
                                                     @if ($canSetPermissions)
-                                                    <a href="{{ route('admin-user.permission', $user['id']) }}" class="btn btn-sm btn-warning" data-ajax-page>
-                                                        Permission
-                                                    </a>
+                                                        <a href="{{ route('admin-user.permission', $user->id) }}"
+                                                            class="btn btn-sm btn-warning" data-ajax-page>
+                                                            Permission
+                                                        </a>
                                                     @endif
                                                 </td>
                                             </tr>
@@ -114,9 +159,11 @@
                             name="email" class="form-control" required></div>
                     <div class="mb-3">
                         <label class="form-label">Type</label>
-                        <select name="type" class="form-select" required>
+                        <select name="type" class="form-select" required @if ($currentAdmin->type !== 'superadmin') data-lock-account-type @endif>
                             <option value="" disabled selected>Select Type</option>
-                            <option value="superadmin">Super Admin</option>
+                            @if ($currentAdmin->type === 'superadmin')
+                                <option value="superadmin">Super Admin</option>
+                            @endif
                             <option value="admin">Admin</option>
                             <option value="crospondent">Correspondent</option>
                             <option value="manager">Manager</option>
