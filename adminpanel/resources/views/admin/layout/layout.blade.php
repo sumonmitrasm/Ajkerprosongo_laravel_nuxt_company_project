@@ -63,8 +63,10 @@
                 flex: 1;
             }
         }
+
     </style>
 
+    <link href="{{ asset('admin/assets/css/newsroom.css') }}?v=5" rel="stylesheet">
 </head>
 
 <body class="main-body app sidebar-mini light-mode ltr">
