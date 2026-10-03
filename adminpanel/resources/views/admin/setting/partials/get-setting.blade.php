@@ -17,7 +17,7 @@
                             <div class="card-title">{{ $title }}</div>@if ($canAddSetting)<button type="button" class="btn btn-info"
                                 data-crud-create data-crud-modal="#setting-form-modal"
                                 data-store-url="{{ route('admin-setting.store') }}"
-                                data-create-title="Add Setting">Add
+                                data-create-title="Add Setting"><i class="fe fe-plus me-1" aria-hidden="true"></i>Add
                                 Setting</button>@endif
                         </div>
                 <div class="card-body">

@@ -22,7 +22,7 @@
                                 <button type="button" class="btn btn-info"
                                     data-crud-create data-crud-modal="#user-form-modal"
                                     data-store-url="{{ route('admin-user.store') }}" data-create-title="Add User">
-                                    Add User
+                                    <i class="fe fe-plus me-1" aria-hidden="true"></i>Add User
                                 </button>
                             @endif
                         </div>
