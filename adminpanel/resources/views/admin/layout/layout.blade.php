@@ -66,14 +66,18 @@
 
     </style>
 
-    <link href="{{ asset('admin/assets/css/newsroom.css') }}?v=15" rel="stylesheet">
+    <link href="{{ asset('admin/assets/css/newsroom.css') }}?v=16" rel="stylesheet">
 </head>
 
 <body class="main-body app sidebar-mini light-mode ltr">
 
     <!---Global-loader-->
-    <div id="global-loader">
-        <img src="{{ asset('admin/assets/images/svgs/loader.svg') }}" alt="Loading">
+    <div id="global-loader" role="status" aria-live="polite" aria-label="Loading dashboard">
+        <div class="newsroom-loader" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="newsroom-loader-copy">
+            <strong>Preparing your newsroom</strong>
+            <small>Loading your workspace…</small>
+        </div>
     </div>
 
     <div class="page">

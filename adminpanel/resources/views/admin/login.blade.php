@@ -59,6 +59,16 @@
         .login-button:hover svg { transform:translateX(3px); }
         .security-note { display:flex; align-items:center; justify-content:center; gap:7px; margin-top:23px; color:#98a2b3; font-size:12px; }
         .security-note svg { width:14px; height:14px; }
+        .login-loader { position:fixed; z-index:9999; inset:0; display:none; align-items:center; justify-content:center; padding:24px; background:rgba(15,23,42,.72); backdrop-filter:blur(7px); }
+        .login-loader.is-visible { display:flex; }
+        .login-loader__card { display:grid; justify-items:center; width:min(100%,330px); padding:32px 28px; color:#17233c; border:1px solid rgba(255,255,255,.76); border-radius:20px; background:rgba(255,255,255,.96); box-shadow:0 24px 60px rgba(0,0,0,.24); text-align:center; }
+        .login-loader__mark { display:flex; align-items:end; justify-content:center; gap:5px; width:52px; height:48px; margin-bottom:17px; padding:10px; border-radius:14px; background:#fff1f2; }
+        .login-loader__mark span { width:7px; height:12px; border-radius:5px; background:#e31e24; animation:login-loader-bars .78s ease-in-out infinite; transform-origin:bottom; }
+        .login-loader__mark span:nth-child(2) { animation-delay:.13s; background:#f0ab34; }
+        .login-loader__mark span:nth-child(3) { animation-delay:.26s; background:#16a179; }
+        .login-loader strong { font-size:17px; letter-spacing:-.015em; }
+        .login-loader small { margin-top:6px; color:#667085; font-size:13px; }
+        @keyframes login-loader-bars { 0%,100% { opacity:.55; transform:scaleY(.55); } 50% { opacity:1; transform:scaleY(1.65); } }
 
         .auth-alert { position:relative; margin-bottom:22px; padding:13px 42px 13px 44px; color:#9b1c1c; border:1px solid #fecaca; border-radius:11px; background:#fff1f2; font-size:13px; line-height:1.5; }
         .auth-alert::before { content:"!"; position:absolute; top:13px; left:15px; display:grid; width:19px; height:19px; place-items:center; color:#fff; border-radius:50%; background:#dc2626; font-size:12px; font-weight:800; }
@@ -147,6 +157,14 @@
         </section>
     </main>
 
+    <div id="loginLoader" class="login-loader" role="status" aria-live="polite" aria-label="Signing in">
+        <div class="login-loader__card">
+            <div class="login-loader__mark" aria-hidden="true"><span></span><span></span><span></span></div>
+            <strong>Opening your newsroom</strong>
+            <small>Securely preparing your dashboard…</small>
+        </div>
+    </div>
+
     <script src="{{ url('admin/assets/js/vendors/jquery.min.js') }}"></script>
     <script>
         (function () {
@@ -176,6 +194,7 @@
                 const container = $('#alertContainer');
                 button.prop('disabled', true).find('span').text('Signing in...');
                 container.empty();
+                showLoginLoader();
 
                 $.ajax({
                     url: form.attr('action'), type: 'POST', data: form.serialize(),
@@ -201,8 +220,14 @@
                     const close = $('<button>', {type:'button', class:'alert-close', 'aria-label':'Close alert', html:'&times;'}).on('click', function () { alert.remove(); });
                     container.append(alert.append(list, close));
                 }
-                function reset() { button.prop('disabled', false).html(original); }
+                function reset() {
+                    hideLoginLoader();
+                    button.prop('disabled', false).html(original);
+                }
             });
+
+            function showLoginLoader() { document.getElementById('loginLoader')?.classList.add('is-visible'); }
+            function hideLoginLoader() { document.getElementById('loginLoader')?.classList.remove('is-visible'); }
         })();
     </script>
 </body>

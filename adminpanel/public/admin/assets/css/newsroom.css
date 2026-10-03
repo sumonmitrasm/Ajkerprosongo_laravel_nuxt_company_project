@@ -455,6 +455,55 @@ body.main-body #ajax-page-content, body.main-body .app-content {
     color: var(--press-text);
 }
 body.main-body .page-title { color: var(--press-text); }
+
+/* A quiet editorial loader used while the authenticated workspace is opening. */
+body.main-body #global-loader {
+    display: flex;
+    position: fixed;
+    z-index: 10000;
+    inset: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 13px;
+    margin: 0;
+    background: color-mix(in srgb, var(--press-bg) 92%, transparent) !important;
+    backdrop-filter: blur(4px);
+}
+body.main-body #global-loader img { display: none !important; }
+body.main-body .newsroom-loader {
+    display: flex;
+    align-items: end;
+    gap: 4px;
+    width: 39px;
+    height: 36px;
+    padding: 7px;
+    border: 1px solid var(--press-border);
+    border-radius: 11px;
+    background: var(--press-surface);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, .12);
+}
+body.main-body .newsroom-loader span {
+    display: block;
+    width: 5px;
+    height: 9px;
+    border-radius: 4px;
+    background: var(--press-red);
+    animation: newsroom-loader-bars 780ms ease-in-out infinite;
+    transform-origin: bottom;
+}
+body.main-body .newsroom-loader span:nth-child(2) { animation-delay: 130ms; background: #f5ae37; }
+body.main-body .newsroom-loader span:nth-child(3) { animation-delay: 260ms; background: #2db98d; }
+body.main-body .newsroom-loader-copy { display: grid; gap: 2px; }
+body.main-body .newsroom-loader-copy strong { color: var(--press-text); font-size: 14px; font-weight: 700; }
+body.main-body .newsroom-loader-copy small { color: var(--press-muted); font-size: 11px; }
+@keyframes newsroom-loader-bars {
+    0%, 100% { transform: scaleY(.55); opacity: .55; }
+    50% { transform: scaleY(1.65); opacity: 1; }
+}
+@media (max-width: 480px) {
+    body.main-body #global-loader { gap: 10px; }
+    body.main-body .newsroom-loader-copy strong { font-size: 13px; }
+}
 /* Keep wide tables inside a native, touch-scrollable viewport. */
 body.main-body .app-content .card,
 body.main-body .app-content .card-body { min-width: 0; }
