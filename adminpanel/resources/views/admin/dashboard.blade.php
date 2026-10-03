@@ -1,462 +1,99 @@
 @extends('admin.layout.layout')
 @section('content')
-<div class="app-content main-content">
-                <div class="side-app">
-                    <div class="container-fluid main-container">
-
-                        <!--Page header-->
-                        <div class="page-header">
-                            <div class="page-leftheader">
-                                <h4 class="page-title">Analytics Dashboard</h4>
-                            </div>
-                            <div class="page-rightheader ms-auto d-lg-flex d-none">
-                                <div class="ms-5 mb-0">
-                                    <a class="btn btn-white date-range-btn" href="javascript:void(0)" id="daterange-btn">
-                                        <svg class="header-icon2 me-3" x="1008" y="1248" viewBox="0 0 24 24" height="100%" width="100%" preserveAspectRatio="xMidYMid meet" focusable="false">
-                                                <path d="M5 8h14V6H5z" opacity=".3"/><path d="M7 11h2v2H7zm12-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-4 3h2v2h-2zm-4 0h2v2h-2z"/>
-                                            </svg> <span>Select Date
-                                            <i class="fa fa-caret-down"></i></span>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        <!--End Page header-->
-
-                        <!--Row-->
-                        <div class="row">
-                            <div class="col-xl-6 col-md-12 col-lg-12">
-                                <div class="card bg-primary text-white">
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-xl-7 col-md-12 col-lg-6">
-                                                <div class="d-block card-header border-0 text-center px-0">
-                                                    <h2 class="text-center mb-4">Congratulations <b>{{ Auth::guard('admin')->user()?->name }}!</b></h2>
-                                                    <small>You position is {{ Auth::guard('admin')->user()?->type }}</small>
-                                                </div>
-                                                <div class="row text-center">
-                                                    <div class="col-md-12">
-                                                        <h2 class="mb-0 fs-40 counter font-weight-bold">{{ Auth::guard('admin')->user()?->mobile }}</h2>
-                                                        <h6 class="mt-4 text-white-50">You have done 100% reached target today.</h6>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-xl-5 col-md-12 col-lg-6">
-                                                {{-- <img class="mx-auto text-center w-90" alt="Award" src="{{ asset('admin/assets/images/photos/award.png') }}"> --}}
-                                                @php
-                                                            $admin = Auth::guard('admin')->user();
-                                                        @endphp
-                                                        <img src="{{ $admin && $admin->image
-                                                            ? asset('admin/adminimage/' . $admin->image)
-                                                            : asset('admin/site_settings/no-image.png') }}"
-                                                            class="mx-auto text-center w-90" alt="Award">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xl-3 col-lg-6 col-md-12">
-                                <div class="card">
-                                    <div class="card-body text-center">
-                                        <span class="fs-50 icon-muted"><i class="si si-chart icon-dropshadow-info text-info"></i></span>
-                                        <p class=" mb-1">Bounce Rate</p>
-                                        <h2 class="mb-1 fs-40 font-weight-bold">52.12%</h2>
-                                        <small class="mb-1 text-muted"><small class="text-success"><i class="fa fa-caret-up  me-1"></i> 19.8</small> vs 36,144 than last month</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xl-3 col-lg-6 col-md-12">
-                                <div class="card">
-                                    <div class="card-body text-center">
-                                        <span class="fs-50 icon-muted"><i class="si si-wallet icon-dropshadow-danger text-danger"></i></span>
-                                        <p class=" mb-1 ">Revenue Status</p>
-                                        <h2 class="mb-1 fs-40 font-weight-bold">$2,206.62</h2>
-                                        <small class="mb-1 text-muted"><small class="text-danger"><i class="fa fa-caret-down  me-1"></i> 43.2</small> vs $5,699 than last month</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xl-12 col-md-12 col-lg-12">
-                                <div class="row">
-                                    <div class="col-xl-3 col-lg-6 col-md-12">
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <i class="mdi mdi-file-outline card-custom-icon icon-dropshadow-primary text-primary fs-60"></i>
-                                                <p class=" mb-1">Page Views</p>
-                                                <h2 class="mb-1 font-weight-bold">234k</h2>
-                                                <span class="mb-1 text-muted"><span class="text-danger"><i class="fa fa-caret-down  me-1"></i> 43.2</span> than last month</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-xl-3 col-lg-6 col-md-12">
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <i class="mdi mdi-clock card-custom-icon icon-dropshadow-warning text-warning fs-60"></i>
-                                                <p class=" mb-1">Time On Site</p>
-                                                <h2 class="mb-1 font-weight-bold">12m 3s</h2>
-                                                <span class="mb-1 text-muted"><span class="text-success"><i class="fa fa-caret-up  me-1"></i> 19.8</span> than last month</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-xl-3 col-lg-6 col-md-12">
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <i class="mdi mdi-heart-outline card-custom-icon icon-dropshadow-success text-success fs-60"></i>
-                                                <p class=" mb-1">Impressions</p>
-                                                <h2 class="mb-1 font-weight-bold">168</h2>
-                                                <span class="mb-1 text-muted"><span class="text-success"><i class="fa fa-caret-up  me-1"></i> 0.8%</span> than last month</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-xl-3 col-lg-6 col-md-12">
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <i class="mdi mdi-account-multiple-outline card-custom-icon icon-dropshadow-secondary text-secondary fs-60"></i>
-                                                <p class=" mb-1">Total Followers</p>
-                                                <h2 class="mb-1 font-weight-bold">3456k</h2>
-                                                <span class="mb-1 text-muted"><span class="text-success"><i class="fa fa-caret-up  me-1"></i> 0.8%</span> than last month</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-xxl-3 col-xl-6 col-md-12 col-lg-6">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h3 class="card-title">Follower Growth</h3>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="row text-center">
-                                            <div class="col-md-12 mb-4 mt-sm-0">
-                                                <div class="mx-auto chart-circle chart-circle-primary chart-circle-lg  mt-sm-0 mb-0 donutShadow" id="chart-circle-primary" data-value="0.85" data-thickness="15" data-color="">
-                                                    <div class="mx-auto chart-circle-value text-center mb-2">
-                                                        <h1 class="mb-0 mt-2">85%</h1><small>Goal</small></div>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-12">
-                                                <h2 class="mb-0 fs-50 mt-3 counter  font-weight-bold">65,268</h2>
-                                                <span class=" fs-12 text-muted"><span class="text-danger me-1"><i class="fe fe-arrow-down ms-1"></i>0.82%</span> since last week</span>
-                                                <p class="mt-5 mb-2 text-muted">It is a long established fact that a ayout. </p>
-                                                <small class="mt-1 fs-12 text-muted">Updated 20 minutes ago</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xxl-3 col-xl-6 col-md-12 col-lg-6">
-                                <div class="card">
-                                    <div class="card-header mb-4">
-                                        <h3 class="card-title">Country Wise Page Views</h3>
-                                    </div>
-                                    <div class="p-2">
-                                        <h5 class="ps-4 font-weight-bold mb-4">This Week Page Views</h5>
-                                        <table class="table card-table text-nowrap">
-                                            <tbody>
-                                                <tr>
-                                                    <td class="w-1"><i class="flag flag-us"></i></td>
-                                                    <td>USA
-                                                    </td>
-                                                    <td class="w-3 text-end"><span class="">6425</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><i class="flag flag-cn"></i></td>
-                                                    <td>Chaina
-                                                    </td>
-                                                    <td class="w-3 text-end"><span class="">5582</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><i class="flag flag-de"></i></td>
-                                                    <td>Germany
-                                                    </td>
-                                                    <td class="w-3 text-end"><span class="">4587</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><i class="flag flag-ru"></i></td>
-                                                    <td>Russia
-                                                    </td>
-                                                    <td class="w-3 text-end"><span class="">2520</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><i class="flag flag-in"></i></td>
-                                                    <td>India
-                                                    </td>
-                                                    <td class="w-3 text-end"><span class="">6429</span></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div class="card-footer">
-                                        <a href="javascript:void(0)" class="btn btn-lg btn-block btn-white">View All</a>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xxl-6 col-xl-12 col-md-12 col-lg-12">
-                                <div class="card">
-                                    <div class="row">
-                                        <div class="col-xl-12 col-md-12 col-lg-12">
-                                            <div class="card-header">
-                                                <h4 class="card-title">Website Overview</h4>
-                                            </div>
-                                            <div class="card-body text-center">
-                                                <div id="myfirstchart" class="BarChartShadow" style="height: 285px;"></div>
-                                                <div class="row mt-5">
-                                                    <div class="col text-center">
-                                                        <div class="text-muted float-end">
-                                                            <div class="w-3 h-3 bg-primary br-3 me-1 mt-1 float-start"></div> Page views</div>
-                                                    </div>
-                                                    <div class="col text-center">
-                                                        <div class="text-muted float-start">
-                                                            <div class="w-3 h-3 bg-secondary br-3 me-1 mt-1 float-start"></div> New Visitors</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xl-8 col-lg-12 col-md-12">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h3 class="card-title">Country Traffic Source</h3>
-                                        <div class="card-options ">
-                                            <div class="btn-group mb-0">
-                                                <a class="option-dots" data-bs-toggle="dropdown" aria-expanded="false" href="javascript:void(0)"><i class="fa fa-ellipsis-v"></i></a>
-                                                <div class="dropdown-menu">
-                                                    <a class="dropdown-item" href="javascript:void(0)"> Download Print</a>
-                                                    <a class="dropdown-item" href="javascript:void(0)">Last Week</a>
-                                                    <a class="dropdown-item" href="javascript:void(0)">Last Month</a>
-                                                    <a class="dropdown-item" href="javascript:void(0)">Yearly</a>
-                                                    <div class="dropdown-divider"></div>
-                                                    <a class="dropdown-item" href="javascript:void(0)"><i class="fa fa-cog me-2"></i> Settings</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="table-responsive card-body">
-                                        <table class="table mg-b-0 text-nowrap">
-                                            <thead>
-                                                <tr>
-                                                    <th class="wd-45p border-bottom-0 py-4 font-weight-bold">Country</th>
-                                                    <th class="border-bottom-0 py-4 font-weight-bold text-center">Total Traffic</th>
-                                                    <th class="border-bottom-0 py-4 font-weight-bold text-center">Entrances</th>
-                                                    <th class="border-bottom-0 py-4 font-weight-bold text-center">Bounce Rate</th>
-                                                    <th class="border-bottom-0 py-4 font-weight-bold text-center">Exits</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td><i class="flag flag-us flag-icon-squared me-2"></i> <strong>United States</strong></td>
-                                                    <td class="text-center"><strong>4534</strong></td>
-                                                    <td class="text-center"><strong>134</strong> (1.51%)</td>
-                                                    <td class="text-center">33.58% <i class="fa fa-caret-up text-success"></i></td>
-                                                    <td class="text-center">15.47% <i class="fa fa-caret-up text-success"></i></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><i class="flag flag-gb flag-icon-squared me-2"></i> <strong>United Kingdom</strong></td>
-                                                    <td class="text-center"><strong>5463</strong></td>
-                                                    <td class="text-center"><strong>290</strong> (3.30%)</td>
-                                                    <td class="text-center">9.22% <i class="fa fa-caret-down text-danger"></i></td>
-                                                    <td class="text-center">7.99% <i class="fa fa-caret-up text-success"></i></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><i class="flag flag-in flag-icon-squared me-2"></i> <strong>India</strong></td>
-                                                    <td class="text-center"><strong>6534</strong></td>
-                                                    <td class="text-center"><strong>250</strong> (3.00%)</td>
-                                                    <td class="text-center">20.75% <i class="fa fa-caret-down text-danger"></i></td>
-                                                    <td class="text-center">2.40% <i class="fa fa-caret-down text-danger"></i></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><i class="flag flag-ca flag-icon-squared me-2"></i> <strong>Canada</strong></td>
-                                                    <td class="text-center"><strong>4532</strong></td>
-                                                    <td class="text-center"><strong>216</strong> (2.79%)</td>
-                                                    <td class="text-center">32.07% <i class="fa fa-caret-up text-success"></i></td>
-                                                    <td class="text-center">15.09% <i class="fa fa-caret-down text-danger"></i></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><i class="flag flag-fr flag-icon-squared me-2"></i> <strong>France</strong></td>
-                                                    <td class="text-center"><strong>5643</strong></td>
-                                                    <td class="text-center"><strong>216</strong> (2.79%)</td>
-                                                    <td class="text-center">32.07% <i class="fa fa-caret-down text-danger"></i></td>
-                                                    <td class="text-center">15.09% <i class="fa fa-caret-up text-success"></i></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><i class="flag flag-cn flag-icon-squared me-2"></i> <strong>China</strong></td>
-                                                    <td class="text-center"><strong>6534</strong></td>
-                                                    <td class="text-center"><strong>216</strong> (2.79%)</td>
-                                                    <td class="text-center">32.07% <i class="fa fa-caret-down text-danger"></i></td>
-                                                    <td class="text-center">15.09% <i class="fa fa-caret-up text-success"></i></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xl-4 col-md-12 col-lg-12">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h3 class="card-title"> Website Visitors</h3>
-                                    </div>
-                                    <div class="card-body text-center mx-auto py-7">
-                                        <div class="overflow-hidden">
-                                            <div class="chart-container">
-                                                <canvas class="canvasDoughnut" height="200" width="200"></canvas>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="row no-gutters">
-                                            <div class="col text-center">
-                                                <div class="text-muted float-start">
-                                                    <div class="w-4 h-3 bg-success br-3 me-1 mt-1 float-start"></div> Local</div>
-                                            </div>
-                                            <div class="col text-center">
-                                                <div class="text-muted float-start">
-                                                    <div class="w-4 h-3 bg-primary br-3 me-1 mt-1 float-start"></div> Domestic</div>
-                                            </div>
-                                            <div class="col col-auto text-center">
-                                                <div class="text-muted float-start">
-                                                    <div class="w-4 h-3 bg-danger br-3 me-1 mt-1 float-start"></div> International</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!--End row-->
-
-                        <!--Row-->
-                        <div class="row">
-                            <div class="col-xl-12 col-lg-12 col-md-12">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h3 class="card-title">Most Visited Pages
-                                        </h3>
-                                        <div class="card-options ">
-                                            <div class="btn-group mb-0">
-                                                <a class="option-dots" data-bs-toggle="dropdown" aria-expanded="false" href="javascript:void(0)"><i class="fa fa-ellipsis-v"></i></a>
-                                                <div class="dropdown-menu">
-                                                    <a class="dropdown-item" href="javascript:void(0)"> Download Print</a>
-                                                    <a class="dropdown-item" href="javascript:void(0)">Last Week</a>
-                                                    <a class="dropdown-item" href="javascript:void(0)">Last Month</a>
-                                                    <a class="dropdown-item" href="javascript:void(0)">Yearly</a>
-                                                    <div class="dropdown-divider"></div>
-                                                    <a class="dropdown-item" href="javascript:void(0)"><i class="fa fa-cog me-2"></i> Settings</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="">
-                                            <div class="table-responsive">
-                                                <table class="table card-table table-vcenter text-nowrap mb-0 border">
-                                                    <thead>
-                                                        <tr>
-                                                            <th class="wd-lg-10p">Page Name</th>
-                                                            <th class="wd-lg-20p text-center">Browsers</th>
-                                                            <th class="wd-lg-20p text-center">Visitors</th>
-                                                            <th class="wd-lg-20p text-center">Unique Page Visitors</th>
-                                                            <th class="wd-lg-20p text-center">Bounce Rate</th>
-                                                            <th class="text-center">Page Updated</th>
-                                                            <th class="text-center">Preview</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>home/index.html</td>
-                                                            <td class="text-center">
-                                                                <div class="avatar-list avatar-list-stacked">
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/1.jpg)"></span>
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/2.jpg)"></span>
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/3.jpg)"></span>
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/4.jpg)"></span>
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/5.jpg)"></span>
-                                                                </div>
-                                                            </td>
-                                                            <td class="text-center">3456</td>
-                                                            <td class="text-center">556</td>
-                                                            <td class="text-center">13.6 <i class="fa fa-caret-down text-danger"></i></td>
-                                                            <td class="text-nowrap text-center">July 13, 2020</td>
-                                                            <td class="w-1 text-center"><a href="javascript:void(0)" class="btn btn-icon2 btn-white"><i class="fe fe-eye"></i></a></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>Store/shop/cart.html</td>
-                                                            <td class="text-center">
-                                                                <div class="avatar-list avatar-list-stacked">
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/6.jpg)"></span>
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/6.jpg)"></span>
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/8.jpg)"></span>
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/9.jpg)"></span>
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/10.jpg)"></span>
-                                                                </div>
-                                                            </td>
-                                                            <td class="text-center">3456</td>
-                                                            <td class="text-center">556</td>
-                                                            <td class="text-center">13.6 <i class="fa fa-caret-down text-danger"></i></td>
-                                                            <td class="text-nowrap text-center">June 15, 2020</td>
-                                                            <td class="w-1 text-center"><a href="javascript:void(0)" class="btn btn-icon2 btn-white"><i class="fe fe-eye"></i></a></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>Store/shop</td>
-                                                            <td class="text-center">
-                                                                <div class="avatar-list avatar-list-stacked">
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/11.jpg)"></span>
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/12.jpg)"></span>
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/13.jpg)"></span>
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/14.jpg)"></span>
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/15.jpg)"></span>
-                                                                </div>
-                                                            </td>
-                                                            <td class="text-center">3456</td>
-                                                            <td class="text-center">556</td>
-                                                            <td class="text-center">13.6 <i class="fa fa-caret-down text-danger"></i></td>
-                                                            <td class="text-nowrap text-center">July 8, 2020</td>
-                                                            <td class="w-1 text-center"><a href="javascript:void(0)" class="btn btn-icon2 btn-white"><i class="fe fe-eye"></i></a></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>home/blog.html</td>
-                                                            <td class="text-center">
-                                                                <div class="avatar-list avatar-list-stacked">
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/16.jpg)"></span>
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/2.jpg)"></span>
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/9.jpg)"></span>
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/2.jpg)"></span>
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/4.jpg)"></span>
-                                                                </div>
-                                                            </td>
-                                                            <td class="text-center">3456</td>
-                                                            <td class="text-center">556</td>
-                                                            <td class="text-center">13.6 <i class="fa fa-caret-down text-danger"></i></td>
-                                                            <td class="text-nowrap text-center">June 28, 2020</td>
-                                                            <td class="w-1 text-center"><a href="javascript:void(0)" class="btn btn-icon2 btn-white"><i class="fe fe-eye"></i></a></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>home/blog/blog-overview.html</td>
-                                                            <td class="text-center">
-                                                                <div class="avatar-list avatar-list-stacked">
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/12.jpg)"></span>
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/2.jpg)"></span>
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/9.jpg)"></span>
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/2.jpg)"></span>
-                                                                    <span class="avatar brround" style="background-image: url(../assets/images/users/4.jpg)"></span>
-                                                                </div>
-                                                            </td>
-                                                            <td class="text-center">3456</td>
-                                                            <td class="text-center">556</td>
-                                                            <td class="text-center">13.6 <i class="fa fa-caret-down text-danger"></i></td>
-                                                            <td class="text-nowrap text-center">July 2, 2020</td>
-                                                            <td class="w-1 text-center"><a href="javascript:void(0)" class="btn btn-icon2 btn-white"><i class="fe fe-eye"></i></a></td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!--End row-->
-
-                    </div>
-                </div>
+@php
+    $admin = Auth::guard('admin')->user();
+    // Static design fixtures, not live analytics.
+    $metrics = [
+        ['file-text','Total news','12,486','124 stories this week','blue'],
+        ['check-circle','Published','10,842','86.8% of all stories','green'],
+        ['clock','In review','48','Awaiting editorial review','amber'],
+        ['users','Visitors','248.6K','14.2% growth this month','violet'],
+        ['image','Active ads','24','Across 8 placements','rose'],
+        ['user-check','Reporters','36','28 contributed this month','cyan']
+    ];
+    $reporters = [
+        ['1.jpg','Nusrat Jahan','National',86,74,8,'42.8K'],
+        ['2.jpg','Rahim Ahmed','Politics',72,65,4,'38.2K'],
+        ['3.jpg','Farhana Islam','Business',64,58,3,'31.6K'],
+        ['4.jpg','Tanvir Hasan','Sports',58,51,5,'28.4K']
+    ];
+@endphp
+<div class="app-content main-content press-dashboard">
+<div class="side-app"><div class="container-fluid main-container">
+    <div class="press-heading">
+        <div><div class="press-eyebrow">EDITORIAL / OVERVIEW</div><h1>Newsroom overview<span>.</span></h1><p>Your stories, audience and advertising — all in one place.</p></div>
+        <div class="press-period"><i class="fe fe-calendar" aria-hidden="true"></i> This month <span class="press-badge">Sample analytics</span></div>
+    </div>
+    <section class="press-welcome">
+        <div class="press-identity">
+            <img src="{{ $admin?->image ? asset('admin/adminimage/'.$admin->image) : asset('admin/site_settings/no-image.png') }}" alt="{{ $admin?->name }}">
+            <div><small>YOUR WORKSPACE</small><h2>Welcome back, {{ $admin?->name ?? 'Editor' }}</h2><p>{{ ucfirst($admin?->type ?? 'Administrator') }} · Signed in to the newsroom</p></div>
+        </div>
+        <div class="press-welcome-note"><i class="fe fe-edit-3" aria-hidden="true"></i><span><strong>Every story starts here.</strong><small>Make today’s edition count.</small></span></div>
+    </section>
+    <div class="press-metrics">
+        @foreach($metrics as [$icon,$label,$value,$note,$tone])
+        <article class="press-stat"><div><span class="press-icon {{ $tone }}"><i class="fe fe-{{ $icon }}" aria-hidden="true"></i></span><span>{{ $label }}</span></div><strong>{{ $value }}</strong><small>{{ $note }}</small></article>
+        @endforeach
+    </div>
+    <div class="press-grid">
+        <section class="press-panel">
+            <header><div><h2>Audience growth</h2><p>How readers discover your newsroom</p></div><span class="press-badge">This month</span></header>
+            <div class="press-chart-summary"><strong>248,620</strong><span class="press-positive">↗ 14.2%</span><small>visitors this month</small></div>
+            <div class="press-line-chart">
+                <svg viewBox="0 0 720 210" role="img" aria-label="Sample audience chart: readership rises across four weeks">
+                    <defs><linearGradient id="audience-fill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#4386f4" stop-opacity=".23"/><stop offset="1" stop-color="#4386f4" stop-opacity="0"/></linearGradient></defs>
+                    <g class="press-grid-lines"><path d="M45 20H710M45 65H710M45 110H710M45 155H710M45 195H710"/></g>
+                    <g class="press-axis"><text x="0" y="25">30K</text><text x="0" y="70">20K</text><text x="0" y="115">10K</text><text x="14" y="195">0</text></g>
+                    <path d="M45 160L90 150L135 167L180 110L225 125L270 82L315 107L360 57L405 78L450 47L495 65L540 30L585 53L630 18L675 35L710 20V195H45Z" fill="url(#audience-fill)"/>
+                    <path d="M45 160L90 150L135 167L180 110L225 125L270 82L315 107L360 57L405 78L450 47L495 65L540 30L585 53L630 18L675 35L710 20" fill="none" stroke="#4386f4" stroke-width="3" stroke-linejoin="round"/>
+                    <path d="M45 180L90 175L135 179L180 160L225 163L270 143L315 152L360 131L405 146L450 110L495 122L540 104L585 118L630 88L675 99L710 81" fill="none" stroke="#24b69a" stroke-width="2.5" stroke-dasharray="5 4"/>
+                </svg>
+                <div class="press-axis-labels"><span>Week 1</span><span>Week 2</span><span>Week 3</span><span>Week 4</span></div>
             </div>
+            <div class="press-legend"><span><i class="blue"></i>Total visitors</span><span><i class="green"></i>Returning readers</span></div>
+        </section>
+        <section class="press-panel">
+            <header><div><h2>Publishing overview</h2><p>Story status distribution</p></div><i class="fe fe-pie-chart" aria-hidden="true"></i></header>
+            <div class="press-donut" role="img" aria-label="Sample: 86.8 percent published, 12.8 percent drafts, 0.4 percent review"><div><strong>12,486</strong><small>Total stories</small></div></div>
+            <div class="press-distribution"><span><i class="blue"></i>Published <b>10,842</b></span><span><i class="amber"></i>Drafts <b>1,596</b></span><span><i class="rose"></i>In review <b>48</b></span></div>
+        </section>
+        <section class="press-panel">
+            <header><div><h2>Advertising performance</h2><p>Impressions and clicks across placements</p></div><span class="press-badge">Sample report</span></header>
+            <div class="press-ad-stats"><div><small>Impressions</small><strong>1.28M</strong></div><div><small>Ad clicks</small><strong>24,680</strong></div><div><small>Click-through rate</small><strong>1.93%</strong></div><div><small>Est. revenue</small><strong>৳ 84,200</strong></div></div>
+            <div class="press-bars" role="img" aria-label="Sample advertising impressions and clicks by placement">
+                @foreach([[52,26],[68,38],[59,31],[82,49],[72,42],[94,58],[85,53],[100,65]] as $bars)
+                <div><span style="height:{{ $bars[0] }}%"></span><span style="height:{{ $bars[1] }}%"></span><small>P{{ $loop->iteration }}</small></div>
+                @endforeach
+            </div>
+            <div class="press-legend"><span><i class="violet"></i>Impressions</span><span><i class="cyan"></i>Clicks (relative scale)</span></div>
+        </section>
+        <section class="press-panel">
+            <header><div><h2>Ad placements</h2><p>Inventory at a glance</p></div><i class="fe fe-layout" aria-hidden="true"></i></header>
+            <div class="press-placements">
+                @foreach([['Homepage banner',8,90],['Article inline',6,72],['Sidebar display',7,82],['Mobile banner',3,46]] as [$label,$count,$width])
+                <div><p>{{ $label }}<strong>{{ $count }} ads</strong></p><div class="press-track"><span style="width:{{ $width }}%"></span></div></div>
+                @endforeach
+            </div>
+        </section>
+        <section class="press-panel">
+            <header><div><h2>Reporter performance</h2><p>News count and readership · sample people</p></div><span class="press-badge">This month</span></header>
+            <div class="press-table-wrap"><table class="press-table"><thead><tr><th>Reporter</th><th>Stories</th><th>Published</th><th>Review</th><th>Views</th></tr></thead><tbody>
+                @foreach($reporters as [$photo,$name,$desk,$stories,$published,$review,$views])
+                <tr><td><div class="press-person"><img src="{{ asset('admin/assets/images/users/'.$photo) }}" alt=""><span><strong>{{ $name }}</strong><small>{{ $desk }} desk</small></span></div></td><td><b>{{ $stories }}</b></td><td><span class="press-positive">{{ $published }}</span></td><td>{{ $review }}</td><td>{{ $views }}</td></tr>
+                @endforeach
+            </tbody></table></div>
+        </section>
+        <section class="press-panel">
+            <header><div><h2>Top categories</h2><p>News published this month</p></div><i class="fe fe-layers" aria-hidden="true"></i></header>
+            <div class="press-placements">
+                @foreach([['National',284,92],['Politics',216,75],['Sports',178,61],['Business',142,48],['Entertainment',96,34]] as [$label,$count,$width])
+                <div><p>{{ $label }}<strong>{{ $count }}</strong></p><div class="press-track"><span style="width:{{ $width }}%"></span></div></div>
+                @endforeach
+            </div>
+        </section>
+    </div>
+    <p class="press-footnote">Analytics, reporter entries and charts are design samples. Your signed-in profile is real.</p>
+</div></div>
+</div>
 @endsection
