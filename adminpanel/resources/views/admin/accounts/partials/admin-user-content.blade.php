@@ -40,7 +40,7 @@
                                 <button class="btn btn-sm btn-success" data-table-export="#users-table" data-table-export-type="excel">Excel</button>
                                 <button class="btn btn-sm btn-primary" data-table-export="#users-table" data-table-export-type="word">Word</button>
                             </div>
-                            <div class="table-responsive">
+                            <div class="table-responsive" tabindex="0" role="region" aria-label="Users table; swipe horizontally or use arrow keys to see more columns">
                                 <table id="users-table" data-server-pagination
                                     class="table table-bordered text-nowrap key-buttons">
                                     <thead>

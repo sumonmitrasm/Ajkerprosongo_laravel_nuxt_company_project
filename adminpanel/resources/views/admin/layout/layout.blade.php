@@ -66,7 +66,7 @@
 
     </style>
 
-    <link href="{{ asset('admin/assets/css/newsroom.css') }}?v=5" rel="stylesheet">
+    <link href="{{ asset('admin/assets/css/newsroom.css') }}?v=15" rel="stylesheet">
 </head>
 
 <body class="main-body app sidebar-mini light-mode ltr">
@@ -133,6 +133,111 @@
         }());
     </script>
 
+    <script>
+        // Makes wide data tables draggable with a mouse while preserving normal clicks.
+        (function () {
+            var activeTable = null;
+            var startX = 0;
+            var startScrollLeft = 0;
+            var dragged = false;
+
+            window.refreshTableScrollIndicators = function () {
+                document.querySelectorAll('.table-responsive').forEach(function (table) {
+                    var isScrollable = table.scrollWidth > table.clientWidth + 1;
+                    table.classList.toggle('is-horizontal-scrollable', isScrollable);
+
+                    if (!table._scrollControls) {
+                        var controls = document.createElement('div');
+                        controls.className = 'table-scroll-controls';
+                        controls.setAttribute('aria-label', 'Table horizontal navigation');
+
+                        var left = document.createElement('button');
+                        left.type = 'button';
+                        left.className = 'table-scroll-button';
+                        left.setAttribute('aria-label', 'Show previous columns');
+                        left.innerHTML = '&#8592;';
+
+                        var right = document.createElement('button');
+                        right.type = 'button';
+                        right.className = 'table-scroll-button';
+                        right.setAttribute('aria-label', 'Show more columns');
+                        right.innerHTML = '&#8594;';
+
+                        function scrollTable(direction) {
+                            table.scrollBy({
+                                left: direction * Math.max(160, Math.round(table.clientWidth * .7)),
+                                behavior: 'smooth'
+                            });
+                        }
+
+                        left.addEventListener('click', function () { scrollTable(-1); });
+                        right.addEventListener('click', function () { scrollTable(1); });
+                        controls.append(left, right);
+                        table.parentNode.insertBefore(controls, table);
+                        table._scrollControls = controls;
+                        table.addEventListener('scroll', function () { updateControls(table); });
+                    }
+
+                    table._scrollControls.hidden = !isScrollable;
+                    updateControls(table);
+                });
+            };
+
+            function updateControls(table) {
+                var controls = table._scrollControls;
+                if (!controls || controls.hidden) return;
+                var buttons = controls.querySelectorAll('.table-scroll-button');
+                var maximum = table.scrollWidth - table.clientWidth;
+                buttons[0].disabled = table.scrollLeft <= 1;
+                buttons[1].disabled = table.scrollLeft >= maximum - 1;
+            }
+
+            document.addEventListener('mousedown', function (event) {
+                if (event.button !== 0) return;
+
+                var table = event.target.closest('.table-responsive');
+                if (!table || table.scrollWidth <= table.clientWidth + 1) return;
+
+                activeTable = table;
+                startX = event.clientX;
+                startScrollLeft = table.scrollLeft;
+                dragged = false;
+            });
+
+            document.addEventListener('mousemove', function (event) {
+                if (!activeTable) return;
+
+                var distance = startX - event.clientX;
+                if (Math.abs(distance) > 3) {
+                    dragged = true;
+                    activeTable.classList.add('is-table-dragging');
+                    activeTable.scrollLeft = startScrollLeft + distance;
+                    event.preventDefault();
+                }
+            });
+
+            function finishDrag(event) {
+                if (!activeTable) return;
+                var table = activeTable;
+                activeTable = null;
+                table.classList.remove('is-table-dragging');
+                if (dragged) {
+                    table.dataset.dragged = 'true';
+                    window.setTimeout(function () { delete table.dataset.dragged; }, 0);
+                }
+            }
+
+            document.addEventListener('mouseup', finishDrag);
+            document.addEventListener('click', function (event) {
+                var table = event.target.closest('.table-responsive');
+                if (table && table.dataset.dragged === 'true') event.preventDefault();
+            }, true);
+
+            window.addEventListener('resize', window.refreshTableScrollIndicators);
+            document.addEventListener('DOMContentLoaded', window.refreshTableScrollIndicators);
+        }());
+    </script>
+
     <!-- Bootstrap5 js-->
     <script src="{{ url('admin/assets/plugins/bootstrap/js/popper.min.js') }}"></script>
     <script src="{{ url('admin/assets/plugins/bootstrap/js/bootstrap.min.js') }}"></script>
@@ -179,10 +284,11 @@
 
                     $content.html($newContent.html()).css('opacity', '1');
                     window.initServerSearch();
+                    window.refreshTableScrollIndicators();
                     if (window.ensureDashboardAssets) {
                         window.ensureDashboardAssets();
                     }
-                    $('.side-menu .slide-item').removeClass('active');
+                    $('.side-menu .side-menu__item, .side-menu .slide-item').removeClass('active');
                     $('.side-menu a[href="' + url + '"]').addClass('active');
 
                     if (pushHistory) {
