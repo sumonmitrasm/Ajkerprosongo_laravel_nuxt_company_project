@@ -66,7 +66,7 @@
 
     </style>
 
-    <link href="{{ asset('admin/assets/css/newsroom.css') }}?v=16" rel="stylesheet">
+    <link href="{{ asset('admin/assets/css/newsroom.css') }}?v=21" rel="stylesheet">
 </head>
 
 <body class="main-body app sidebar-mini light-mode ltr">
@@ -293,7 +293,15 @@
                         window.ensureDashboardAssets();
                     }
                     $('.side-menu .side-menu__item, .side-menu .slide-item').removeClass('active');
-                    $('.side-menu a[href="' + url + '"]').addClass('active');
+                    var targetPath = new URL(url, window.location.href).pathname;
+                    var $activeLink = $('.side-menu a[href]').filter(function () {
+                        try { return new URL(this.href, window.location.href).pathname === targetPath; }
+                        catch (error) { return false; }
+                    }).first();
+                    $activeLink.addClass('active');
+                    if ($activeLink.hasClass('slide-item')) {
+                        $activeLink.closest('.slide').addClass('is-expanded').children('.side-menu__item').addClass('active');
+                    }
 
                     if (pushHistory) {
                         window.history.pushState({}, '', url);
@@ -338,6 +346,110 @@
             $(document).on('click', '#ajax-page-content .pagination a', function (event) {
                 event.preventDefault();
                 window.loadAjaxPage(this.href, true);
+            });
+
+            $(document).on('submit', '[data-activity-filter]', function (event) {
+                event.preventDefault();
+                var url = new URL(this.action, window.location.href);
+                var search = $(this).find('[name="search"]').val().trim();
+                if (search) url.searchParams.set('search', search);
+                window.loadAjaxPage(url.href, true);
+            });
+
+            $(document).on('click', '[data-activity-prune], [data-activity-clear]', function () {
+                var $button = $(this), clearAll = $button.is('[data-activity-clear]');
+                var modalCopy = clearAll ? {
+                    title: 'Delete all login activity?',
+                    text: 'This will permanently remove the complete audit history. This action cannot be undone.',
+                    confirm: 'Delete all',
+                    buttonClass: 'is-danger'
+                } : {
+                    title: 'Clear old login activity?',
+                    text: 'Login records older than 90 days will be permanently deleted.',
+                    confirm: 'Clear old activity',
+                    buttonClass: 'is-primary'
+                };
+
+                function removeActivity() {
+                    $button.prop('disabled', true);
+                    $.ajax({
+                        url: $button.data('url'),
+                        method: 'POST',
+                        data: { _token: $('[name="_token"]').first().val(), _method: 'DELETE' },
+                        headers: { Accept: 'application/json' }
+                    }).done(function (response) {
+                        window.loadAjaxPage(window.location.href, false);
+                        setTimeout(function () { crudToast('success', response.message); }, 250);
+                    }).fail(function (xhr) {
+                        crudToast('error', (xhr.responseJSON && xhr.responseJSON.message) || 'Login activity could not be cleared');
+                        $button.prop('disabled', false);
+                    });
+                }
+
+                if (!window.Swal) {
+                    if (window.confirm(modalCopy.text)) removeActivity();
+                    return;
+                }
+
+                Swal.fire({
+                    title: modalCopy.title,
+                    text: modalCopy.text,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    reverseButtons: true,
+                    focusCancel: true,
+                    buttonsStyling: false,
+                    confirmButtonText: modalCopy.confirm,
+                    cancelButtonText: 'Keep history',
+                    customClass: {
+                        popup: 'activity-confirm-modal',
+                        icon: 'activity-confirm-icon',
+                        actions: 'activity-confirm-actions',
+                        confirmButton: 'activity-confirm-button ' + modalCopy.buttonClass,
+                        cancelButton: 'activity-confirm-button is-cancel'
+                    }
+                }).then(function (result) {
+                    if (result.isConfirmed) removeActivity();
+                });
+            });
+
+            $(document).on('change', '[data-account-image]', function () {
+                var file = this.files && this.files[0];
+                if (!file || !file.type || file.type.indexOf('image/') !== 0) return;
+                $(this).closest('form').find('[data-account-preview]').attr('src', URL.createObjectURL(file));
+            });
+
+            $(document).on('submit', '[data-my-account-form]', function (event) {
+                event.preventDefault();
+                var $form = $(this), data = new FormData(this), $submit = $form.find('[data-account-submit]');
+                data.set('_method', 'PUT');
+                $submit.prop('disabled', true);
+                $form.find('[data-account-errors]').empty().addClass('d-none');
+
+                $.ajax({
+                    url: this.action,
+                    method: 'POST',
+                    data: data,
+                    processData: false,
+                    contentType: false,
+                    headers: { Accept: 'application/json' }
+                }).done(function (response) {
+                    $form.find('[name="current_password"], [name="password"], [name="password_confirmation"]').val('');
+                    $form.find('[data-account-preview]').attr('src', response.image_url);
+                    $('[data-auth-avatar]').attr('src', response.image_url);
+                    $('[data-auth-name], [data-account-card-name]').text(response.user.name);
+                    crudToast('success', response.message || 'Your account has been updated');
+                }).fail(function (xhr) {
+                    var errors = xhr.responseJSON && xhr.responseJSON.errors ? xhr.responseJSON.errors : null;
+                    if (errors) {
+                        var messages = $.map(errors, function (items) { return items.join('<br>'); });
+                        $form.find('[data-account-errors]').html(messages.join('<br>')).removeClass('d-none');
+                    } else {
+                        crudToast('error', (xhr.responseJSON && xhr.responseJSON.message) || 'Account update failed');
+                    }
+                }).always(function () {
+                    $submit.prop('disabled', false);
+                });
             });
 
             $(document).on('change', '[data-server-per-page]', function () {

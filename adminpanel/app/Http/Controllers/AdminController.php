@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use App\Models\Admin;
+use App\Models\AdminLoginActivity;
 use App\Models\AdminRole;
 use App\Support\PostFormLookups;
 use Intervention\Image\Drivers\Gd\Driver as GdDriver;
@@ -60,6 +61,16 @@ class AdminController extends Controller
             ])) {
                 RateLimiter::clear($throttleKey);
                 $request->session()->regenerate();
+                $client = $this->loginClient($request);
+                AdminLoginActivity::create([
+                    'admin_id' => Auth::guard('admin')->id(),
+                    'ip_address' => $request->ip(),
+                    'device' => $client['device'],
+                    'browser' => $client['browser'],
+                    'platform' => $client['platform'],
+                    'user_agent' => $request->userAgent(),
+                    'logged_in_at' => now(),
+                ]);
                 return response()->json([
                     'status' => true,
                     'message' => 'Login successful.',
@@ -85,6 +96,123 @@ class AdminController extends Controller
         return redirect('admin/login');
     }
 
+    public function myAccount()
+    {
+        return view('admin.accounts.my-account', [
+            'admin' => Auth::guard('admin')->user(),
+        ]);
+    }
+
+    public function updateMyAccount(Request $request)
+    {
+        /** @var Admin $admin */
+        $admin = Auth::guard('admin')->user();
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:100'],
+            'mobile' => ['nullable', 'string', 'max:30'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
+            'current_password' => ['nullable', 'required_with:password', 'current_password:admin'],
+            'password' => ['nullable', 'string', 'min:8', 'max:255', 'confirmed'],
+        ], [
+            'current_password.current_password' => 'Your current password is incorrect.',
+            'password.confirmed' => 'The new password confirmation does not match.',
+        ]);
+
+        $oldImage = $admin->image;
+        if ($request->hasFile('image')) {
+            $data['image'] = $this->uploadImage($request->file('image'));
+        }
+        unset($data['current_password'], $data['password_confirmation']);
+        if (blank($data['password'] ?? null)) {
+            unset($data['password']);
+        }
+
+        $admin->update($data);
+        if (isset($data['image']) && $oldImage !== $data['image']) {
+            $this->deleteOldImage($oldImage);
+        }
+        $this->clearUserCache();
+
+        return response()->json([
+            'message' => 'Your account has been updated.',
+            'user' => $admin->only(['name', 'email', 'mobile', 'type']),
+            'image_url' => $admin->image
+                ? asset('admin/adminimage/'.$admin->image)
+                : asset('admin/site_settings/no-image.png'),
+        ]);
+    }
+
+    public function loginActivity(Request $request)
+    {
+        /** @var Admin $admin */
+        $admin = Auth::guard('admin')->user();
+        $canViewAll = in_array($admin->type, ['admin', 'superadmin'], true)
+            || $admin->hasModuleAccess('admin', 'view');
+        $search = trim((string) $request->query('search', ''));
+
+        $baseQuery = AdminLoginActivity::query()
+            ->when(! $canViewAll, fn ($query) => $query->where('admin_id', $admin->id));
+
+        $activities = (clone $baseQuery)
+            ->with('admin:id,name,email,image,type')
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('ip_address', 'like', "%{$search}%")
+                        ->orWhere('device', 'like', "%{$search}%")
+                        ->orWhere('browser', 'like', "%{$search}%")
+                        ->orWhere('platform', 'like', "%{$search}%")
+                        ->orWhereHas('admin', fn ($adminQuery) => $adminQuery
+                            ->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%"));
+                });
+            })
+            ->latest('logged_in_at')
+            ->paginate($this->perPage($request))
+            ->withQueryString();
+
+        $summary = [
+            'total' => (clone $baseQuery)->count(),
+            'week' => (clone $baseQuery)->where('logged_in_at', '>=', now()->subDays(7))->count(),
+            'mobile' => (clone $baseQuery)->where('device', 'Mobile')->count(),
+        ];
+        $canPrune = in_array($admin->type, ['admin', 'superadmin'], true);
+        $canClear = $admin->type === 'superadmin';
+
+        return view('admin.accounts.login-activity', compact(
+            'activities', 'summary', 'search', 'canViewAll', 'canPrune', 'canClear'
+        ));
+    }
+
+    public function pruneLoginActivity()
+    {
+        /** @var Admin $admin */
+        $admin = Auth::guard('admin')->user();
+        abort_unless(in_array($admin->type, ['admin', 'superadmin'], true), 403,
+            'Only an admin or superadmin can clear old login activity.');
+
+        $deleted = AdminLoginActivity::where('logged_in_at', '<', now()->subDays(90))->delete();
+
+        return response()->json([
+            'message' => $deleted
+                ? number_format($deleted).' old login '.Str::plural('record', $deleted).' deleted.'
+                : 'There are no login records older than 90 days.',
+        ]);
+    }
+
+    public function clearLoginActivity()
+    {
+        /** @var Admin $admin */
+        $admin = Auth::guard('admin')->user();
+        abort_unless($admin->type === 'superadmin', 403,
+            'Only a superadmin can delete the complete login history.');
+
+        $deleted = AdminLoginActivity::query()->delete();
+
+        return response()->json([
+            'message' => number_format($deleted).' login '.Str::plural('record', $deleted).' deleted.',
+        ]);
+    }
+
     public function users(Request $request)
     {
         $admin = Auth::guard('admin')->user();
@@ -99,7 +227,7 @@ class AdminController extends Controller
                         ->orWhere('type', 'like', "%{$search}%");
                 }))
                 ->latest('id')
-                ->cursorPaginate($this->perPage($request))
+                ->paginate($this->perPage($request))
                 ->withQueryString();
         } else {
             $users = collect([$admin]);
@@ -232,6 +360,34 @@ class AdminController extends Controller
     private function clearUserCache(): void
     {
         PostFormLookups::forget();
+    }
+
+    private function loginClient(Request $request): array
+    {
+        $agent = (string) $request->userAgent();
+        $device = preg_match('/ipad|tablet/i', $agent)
+            ? 'Tablet'
+            : (preg_match('/mobile|iphone|ipod|android/i', $agent) ? 'Mobile' : 'Desktop');
+
+        $browser = match (true) {
+            str_contains($agent, 'Edg/') => 'Microsoft Edge',
+            str_contains($agent, 'OPR/'), str_contains($agent, 'Opera') => 'Opera',
+            str_contains($agent, 'Chrome/') => 'Google Chrome',
+            str_contains($agent, 'Firefox/') => 'Mozilla Firefox',
+            str_contains($agent, 'Safari/') => 'Safari',
+            default => 'Unknown browser',
+        };
+
+        $platform = match (true) {
+            preg_match('/Windows/i', $agent) === 1 => 'Windows',
+            preg_match('/Android/i', $agent) === 1 => 'Android',
+            preg_match('/iPhone|iPad|iPod/i', $agent) === 1 => 'iOS',
+            preg_match('/Macintosh|Mac OS/i', $agent) === 1 => 'macOS',
+            preg_match('/Linux/i', $agent) === 1 => 'Linux',
+            default => 'Unknown platform',
+        };
+
+        return compact('device', 'browser', 'platform');
     }
 
 

@@ -18,8 +18,8 @@
                         <div class="card-header justify-content-between">
                             <div class="card-title">{{ $title }}</div>@if ($canAddSections)<button type="button" class="btn btn-info"
                                 data-crud-create data-crud-modal="#section-form-modal"
-                                data-store-url="{{ route('admin-section.store') }}" data-create-title="Add Section">Add
-                                Section</button>@endif
+                                data-store-url="{{ route('admin-section.store') }}" data-create-title="Add Section"><i
+                                    class="fe fe-plus me-1" aria-hidden="true"></i>Add Section</button>@endif
                         </div>
                         <div class="card-body">
                             <div class="mb-3 d-flex align-items-center gap-2"><label class="mb-0">Show</label><select class="form-select form-select-sm w-auto" data-server-per-page>@foreach ([10,20,50,100] as $size)<option value="{{ $size }}" {{ (int) request('per_page',10) === $size ? 'selected' : '' }}>{{ $size }}</option>@endforeach</select><span>entries</span><button class="btn btn-sm btn-success" data-table-export="#sections-table" data-table-export-type="excel">Excel</button><button class="btn btn-sm btn-primary" data-table-export="#sections-table" data-table-export-type="word">Word</button></div>

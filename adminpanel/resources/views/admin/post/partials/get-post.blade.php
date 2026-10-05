@@ -5,10 +5,10 @@
     $canDelete = $admin?->hasModuleAccess('post', 'delete');
 
     $statCards = [
-        ['Total Posts', $summary['total'], 'fe-file-text'],
-        ['Published', $summary['published'], 'fe-check-circle'],
-        ['Draft & Review', $summary['draft_review'], 'fe-edit-3'],
-        ['Scheduled', $summary['scheduled'], 'fe-calendar'],
+        ['label' => 'Total Posts', 'value' => $summary['total'], 'icon' => 'fe-file-text', 'color' => 'primary'],
+        ['label' => 'Published', 'value' => $summary['published'], 'icon' => 'fe-check-circle', 'color' => 'success'],
+        ['label' => 'Draft & Review', 'value' => $summary['draft_review'], 'icon' => 'fe-edit-3', 'color' => 'warning'],
+        ['label' => 'Scheduled', 'value' => $summary['scheduled'], 'icon' => 'fe-calendar', 'color' => 'info'],
     ];
 
     $statusOptions = ['draft', 'review', 'scheduled', 'published', 'archived'];
@@ -59,15 +59,22 @@
         gap: 1rem;
         min-height: 96px;
     }
-    .post-stat i {
+    .post-summary-icon {
         display: grid;
+        flex: 0 0 auto;
         place-items: center;
-        width: 48px;
-        height: 48px;
-        border-radius: 13px;
-        background: #edf0ff;
-        color: var(--p);
-        font-size: 1.2rem;
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        font-size: 22px;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
+    }
+    .post-summary-icon i {
+        width: auto;
+        height: auto;
+        color: inherit;
+        background: transparent;
+        font-size: inherit;
     }
     .post-thumb {
         display: grid;
@@ -650,10 +657,13 @@
                     <div class="col-xl-3 col-sm-6">
                         <div class="card post-card mb-0">
                             <div class="card-body post-stat">
-                                <i class="fe {{ $card[2] }}"></i
-                                ><span class="text-muted"
-                                    >{{ $card[0] }}<strong class="d-block fs-4 text-body">{{ $card[1] }}</strong></span
-                                >
+                                <div class="post-summary-icon bg-{{ $card['color'] }}-transparent text-{{ $card['color'] }}">
+                                    <i class="fe {{ $card['icon'] }}" aria-hidden="true"></i>
+                                </div>
+                                <span class="text-muted">
+                                    {{ $card['label'] }}
+                                    <strong class="d-block fs-4 text-body">{{ number_format($card['value']) }}</strong>
+                                </span>
                             </div>
                         </div>
                     </div>

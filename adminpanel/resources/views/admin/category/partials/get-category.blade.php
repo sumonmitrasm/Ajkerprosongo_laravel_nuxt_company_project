@@ -19,7 +19,7 @@
                             <div class="card-title">{{ $title }}</div>@if ($canAddCategories)<button type="button" class="btn btn-info"
                                 data-crud-create data-crud-modal="#category-form-modal"
                                 data-store-url="{{ route('admin-category.store') }}"
-                                data-create-title="Add Category">Add
+                                data-create-title="Add Category"><i class="fe fe-plus me-1" aria-hidden="true"></i>Add
                                 Category</button>@endif
                         </div>
                         <div class="card-body">

@@ -21,7 +21,8 @@
                     <div class="card-title">{{ $title }}</div>
                     @if ($canAddTag)
                         <button type="button" class="btn btn-info" data-crud-create data-crud-modal="#tag-form-modal"
-                            data-store-url="{{ route('admin-tag.store') }}" data-create-title="Add Tag">Add Tag</button>
+                            data-store-url="{{ route('admin-tag.store') }}" data-create-title="Add Tag"><i
+                                class="fe fe-plus me-1" aria-hidden="true"></i>Add Tag</button>
                     @endif
                 </div>
                 <div class="card-body">

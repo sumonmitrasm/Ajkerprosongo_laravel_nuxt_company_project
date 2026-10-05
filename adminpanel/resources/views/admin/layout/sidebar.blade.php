@@ -35,10 +35,10 @@
                         <img src="{{ $admin && $admin->image
                             ? asset('admin/adminimage/' . $admin->image)
                             : asset('admin/site_settings/no-image.png') }}"
-                            class="avatar avatar-xl brround mb-1">
+                            class="avatar avatar-xl brround mb-1" data-auth-avatar>
                     </div>
                     <div class="user-info text-center">
-                        <h5 class=" mb-1 font-weight-bold">{{ Auth::guard('admin')->user()?->name }}</h5>
+                        <h5 class=" mb-1 font-weight-bold" data-auth-name>{{ Auth::guard('admin')->user()?->name }}</h5>
                         <span
                             class="text-muted app-sidebar__user-name text-sm">{{ ucfirst(Auth::guard('admin')->user()?->type) }}</span>
                     </div>
@@ -51,28 +51,32 @@
             <ul class="side-menu">
                 <li class="slide">
                     <a class="side-menu__item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
-                        <svg class="side-menu__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="26"
-                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        <svg class="side-menu__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+                            <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+                            <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+                            <path d="M14 17.5h7M17.5 14v7"></path>
                         </svg>
                         <span class="side-menu__label">Dashboard</span><i class="angle fe fe-chevron-right"></i></a>
                     <ul class="slide-menu">
                         <li class="side-menu-label1"><a href="javascript:void(0)">Dashboard</a></li>
                     </ul>
                 </li>
-                @if ($canManageAdmins)
-                    <li class="slide {{ request()->routeIs('admin-user*') ? 'is-expanded' : '' }}">
+                    <li class="slide {{ request()->routeIs('admin.account*') || request()->routeIs('admin.login-activity') || request()->routeIs('admin-user*') ? 'is-expanded' : '' }}">
                         <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0)">
                             <i class="side-menu__icon fe fe-users"></i>
                             <span class="side-menu__label">Account</span><i class="angle fe fe-chevron-right"></i>
                         </a>
                         <ul class="slide-menu">
-                            <li><a class="slide-item {{ request()->routeIs('admin-user*') ? 'active' : '' }}" href="{{ route('admin-user') }}">Users</a></li>
+                            <li><a class="slide-item {{ request()->routeIs('admin.account*') ? 'active' : '' }}" href="{{ route('admin.account') }}"><i class="fe fe-user"></i>My Account</a></li>
+                            @if ($canManageAdmins)
+                                <li><a class="slide-item {{ request()->routeIs('admin-user*') ? 'active' : '' }}" href="{{ route('admin-user') }}"><i class="fe fe-users"></i>Users</a></li>
+                            @endif
+                            <li><a class="slide-item {{ request()->routeIs('admin.login-activity') ? 'active' : '' }}" href="{{ route('admin.login-activity') }}"><i class="fe fe-shield"></i>Login Activity</a></li>
                         </ul>
                     </li>
-                @endif
                 @if ($canManageSections || $canManageCategories)
                     <li class="slide {{ request()->routeIs('section') || request()->routeIs('category') ? 'is-expanded' : '' }}">
                         <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0)">

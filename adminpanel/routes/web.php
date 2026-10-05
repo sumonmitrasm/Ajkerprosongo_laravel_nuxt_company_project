@@ -26,6 +26,11 @@ Route::namespace('App\Http\Controllers\Admin')->prefix('/admin')->group(function
     Route::middleware(['admin.auth', 'admin.permission'])->group(function () {
         Route::get('dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
         Route::get('logout', [AdminController::class, 'logout'])->name('logout-admin');
+        Route::get('my-account', [AdminController::class, 'myAccount'])->name('admin.account');
+        Route::put('my-account', [AdminController::class, 'updateMyAccount'])->name('admin.account.update');
+        Route::get('login-activity', [AdminController::class, 'loginActivity'])->name('admin.login-activity');
+        Route::delete('login-activity/older', [AdminController::class, 'pruneLoginActivity'])->name('admin.login-activity.prune');
+        Route::delete('login-activity', [AdminController::class, 'clearLoginActivity'])->name('admin.login-activity.clear');
         //>>>>>>>>>>>>>>>>>>>>>>>>User activity<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         Route::get('users', [AdminController::class, 'users'])->name('admin-user');
         Route::post('users', [AdminController::class, 'storeUser'])->name('admin-user.store');
