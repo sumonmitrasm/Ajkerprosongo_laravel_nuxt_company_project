@@ -35,6 +35,11 @@ class Admin extends Authenticatable
         return $this->hasMany(AdminRole::class, 'admin_id');
     }
 
+    public function loginActivities()
+    {
+        return $this->hasMany(AdminLoginActivity::class);
+    }
+
     public function hasModuleAccess(string $module, string $access = 'view'): bool
     {
         if (! $this->status) {

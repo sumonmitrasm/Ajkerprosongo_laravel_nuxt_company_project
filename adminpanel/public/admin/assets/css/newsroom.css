@@ -23,6 +23,84 @@ body.main-body.dark-mode {
 }
 body.light-mode { color-scheme: light; }
 
+/* Branded confirmation dialog for destructive login-activity actions. */
+body.main-body .swal2-popup.activity-confirm-modal {
+    width: min(430px, calc(100vw - 28px));
+    padding: 29px 28px 25px;
+    border: 1px solid var(--press-border);
+    border-radius: 18px;
+    background: var(--press-surface);
+    box-shadow: 0 24px 70px rgba(15, 23, 42, .24);
+}
+body.main-body .activity-confirm-modal .swal2-title {
+    padding: 0;
+    color: var(--press-text);
+    font-size: 21px;
+    font-weight: 750;
+    letter-spacing: -.025em;
+}
+body.main-body .activity-confirm-modal .swal2-html-container {
+    margin: 10px 0 0;
+    padding: 0 12px;
+    color: var(--press-muted);
+    font-size: 14px;
+    line-height: 1.65;
+}
+body.main-body .activity-confirm-modal .swal2-icon.activity-confirm-icon {
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 20px;
+    border-width: 2px;
+    color: #dc8b13;
+    border-color: rgba(220, 139, 19, .38);
+    background: rgba(220, 139, 19, .09);
+}
+body.main-body .activity-confirm-modal .swal2-icon-content { font-size: 36px; }
+body.main-body .activity-confirm-actions {
+    width: 100%;
+    gap: 10px;
+    margin: 25px 0 0;
+}
+body.main-body .activity-confirm-button {
+    min-width: 128px;
+    min-height: 42px;
+    padding: 10px 18px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease;
+}
+body.main-body .activity-confirm-button:hover { transform: translateY(-1px); }
+body.main-body .activity-confirm-button:focus-visible {
+    outline: 3px solid rgba(64, 84, 198, .22);
+    outline-offset: 2px;
+}
+body.main-body .activity-confirm-button.is-primary {
+    color: #fff;
+    background: #4054c6;
+    box-shadow: 0 8px 18px rgba(64, 84, 198, .22);
+}
+body.main-body .activity-confirm-button.is-danger {
+    color: #fff;
+    background: #d93645;
+    box-shadow: 0 8px 18px rgba(217, 54, 69, .22);
+}
+body.main-body .activity-confirm-button.is-cancel {
+    color: var(--press-text);
+    border-color: var(--press-border);
+    background: var(--press-soft);
+}
+body.main-body .activity-confirm-button.is-primary:hover { background: #3549b5; }
+body.main-body .activity-confirm-button.is-danger:hover { background: #c62c3b; }
+body.main-body .activity-confirm-button.is-cancel:hover { background: var(--press-border); }
+@media (max-width: 480px) {
+    body.main-body .swal2-popup.activity-confirm-modal { padding: 25px 18px 20px; }
+    body.main-body .activity-confirm-actions { display: grid; grid-template-columns: 1fr; }
+    body.main-body .activity-confirm-button { width: 100%; margin: 0; }
+}
+
 /* Keep the persistent navigation chrome in the same palette as the workspace. */
 body.light-mode .app-header,
 body.light-mode .app-sidebar,
@@ -213,12 +291,16 @@ body.main-body .slide-menu {
     background: transparent !important;
 }
 body.main-body .slide-menu .slide-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     padding: 7px 10px;
     color: var(--press-muted) !important;
     border-radius: 7px;
     font-size: 12px;
     font-weight: 600;
 }
+body.main-body .slide-menu .slide-item > i { width: 14px; color: currentColor; font-size: 12px; text-align: center; opacity: .82; }
 body.main-body .slide-menu .slide-item:hover,
 body.main-body .slide-menu .slide-item.active {
     color: var(--press-text) !important;
