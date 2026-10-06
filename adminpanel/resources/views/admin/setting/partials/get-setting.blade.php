@@ -172,6 +172,12 @@
                             <label class="form-label">Meta Description</label>
                             <textarea name="meta_description" class="form-control" rows="2"></textarea>
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Meta Image</label>
+                            <input type="file" name="meta_image" class="form-control" accept="image/jpeg,image/png,image/webp" data-image-input>
+                            <div class="form-text">Social share image (recommended: 1200 × 630 px).</div>
+                            <img data-image-preview-for="meta_image" class="d-none mt-2 rounded border" alt="Selected meta image" style="width: 180px; height: 95px; object-fit: cover;">
+                        </div>
 
                         <div class="col-md-6">
                             <label class="form-label">URL Structure</label>
