@@ -667,6 +667,7 @@
                     }
                     setImagePreview($form, imageUrl, $form.find('[name="image"]'));
                     setImagePreview($form, response.favicon_url || record.favicon_url || '', $form.find('[name="favicon"]'));
+                    setImagePreview($form, response.meta_image_url || record.meta_image_url || '', $form.find('[name="meta_image"]'));
                     $form.find('.js-crud-errors').empty().addClass('d-none');
                     $modal.find('[data-crud-title]').text('Edit Record');
                     $modal.find('[data-password-help]').text('(leave blank to keep the current password)');
