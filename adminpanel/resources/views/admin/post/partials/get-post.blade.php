@@ -583,22 +583,23 @@
         .post-modal .post-side-column { position: sticky; top: 0; align-self: flex-start; }
     }
     .dark-mode .post-modal {
-        --editor-bg: #0c1230;
-        --editor-surface: #11183d;
-        --editor-head: #151d46;
-        --editor-text: #edf0f5;
-        --editor-muted: rgba(237, 240, 245, .52);
-        --editor-shadow: 0 10px 26px rgba(0, 0, 0, .16);
-        --line: rgba(255, 255, 255, .11);
+        --editor-bg: #101215;
+        --editor-surface: #181b20;
+        --editor-head: #1e2228;
+        --editor-text: #edf0f3;
+        --editor-muted: #a1a8b3;
+        --editor-shadow: 0 10px 26px rgba(0, 0, 0, .28);
+        --line: rgba(255, 255, 255, .10);
     }
-    .dark-mode .post-modal .modal-header { background: linear-gradient(135deg, rgba(79, 95, 231, .17), transparent 60%); }
-    .dark-mode .post-modal .post-block:hover { border-color: rgba(123, 137, 244, .38); box-shadow: 0 12px 30px rgba(0, 0, 0, .2); }
+    .dark-mode .post-modal .modal-content { border-color: rgba(255, 255, 255, .11); }
+    .dark-mode .post-modal .modal-header { background: linear-gradient(135deg, rgba(255, 255, 255, .045), transparent 60%); }
+    .dark-mode .post-modal .post-block:hover { border-color: rgba(255, 255, 255, .20); box-shadow: 0 12px 30px rgba(0, 0, 0, .32); }
     .dark-mode .post-modal .form-control,
-    .dark-mode .post-modal .form-select { border-color: rgba(255, 255, 255, .12) !important; background-color: #0e1536 !important; }
+    .dark-mode .post-modal .form-select { border-color: rgba(255, 255, 255, .12) !important; background-color: #121519 !important; }
     .dark-mode .post-modal .switch-row { color: #edf0f8; }
     .dark-mode .post-modal .news-toggle-track {
-        background: #263052;
-        border-color: #536087;
+        background: #2a2f37;
+        border-color: #4a515c;
         box-shadow: inset 0 1px 3px rgba(0, 0, 0, .38);
     }
     .dark-mode .post-modal .news-toggle-track::after {
@@ -615,7 +616,7 @@
     .dark-mode .post-modal .news-toggle-input:checked ~ .news-toggle-state { color: #b8c0ff; }
     .dark-mode .post-modal .placement label {
         color: #dce2f4;
-        background: #0e1536;
+        background: #121519;
         border-color: rgba(255, 255, 255, .14);
     }
     .dark-mode .post-modal .placement input:checked + label {
@@ -629,7 +630,10 @@
         outline-offset: 2px;
     }
     .dark-mode .post-modal .upload-box { background: rgba(255, 255, 255, .018); }
-    .dark-mode .post-modal .upload-box:hover { background: rgba(79, 95, 231, .11); }
+    .dark-mode .post-modal .upload-box:hover { background: rgba(255, 255, 255, .055); }
+    .dark-mode .post-modal .post-rich-editor-wrap .ql-toolbar.ql-snow { background: #20242a !important; border-color: var(--line) !important; }
+    .dark-mode .post-modal .post-rich-editor-wrap .ql-container.ql-snow,
+    .dark-mode .post-modal .post-rich-editor-wrap .ql-editor { background: #121519 !important; border-color: var(--line) !important; }
     @media (max-width: 1199px) {
         .post-modal .modal-dialog { max-width: calc(100% - 1.5rem); }
         .post-modal .post-side-column { position: static; }

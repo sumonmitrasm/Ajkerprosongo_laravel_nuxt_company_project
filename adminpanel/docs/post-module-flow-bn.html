@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Post Module Flow — Ajker Proshongo</title>
+<style>
+ :root{--ink:#14213d;--muted:#61708a;--line:#dfe6f0;--bg:#f4f7fb;--card:#fff;--primary:#4054c6;--red:#e31e24;--green:#16845b;--code:#111a2f}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,"Noto Sans Bengali","Segoe UI",sans-serif;line-height:1.65}.hero{padding:58px max(24px,calc((100vw - 1120px)/2));color:#fff;background:linear-gradient(135deg,#111a31,#253b75)}.eyebrow{color:#9eb3ff;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}.hero h1{margin:8px 0;font-size:clamp(30px,5vw,48px);letter-spacing:-.04em}.hero p{max-width:760px;margin:0;color:#d6e0ff}.wrap{max-width:1120px;margin:0 auto;padding:30px 22px 60px}.notice{padding:14px 17px;border-left:4px solid var(--primary);border-radius:8px;background:#eaf0ff}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.card{padding:23px;border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:0 5px 18px rgba(28,45,80,.04)}h2{margin:36px 0 14px;font-size:25px}h3{margin:0 0 9px;font-size:17px}p{margin:8px 0}code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}code{padding:2px 5px;border-radius:4px;background:#edf1f7;color:#27385c;font-size:.9em}pre{margin:13px 0 0;padding:16px;overflow:auto;border-radius:10px;background:var(--code);color:#dce8ff;font-size:13px;line-height:1.55}.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;align-items:stretch}.flow div{position:relative;padding:14px 11px;border-radius:10px;background:#eef2ff;text-align:center;font-size:13px;font-weight:700}.flow div:not(:last-child)::after{content:"→";position:absolute;right:-9px;top:50%;z-index:2;color:var(--primary);font-size:20px;transform:translateY(-50%)}table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}th,td{padding:12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{background:#eff3fa;font-size:13px}tr:last-child td{border:0}.tag{display:inline-block;padding:2px 8px;border-radius:999px;background:#eaf8f1;color:var(--green);font-size:12px;font-weight:700}ul{padding-left:22px}.small{color:var(--muted);font-size:14px}.path{color:#425a9b;font-weight:700;overflow-wrap:anywhere}.step{display:grid;grid-template-columns:34px 1fr;gap:13px;margin:16px 0}.number{display:grid;width:32px;height:32px;place-items:center;border-radius:50%;background:var(--primary);color:#fff;font-weight:800}@media(max-width:760px){.grid{grid-template-columns:1fr}.flow{grid-template-columns:1fr}.flow div:not(:last-child)::after{right:auto;left:50%;top:auto;bottom:-18px;transform:none}.flow{gap:20px}.hero{padding:40px 22px}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="eyebrow">Ajker Proshongo · Developer guide</div><h1>Post Module: পুরো flow</h1><p>একটি news post কীভাবে form থেকে database-এ save হয়, reviewer-এর কাছে যায়, cache ব্যবহার করে এবং পরে edit/publish হয়—তার বাস্তব code map।</p></header>
+<main class="wrap">
+<div class="notice"><strong>মূল কথা:</strong> Blade শুধু UI দেখায়। JavaScript form data পাঠায়। Route সেই request Controller-এ পাঠায়। Controller validate করে Model দিয়ে database-এ save করে। আর dropdown-এর option দ্রুত দেখানোর জন্য Support class cache ব্যবহার করে।</div>
+
+<h2>১. এক নজরে সম্পূর্ণ পথ</h2>
+<div class="flow"><div>Blade Form<br><small>HTML UI</small></div><div>posts.js<br><small>AJAX + FormData</small></div><div>Route<br><small>URL mapping</small></div><div>PostController<br><small>rules + workflow</small></div><div>Post Model / DB<br><small>save + relations</small></div></div>
+
+<h2>২. কোন file কী কাজ করে</h2>
+<table><thead><tr><th>Layer</th><th>File</th><th>কাজ</th></tr></thead><tbody>
+<tr><td>Route</td><td class="path">routes/web.php</td><td>কোন URL কোন controller method চালাবে।</td></tr>
+<tr><td>Controller</td><td class="path">app/Http/Controllers/PostController.php</td><td>Post list, create, update, validation, permissions, workflow ও upload পরিচালনা করে।</td></tr>
+<tr><td>Model</td><td class="path">app/Models/Post.php</td><td><code>posts</code> table-এর ORM model এবং relation-এর সংজ্ঞা।</td></tr>
+<tr><td>Database</td><td class="path">database/migrations/2026_08_24_102818_create_posts_table.php</td><td>Posts table, foreign keys, indexes এবং soft delete তৈরি করে।</td></tr>
+<tr><td>Lookup/cache</td><td class="path">app/Support/PostFormLookups.php</td><td>Section, category, reporter, reviewer, tag, location dropdown data cache করে।</td></tr>
+<tr><td>Blade</td><td class="path">resources/views/admin/post/partials/get-post.blade.php</td><td>Create/Edit modal, dropdown, status, SEO এবং reviewer UI।</td></tr>
+<tr><td>JavaScript</td><td class="path">public/admin/assets/js/posts.js</td><td>Modal open, Quill editor value, AJAX save, image preview ও error display।</td></tr>
+</tbody></table>
+
+<h2>৩. Route থেকে Controller</h2>
+<pre>GET    /admin/posts              → PostController@index       (All News)
+GET    /admin/posts/mine         → PostController@index       (My Posts)
+GET    /admin/posts/review-queue → PostController@index       (Review Queue)
+POST   /admin/post               → PostController@store       (Create)
+GET    /admin/post/{post}        → PostController@show        (Edit data)
+PUT    /admin/post/{post}        → PostController@update      (Update)
+PATCH  /admin/post/{post}/status → PostController@updateStatus
+DELETE /admin/post/{post}        → PostController@destroy</pre>
+<p class="small">এই mapping আছে <code>routes/web.php</code>-এ। একই <code>index()</code> method route name দেখে বোঝে এটি All News, My Posts নাকি Review Queue।</p>
+
+<h2>৪. Create Post কীভাবে save হয়</h2>
+<div class="step"><div class="number">1</div><div><strong>Blade form</strong><br>Post form-এর <code>id="post-form"</code> আছে। User title, description, category, status, reviewer, image ইত্যাদি দেয়।</div></div>
+<div class="step"><div class="number">2</div><div><strong>posts.js</strong><br>Submit আটকায়: <code>ev.preventDefault()</code>। Quill editor-এর HTML sanitize করে hidden description field-এ দেয়। তারপর <code>new FormData(this)</code> দিয়ে text + image একসঙ্গে পাঠায়।</div></div>
+<div class="step"><div class="number">3</div><div><strong>AJAX request</strong><br>Create-এর সময় <code>POST /admin/post</code>; edit-এর সময় method override সহ <code>PUT /admin/post/{id}</code> যায়। সফল হলে modal বন্ধ হয় এবং list AJAX দিয়ে refresh হয়।</div></div>
+<div class="step"><div class="number">4</div><div><strong>Validation</strong><br><code>validatePost()</code> title, description, status, image type/size, category ID, reviewer ID, SEO data ইত্যাদি পরীক্ষা করে। ভুল হলে Laravel 422 JSON error পাঠায়; JS form-এ দেখায়।</div></div>
+<div class="step"><div class="number">5</div><div><strong>Database transaction</strong><br><code>store()</code> image upload করে, তারপর <code>DB::transaction()</code>-এর ভিতরে post, tag pivot, gallery এবং initial status history save করে। কোনো অংশ ব্যর্থ হলে transaction rollback হয়।</div></div>
+
+<h2>৫. Database structure</h2>
+<div class="grid"><section class="card"><h3><code>posts</code> table</h3><p>মূল article record: title, slug, description, status, featured image, SEO, publish time, author/reviewer ID, flags।</p><p><span class="tag">Soft delete</span> Delete করলে row সঙ্গে সঙ্গে মুছে যায় না; <code>deleted_at</code> ভরে যায়।</p></section><section class="card"><h3>Connected tables</h3><ul><li><code>post_images</code> — gallery images</li><li><code>post_tag</code> — post ও tag-এর many-to-many link</li><li><code>post_revisions</code> — edit-এর আগের version</li><li><code>post_status_histories</code> — draft/review/published পরিবর্তনের audit trail</li></ul></section></div>
+<pre>posts.author_id    → admins.id  (যার নামে byline যাবে)
+posts.created_by   → admins.id  (কে record তৈরি করেছে)
+posts.updated_by   → admins.id  (সর্বশেষ কে edit করেছে)
+posts.reviewed_by  → admins.id  (কে review করার দায়িত্ব দেওয়া হয়েছে)
+posts.published_by → admins.id  (কে publish করেছে)</pre>
+
+<h2>৬. Post model ও relation</h2>
+<p><code>app/Models/Post.php</code> Eloquent relation দিয়ে database link সহজ করে:</p>
+<pre>$post-&gt;author;            // author_id থেকে Admin
+$post-&gt;reviewer;          // reviewed_by থেকে Admin
+$post-&gt;category;          // category_id থেকে Category
+$post-&gt;images;            // post_images-এর gallery list
+$post-&gt;tags;              // post_tag দিয়ে Tag collection
+$post-&gt;revisions;         // পূর্বের version
+$post-&gt;statusHistories;   // workflow history</pre>
+<p class="small">Model-এর <code>$fillable</code> list বলছে কোন কোন field mass assignment দিয়ে save করা যাবে। <code>casts()</code> boolean, datetime ও JSON data সঠিক PHP type-এ convert করে।</p>
+
+<h2>৭. Author ও Reviewer flow</h2>
+<div class="grid"><section class="card"><h3>Author / Reporter</h3><p><code>author_id</code>-তে save হয়। এটি post-এর byline; current logged-in user default হিসেবে থাকে, তবে permitted user অন্য active staff-এর নামও দিতে পারে।</p></section><section class="card"><h3>Reviewer / Send for review to</h3><p><code>reviewed_by</code>-তে save হয়। Status <code>review</code> হলে reviewer বাধ্যতামূলক। শুধু selected reviewer সেই item নিজের Review Queue-তে দেখেন।</p></section></div>
+<pre>// Reviewer dropdown query
+Admin::where('status', true)
+  -&gt;where(type = 'superadmin' OR post module-এর edit_access = true)
+  -&gt;orderBy('name')
+  -&gt;get();</pre>
+<p>Review Queue filter: <code>where('reviewed_by', loggedInAdminId)-&gt;where('status', 'review')</code>। তাই reviewer A-র কাছে reviewer B-র assigned post যাবে না।</p>
+
+<h2>৮. Status workflow</h2>
+<div class="flow"><div>Draft</div><div>Review</div><div>Scheduled</div><div>Published</div><div>Archived</div></div>
+<ul><li><strong>Draft:</strong> কাজ চলছে; reviewer দরকার নেই।</li><li><strong>Review:</strong> <code>reviewed_by</code> অবশ্যই selected হতে হবে; <code>reviewed_at</code> এখনো empty থাকে।</li><li><strong>Scheduled / Published:</strong> assigned reviewer অথবা superadmin publish করতে পারে; তখন <code>reviewed_at</code>, <code>published_at</code> ও <code>published_by</code> update হয়।</li><li>প্রতিটি status change <code>post_status_histories</code>-এ note ও user ID-সহ save হয়।</li></ul>
+
+<h2>৯. Support class ও cache কীভাবে কাজ করে</h2>
+<p>Post create form খোলার সময় বারবার ৮টি আলাদা database query না চালিয়ে <code>PostFormLookups::get()</code> ব্যবহার হয়।</p>
+<pre>Cache::remember(
+  'admin.post-form-lookups.v1',
+  now()-&gt;addHours(6),
+  fn () =&gt; self::payload()
+);</pre>
+<div class="grid"><section class="card"><h3>Cache miss</h3><p>প্রথমবার cache না থাকলে <code>payload()</code> database থেকে active section/category/tag/admin/reviewer/location নিয়ে আসে এবং ৬ ঘণ্টার জন্য cache রাখে।</p></section><section class="card"><h3>Cache hit</h3><p>পরের form open-এ database query না করে cache থেকে option আসে, তাই modal দ্রুত open হয়।</p></section></div>
+<p><strong>Cache clear:</strong> User/permission, section, category বা tag পরিবর্তনের পরে সংশ্লিষ্ট controller <code>PostFormLookups::forget()</code> চালায়। তাই নতুন reporter/reviewer সাধারণত সঙ্গে সঙ্গেই দেখা যাবে।</p>
+
+<h2>১০. Image ও SEO data</h2>
+<ul><li><strong>Featured image / Meta image / Gallery image:</strong> <code>upload()</code> file-কে <code>public/admin/postimages/</code>-এ রাখে।</li><li><strong>Update:</strong> নতুন image থাকলে নতুন file save হয়; database update সফল হওয়ার পর পুরোনো image delete হয়।</li><li><strong>Failure:</strong> transaction fail হলে সদ্য upload করা unused files delete করার চেষ্টা হয়।</li><li><strong>SEO:</strong> meta title, description, keywords, image, robots, canonical URL ও JSON schema <code>posts</code> table-এই থাকে।</li></ul>
+
+<h2>১১. Permission ও security</h2>
+<table><thead><tr><th>কাজ</th><th>Rule</th></tr></thead><tbody><tr><td>All News</td><td>Superadmin সব post দেখতে পারে; reporter direct URL দিলেও নিজের post scope-এ নেমে যায়।</td></tr><tr><td>Edit / View</td><td>Owner, assigned reviewer অথবা superadmin।</td></tr><tr><td>Delete</td><td>Owner অথবা superadmin।</td></tr><tr><td>Publish</td><td>Assigned reviewer অথবা superadmin।</td></tr><tr><td>Input safety</td><td>Laravel validation, image MIME/size rule, unique slug এবং editor HTML sanitization।</td></tr></tbody></table>
+
+<h2>১২. দ্রুত সমস্যা সমাধান</h2>
+<ul><li><strong>Reviewer নাম কম দেখায়:</strong> user Active কি না এবং Post module-এর Edit Access আছে কি না দেখুন।</li><li><strong>নতুন user দেখা যাচ্ছে না:</strong> User/Permission screen দিয়ে update করুন; সেটি lookup cache clear করে। Direct database change করলে cache clear দরকার হতে পারে।</li><li><strong>Review status save হচ্ছে না:</strong> Reviewer select করা আছে কি না দেখুন; Review হলে field required।</li><li><strong>Post Review Queue-তে নেই:</strong> status অবশ্যই <code>review</code> এবং <code>reviewed_by</code> অবশ্যই logged-in reviewer-এর ID হতে হবে।</li><li><strong>Image upload fail:</strong> JPG/JPEG/PNG/WebP এবং 5 MB-এর মধ্যে আছে কি না দেখুন।</li></ul>
+
+<p class="small">Document generated for the current project structure. Primary code references: <span class="path">PostController.php</span>, <span class="path">Post.php</span>, <span class="path">PostFormLookups.php</span>, <span class="path">get-post.blade.php</span>, <span class="path">posts.js</span>।</p>
+</main></body></html>
