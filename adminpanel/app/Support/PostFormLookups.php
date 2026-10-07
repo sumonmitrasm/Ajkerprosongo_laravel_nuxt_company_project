@@ -8,7 +8,7 @@ use Throwable;
 
 final class PostFormLookups
 {
-    private const CACHE_KEY = 'admin.post-form-lookups.v1';
+    private const CACHE_KEY = 'admin.post-form-lookups.v2';
 
     /**
      * Return the reusable Post editor options from one cache record.
@@ -19,7 +19,7 @@ final class PostFormLookups
         try {
             $payload = Cache::remember(
                 self::CACHE_KEY,
-                now()->addHours(6),
+                now()->addHours(96),
                 fn () => self::payload(),
             );
         } catch (Throwable $exception) {
