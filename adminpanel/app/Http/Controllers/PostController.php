@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Admin;
 use App\Models\Post;
 use App\Support\PostFormLookups;
 use Illuminate\Http\Request;
@@ -14,6 +15,7 @@ class PostController extends Controller
     /** Show the searchable post list and all form lookup data. */
     public function index(Request $request)
     {
+        /** @var Admin $admin */
         $admin=Auth::guard('admin')->user();
         $adminId=$admin->id;
         $routeName=$request->route()?->getName();
