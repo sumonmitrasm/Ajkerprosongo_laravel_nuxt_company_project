@@ -66,7 +66,7 @@
 
     </style>
 
-    <link href="{{ asset('admin/assets/css/newsroom.css') }}?v=26" rel="stylesheet">
+    <link href="{{ asset('admin/assets/css/newsroom.css') }}?v=34" rel="stylesheet">
 </head>
 
 <body class="main-body app sidebar-mini light-mode ltr">
