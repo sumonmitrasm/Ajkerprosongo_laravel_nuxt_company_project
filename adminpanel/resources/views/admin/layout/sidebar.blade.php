@@ -12,10 +12,8 @@
                     src="{{ optional($generalSetting)->favicon ? asset('admin/site_settings/' . basename($generalSetting->favicon)) : asset('admin/assets/images/brand/favicon1.png') }}" alt="logo"></a>
         </div>
         <div class="main-sidemenu">
-            <div class="app-sidebar__user">
-                <div class="dropdown user-pro-body text-center">
-                    <div class="user-pic">
-                        @php
+            <div class="app-sidebar__user sidebar-account-card">
+                @php
                             $admin = Auth::guard('admin')->user();
                             $canManageAdmins = $admin?->hasModuleAccess('admin', 'view');
                             $canManageSections = $admin?->hasModuleAccess('section', 'view');
@@ -31,18 +29,23 @@
 
                             // Show the Online Polling menu only when the admin has poll view access.
                             $canOnlinePolling = $admin?->hasModuleAccess('poll', 'view');
-                        @endphp
+                @endphp
+                <a href="{{ route('admin.account') }}" class="sidebar-account-link" data-ajax-page>
+                    <span class="sidebar-account-avatar-wrap">
                         <img src="{{ $admin && $admin->image
                             ? asset('admin/adminimage/' . $admin->image)
                             : asset('admin/site_settings/no-image.png') }}"
-                            class="avatar avatar-xl brround mb-1" data-auth-avatar>
-                    </div>
-                    <div class="user-info text-center">
-                        <h5 class=" mb-1 font-weight-bold" data-auth-name>{{ Auth::guard('admin')->user()?->name }}</h5>
-                        <span
-                            class="text-muted app-sidebar__user-name text-sm">{{ ucfirst(Auth::guard('admin')->user()?->type) }}</span>
-                    </div>
-                </div>
+                            class="sidebar-account-avatar" data-auth-avatar>
+                    </span>
+                    <span class="sidebar-account-copy">
+                        <strong data-auth-name>{{ $admin?->name }}</strong>
+                        <small>{{ ucfirst($admin?->type ?? 'Staff') }} account</small>
+                    </span>
+                    <i class="fe fe-chevron-right" aria-hidden="true"></i>
+                </a>
+                <a href="{{ route('admin.account') }}" class="sidebar-account-manage" data-ajax-page>
+                    <i class="fe fe-settings" aria-hidden="true"></i> Manage account
+                </a>
             </div>
             <div class="slide-left disabled" id="slide-left"><svg xmlns="http://www.w3.org/2000/svg" fill="#7b8191"
                     width="24" height="24" viewBox="0 0 24 24">
@@ -277,39 +280,17 @@
                 </li>
 
             </ul>
-            <div class="app-sidebar-help">
-                <div class="dropdown text-center">
-                    <div class="help d-flex">
-                        <a href="javascript:void(0)" class="nav-link p-0 help-dropdown" data-bs-toggle="dropdown">
-                            <span class="font-weight-bold">Help Info</span> <i class="fa fa-angle-down ms-2"></i>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow p-4">
-                            <div class="sidebar-dropdown-divider pb-3">
-                                <h4 class="font-weight-bold">Help</h4>
-                                <a class="d-block" href="javascript:void(0)">Knowledge base</a>
-                                <a class="d-block" href="javascript:void(0)">Contact@info.com</a>
-                                <a class="d-block" href="javascript:void(0)">88 8888 8888</a>
-                            </div>
-                            <div class="sidebar-dropdown-divider pb-3 pt-3 mb-3">
-                                <p class="mb-1">Your Fax Number</p>
-                                <a class="font-weight-bold" href="javascript:void(0)">88 8888 8888</a>
-                            </div>
-                            <a href="{{route('logout-admin')}}" data-no-ajax>Logout</a>
-                        </div>
-                        <div class="ms-auto">
-                            <a class="nav-link icon p-0" href="javascript:void(0)">
-                                <svg class="header-icon" x="1008" y="1248" viewBox="0 0 24 24" height="100%"
-                                    width="100%" preserveAspectRatio="xMidYMid meet" focusable="false">
-                                    <path opacity=".3"
-                                        d="M12 6.5c-2.49 0-4 2.02-4 4.5v6h8v-6c0-2.48-1.51-4.5-4-4.5z"></path>
-                                    <path
-                                        d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-11c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2v-5zm-2 6H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6zM7.58 4.08L6.15 2.65C3.75 4.48 2.17 7.3 2.03 10.5h2a8.445 8.445 0 013.55-6.42zm12.39 6.42h2c-.15-3.2-1.73-6.02-4.12-7.85l-1.42 1.43a8.495 8.495 0 013.54 6.42z">
-                                    </path>
-                                </svg>
-                                <span class="pulse "></span>
-                            </a>
-                        </div>
-                    </div>
+            <div class="app-sidebar-help sidebar-quick-actions">
+                <a href="{{ route('admin.account') }}" class="sidebar-quick-create" data-ajax-page>
+                    <i class="fe fe-user" aria-hidden="true"></i><span>My account</span>
+                </a>
+                <div class="sidebar-quick-utilities">
+                    <button type="button" class="sidebar-quick-icon" data-sidebar-notification-toggle aria-label="Open notifications" title="Notifications">
+                        <i class="fe fe-bell" aria-hidden="true"></i><span class="sidebar-quick-dot"></span>
+                    </button>
+                    <a href="{{ route('logout-admin') }}" class="sidebar-quick-icon is-logout" data-no-ajax aria-label="Log out" title="Log out">
+                        <i class="fe fe-log-out" aria-hidden="true"></i>
+                    </a>
                 </div>
             </div>
             <div class="slide-right" id="slide-right"><svg xmlns="http://www.w3.org/2000/svg" fill="#7b8191"
@@ -319,3 +300,12 @@
         </div>
     </aside>
 </div>
+<script>
+    document.addEventListener('click', function (event) {
+        const trigger = event.target.closest('[data-sidebar-notification-toggle]');
+        if (!trigger) return;
+
+        const notificationToggle = document.querySelector('.header-notify > [data-bs-toggle="dropdown"]');
+        if (notificationToggle) notificationToggle.click();
+    });
+</script>
