@@ -1,4 +1,13 @@
 <div class="app-header header top-header">
+                <div class="header-water-motion" aria-hidden="true">
+                    <svg class="header-ocean-wave header-ocean-wave-back" viewBox="0 0 1440 80" preserveAspectRatio="none" focusable="false">
+                        <path d="M0 46C120 22 240 70 360 46S600 22 720 46s240 24 360 0 240-24 360 0v34H0Z"></path>
+                    </svg>
+                    <svg class="header-ocean-wave header-ocean-wave-front" viewBox="0 0 1440 80" preserveAspectRatio="none" focusable="false">
+                        <path d="M0 54c120-23 240 23 360 0s240-23 360 0 240 23 360 0 240-23 360 0v26H0Z"></path>
+                    </svg>
+                    <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                </div>
                 <div class="container-fluid main-container">
                     <div class="d-flex">
                         <div class="dropdown side-nav">
