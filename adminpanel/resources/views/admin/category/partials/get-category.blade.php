@@ -137,6 +137,14 @@
                         <div class="col-md-6">
                             <label class="form-label">Category Image</label>
                             <input type="file" name="image" class="form-control" accept="image/*">
+                            <div class="d-none mt-2 align-items-center gap-2" data-image-preview-container>
+                                <img data-image-preview-for="image" class="d-none rounded border" alt="Current category image"
+                                    style="width: 52px; height: 52px; object-fit: cover;">
+                                <div class="small text-muted">
+                                    <strong class="d-block">Current image</strong>
+                                    Select a new image only if you want to replace it.
+                                </div>
+                            </div>
                         </div>
 
                         <div class="col-md-6">

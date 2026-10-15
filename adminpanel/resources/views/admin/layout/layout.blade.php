@@ -620,8 +620,10 @@
 
                 if (source) {
                     $preview.attr('src', source).removeClass('d-none');
+                    $preview.closest('[data-image-preview-container]').removeClass('d-none').addClass('d-flex');
                 } else {
                     $preview.attr('src', '').addClass('d-none');
+                    $preview.closest('[data-image-preview-container]').addClass('d-none').removeClass('d-flex');
                 }
             }
 
